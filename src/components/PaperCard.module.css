@@ -1,0 +1,19 @@
+.card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.title {
+  margin: 0;
+}
+
+.meta {
+  color: #6b7280;
+  margin: 0.5rem 0;
+}
+
+.abstract {
+  margin: 0;
+}
