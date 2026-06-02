@@ -1,0 +1,33 @@
+.hero {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 2rem;
+}
+
+.badge {
+  color: #1d4ed8;
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.primary,
+.secondary {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+}
+
+.primary {
+  background: #1d4ed8;
+  color: #fff;
+}
+
+.secondary {
+  background: #dbeafe;
+  color: #1e3a8a;
+}
