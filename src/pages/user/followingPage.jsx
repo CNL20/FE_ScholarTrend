@@ -4,10 +4,14 @@ import styles from './simpleListPage.module.css'
 function FollowingPage() {
   return (
     <section className={styles.panel}>
-      <h1>My Following</h1>
-      <ul>
+      <div className={styles.pageHeader}>
+        <h1 className={styles.pageTitle}>My Following</h1>
+      </div>
+      <ul className={styles.list}>
         {following.map((item) => (
-          <li key={item}>{item}</li>
+          <li key={item} className={styles.listItem}>
+            <span className={styles.listItemText}>{item}</span>
+          </li>
         ))}
       </ul>
     </section>

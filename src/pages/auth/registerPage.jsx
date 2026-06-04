@@ -35,52 +35,67 @@ function RegisterPage() {
   };
 
   return (
-    <section className={styles.container}>
-      <h1>Register</h1>
-      <form className={styles.form} onSubmit={handleSubmit} noValidate>
-        <label htmlFor="reg-name">Name</label>
-        <input
-          id="reg-name"
-          className={styles.input}
-          type="text"
-          value={form.name}
-          onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
-        />
-        <label htmlFor="reg-email">Email</label>
-        <input
-          id="reg-email"
-          className={styles.input}
-          type="email"
-          value={form.email}
-          onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
-        />
-        <label htmlFor="reg-password">Password</label>
-        <input
-          id="reg-password"
-          className={styles.input}
-          type="password"
-          value={form.password}
-          onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
-        />
-        <label htmlFor="reg-role">Role</label>
-        <select
-          id="reg-role"
-          className={styles.input}
-          value={form.role}
-          onChange={(e) => setForm((prev) => ({ ...prev, role: e.target.value }))}
-        >
-          <option value="student">Student / Lecturer</option>
-          <option value="researcher">Researcher</option>
-        </select>
-        {error && <p className={styles.error}>{error}</p>}
-        <button type="submit" className={styles.button}>
-          Create Account
-        </button>
-      </form>
-      <p style={{ marginTop: "16px" }}>
-        Already have an account? <Link to="/login">Login</Link>
-      </p>
-    </section>
+    <div className={styles.wrapper}>
+      <section className={styles.container}>
+        <div className={styles.logo}>ScholarTrend</div>
+        <p className={styles.subtitle}>Academic Research Intelligence</p>
+        <h1 className={styles.heading}>Create Account</h1>
+        <form className={styles.form} onSubmit={handleSubmit} noValidate>
+          <div className={styles.fieldGroup}>
+            <label htmlFor="reg-name" className={styles.label}>Full Name</label>
+            <input
+              id="reg-name"
+              className={styles.input}
+              type="text"
+              placeholder="John Doe"
+              value={form.name}
+              onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+            />
+          </div>
+          <div className={styles.fieldGroup}>
+            <label htmlFor="reg-email" className={styles.label}>Email Address</label>
+            <input
+              id="reg-email"
+              className={styles.input}
+              type="email"
+              placeholder="you@university.edu"
+              value={form.email}
+              onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
+            />
+          </div>
+          <div className={styles.fieldGroup}>
+            <label htmlFor="reg-password" className={styles.label}>Password</label>
+            <input
+              id="reg-password"
+              className={styles.input}
+              type="password"
+              placeholder="••••••••"
+              value={form.password}
+              onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
+            />
+          </div>
+          <div className={styles.fieldGroup}>
+            <label htmlFor="reg-role" className={styles.label}>Role</label>
+            <select
+              id="reg-role"
+              className={styles.input}
+              value={form.role}
+              onChange={(e) => setForm((prev) => ({ ...prev, role: e.target.value }))}
+            >
+              <option value="student">Student / Lecturer</option>
+              <option value="researcher">Researcher</option>
+            </select>
+          </div>
+          {error && <p className={styles.error}>{error}</p>}
+          <button type="submit" className={styles.button}>
+            Create Account
+          </button>
+        </form>
+        <p className={styles.footer}>
+          Already have an account? <Link to="/login">Sign in</Link>
+        </p>
+      </section>
+    </div>
   );
 }
 

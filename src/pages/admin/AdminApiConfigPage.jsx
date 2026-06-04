@@ -15,50 +15,59 @@ function AdminApiConfigPage() {
   }
 
   return (
-    <section className={styles.panel}>
-      <h1>Admin API Configuration</h1>
-      <form className={styles.form} onSubmit={handleSubmit}>
-        <label htmlFor="api-base-url">API Base URL</label>
-        <input
-          id="api-base-url"
-          className={styles.input}
-          value={config.baseUrl}
-          onChange={(event) => {
-            setSaved(false)
-            setConfig((prev) => ({ ...prev, baseUrl: event.target.value }))
-          }}
-        />
+    <section className={styles.configPage}>
+      <h1 className={styles.pageTitle}>API Configuration</h1>
+      <div className={styles.panel}>
+        <form className={styles.form} onSubmit={handleSubmit}>
+          <div className={styles.fieldGroup}>
+            <label htmlFor="api-base-url" className={styles.label}>API Base URL</label>
+            <input
+              id="api-base-url"
+              className={styles.input}
+              value={config.baseUrl}
+              onChange={(event) => {
+                setSaved(false)
+                setConfig((prev) => ({ ...prev, baseUrl: event.target.value }))
+              }}
+            />
+          </div>
 
-        <label htmlFor="api-key">API Key</label>
-        <input
-          id="api-key"
-          className={styles.input}
-          type="password"
-          value={config.apiKey}
-          onChange={(event) => {
-            setSaved(false)
-            setConfig((prev) => ({ ...prev, apiKey: event.target.value }))
-          }}
-        />
+          <div className={styles.fieldGroup}>
+            <label htmlFor="api-key" className={styles.label}>API Key</label>
+            <input
+              id="api-key"
+              className={styles.input}
+              type="password"
+              placeholder="Enter your API key"
+              value={config.apiKey}
+              onChange={(event) => {
+                setSaved(false)
+                setConfig((prev) => ({ ...prev, apiKey: event.target.value }))
+              }}
+            />
+          </div>
 
-        <label htmlFor="api-sync">Sync Interval (hours)</label>
-        <input
-          id="api-sync"
-          className={styles.input}
-          type="number"
-          min="1"
-          value={config.syncInterval}
-          onChange={(event) => {
-            setSaved(false)
-            setConfig((prev) => ({ ...prev, syncInterval: event.target.value }))
-          }}
-        />
+          <div className={styles.fieldGroup}>
+            <label htmlFor="api-sync" className={styles.label}>Sync Interval (hours)</label>
+            <input
+              id="api-sync"
+              className={styles.input}
+              type="number"
+              min="1"
+              value={config.syncInterval}
+              onChange={(event) => {
+                setSaved(false)
+                setConfig((prev) => ({ ...prev, syncInterval: event.target.value }))
+              }}
+            />
+          </div>
 
-        <button type="submit" className={styles.button}>
-          Save Configuration
-        </button>
-      </form>
-      {saved && <p className={styles.saved}>Configuration saved.</p>}
+          <button type="submit" className={styles.button}>
+            Save Configuration
+          </button>
+        </form>
+        {saved && <p className={styles.saved}>✓ Configuration saved.</p>}
+      </div>
     </section>
   )
 }

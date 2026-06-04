@@ -1,8 +1,40 @@
+/* ═══════════════════════════════════
+   SearchResultsList — Dark Glassmorphism
+   ═══════════════════════════════════ */
+
 .list {
   display: grid;
   gap: 1rem;
 }
 
-.empty {
-  color: #6b7280;
+/* stagger entrance animation on cards */
+.list > *:nth-child(1) { animation-delay: 0.05s; }
+.list > *:nth-child(2) { animation-delay: 0.10s; }
+.list > *:nth-child(3) { animation-delay: 0.15s; }
+.list > *:nth-child(4) { animation-delay: 0.20s; }
+.list > *:nth-child(5) { animation-delay: 0.25s; }
+
+/* ── Empty State ── */
+.emptyState {
+  text-align: center;
+  padding: 3rem 1rem;
+  background: var(--glass-bg);
+  border: var(--card-border);
+  border-radius: var(--card-radius);
+  backdrop-filter: var(--card-blur);
+  -webkit-backdrop-filter: var(--card-blur);
+  animation: fadeIn 0.5s ease;
+}
+
+.emptyIcon {
+  display: block;
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+  opacity: 0.7;
+}
+
+.emptyText {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.95rem;
 }

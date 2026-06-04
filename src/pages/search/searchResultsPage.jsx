@@ -27,9 +27,13 @@ function SearchResultsPage() {
   )
 
   return (
-    <section>
-      <h1>Search Results</h1>
-      <p className={styles.summary}>Found {filteredPapers.length} matching paper(s).</p>
+    <section className={styles.resultsPage}>
+      <div className={styles.pageHeader}>
+        <h1 className={styles.pageTitle}>Search Results</h1>
+        <p className={styles.summary}>
+          Found <span className={styles.summaryCount}>{filteredPapers.length}</span> matching paper(s).
+        </p>
+      </div>
       <SearchResultsList papers={filteredPapers} />
     </section>
   )

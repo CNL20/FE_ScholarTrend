@@ -31,34 +31,44 @@ function LoginPage() {
   };
 
   return (
-    <section className={styles.container}>
-      <h1>Login</h1>
-      <form className={styles.form} onSubmit={handleSubmit} noValidate>
-        <label htmlFor="login-email">Email</label>
-        <input
-          id="login-email"
-          className={styles.input}
-          type="email"
-          value={form.email}
-          onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
-        />
-        <label htmlFor="login-password">Password</label>
-        <input
-          id="login-password"
-          className={styles.input}
-          type="password"
-          value={form.password}
-          onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
-        />
-        {error && <p className={styles.error}>{error}</p>}
-        <button type="submit" className={styles.button}>
-          Sign In
-        </button>
-      </form>
-      <p style={{ marginTop: "16px" }}>
-        Don't have an account? <Link to="/register">Register</Link>
-      </p>
-    </section>
+    <div className={styles.wrapper}>
+      <section className={styles.container}>
+        <div className={styles.logo}>ScholarTrend</div>
+        <p className={styles.subtitle}>Academic Research Intelligence</p>
+        <h1 className={styles.heading}>Welcome Back</h1>
+        <form className={styles.form} onSubmit={handleSubmit} noValidate>
+          <div className={styles.fieldGroup}>
+            <label htmlFor="login-email" className={styles.label}>Email Address</label>
+            <input
+              id="login-email"
+              className={styles.input}
+              type="email"
+              placeholder="you@university.edu"
+              value={form.email}
+              onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
+            />
+          </div>
+          <div className={styles.fieldGroup}>
+            <label htmlFor="login-password" className={styles.label}>Password</label>
+            <input
+              id="login-password"
+              className={styles.input}
+              type="password"
+              placeholder="••••••••"
+              value={form.password}
+              onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
+            />
+          </div>
+          {error && <p className={styles.error}>{error}</p>}
+          <button type="submit" className={styles.button}>
+            Sign In
+          </button>
+        </form>
+        <p className={styles.footer}>
+          Don&apos;t have an account? <Link to="/register">Create one</Link>
+        </p>
+      </section>
+    </div>
   );
 }
 

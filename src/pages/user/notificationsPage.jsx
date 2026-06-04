@@ -4,10 +4,14 @@ import styles from './simpleListPage.module.css'
 function NotificationsPage() {
   return (
     <section className={styles.panel}>
-      <h1>Notifications</h1>
-      <ul>
+      <div className={styles.pageHeader}>
+        <h1 className={styles.pageTitle}>Notifications</h1>
+      </div>
+      <ul className={styles.list}>
         {notifications.map((item) => (
-          <li key={item}>{item}</li>
+          <li key={item} className={styles.listItem}>
+            <span className={styles.listItemText}>{item}</span>
+          </li>
         ))}
       </ul>
     </section>

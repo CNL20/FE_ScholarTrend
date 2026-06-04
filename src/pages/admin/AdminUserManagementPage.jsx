@@ -26,68 +26,70 @@ function AdminUserManagementPage() {
   }
 
   return (
-    <section className={styles.panel}>
-      <h1>Admin User Management</h1>
-      <form className={styles.form} onSubmit={addUser}>
-        <input
-          className={styles.input}
-          placeholder="Name"
-          value={newUser.name}
-          onChange={(event) => setNewUser((prev) => ({ ...prev, name: event.target.value }))}
-        />
-        <input
-          className={styles.input}
-          placeholder="Email"
-          type="email"
-          value={newUser.email}
-          onChange={(event) => setNewUser((prev) => ({ ...prev, email: event.target.value }))}
-        />
-        <select
-          className={styles.input}
-          value={newUser.role}
-          onChange={(event) => setNewUser((prev) => ({ ...prev, role: event.target.value }))}
-        >
-          <option value="researcher">Researcher</option>
-          <option value="admin">Admin</option>
-        </select>
-        <button type="submit" className={styles.button}>
-          Add User
-        </button>
-      </form>
+    <section className={styles.userMgmtPage}>
+      <h1 className={styles.pageTitle}>User Management</h1>
+      <div className={styles.panel}>
+        <form className={styles.form} onSubmit={addUser}>
+          <input
+            className={styles.input}
+            placeholder="Name"
+            value={newUser.name}
+            onChange={(event) => setNewUser((prev) => ({ ...prev, name: event.target.value }))}
+          />
+          <input
+            className={styles.input}
+            placeholder="Email"
+            type="email"
+            value={newUser.email}
+            onChange={(event) => setNewUser((prev) => ({ ...prev, email: event.target.value }))}
+          />
+          <select
+            className={styles.input}
+            value={newUser.role}
+            onChange={(event) => setNewUser((prev) => ({ ...prev, role: event.target.value }))}
+          >
+            <option value="researcher">Researcher</option>
+            <option value="admin">Admin</option>
+          </select>
+          <button type="submit" className={styles.button}>
+            Add User
+          </button>
+        </form>
 
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((user) => (
-            <tr key={user.id}>
-              <td>{user.name}</td>
-              <td>{user.email}</td>
-              <td>
-                <select
-                  value={user.role}
-                  onChange={(event) => updateRole(user.id, event.target.value)}
-                  className={styles.input}
-                >
-                  <option value="researcher">Researcher</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </td>
-              <td>
-                <button type="button" className={styles.danger} onClick={() => removeUser(user.id)}>
-                  Delete
-                </button>
-              </td>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {users.map((user) => (
+              <tr key={user.id}>
+                <td>{user.name}</td>
+                <td>{user.email}</td>
+                <td>
+                  <select
+                    value={user.role}
+                    onChange={(event) => updateRole(user.id, event.target.value)}
+                    className={styles.input}
+                  >
+                    <option value="researcher">Researcher</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </td>
+                <td>
+                  <button type="button" className={styles.danger} onClick={() => removeUser(user.id)}>
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </section>
   )
 }

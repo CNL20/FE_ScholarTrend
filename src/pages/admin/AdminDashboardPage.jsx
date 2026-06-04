@@ -9,17 +9,20 @@ const adminStats = [
 
 function AdminDashboardPage() {
   return (
-    <section>
-      <h1>Admin Dashboard</h1>
+    <section className={styles.dashboardPage}>
+      <div className={styles.pageHeader}>
+        <h1 className={styles.pageTitle}>Admin Dashboard</h1>
+        <p className={styles.pageSubtitle}>System overview and monitoring</p>
+      </div>
       <div className={styles.statsGrid}>
         {adminStats.map((item) => (
           <StatsCard key={item.label} label={item.label} value={item.value} />
         ))}
       </div>
       <article className={styles.syncPanel}>
-        <h2>Sync Status</h2>
-        <p>Last successful metadata sync: 2026-06-02 21:10 UTC</p>
-        <p className={styles.healthy}>System Health: Healthy</p>
+        <h2 className={styles.syncTitle}>Sync Status</h2>
+        <p className={styles.syncInfo}>Last successful metadata sync: 2026-06-02 21:10 UTC</p>
+        <p className={styles.healthy}>✓ System Health: Healthy</p>
       </article>
     </section>
   )

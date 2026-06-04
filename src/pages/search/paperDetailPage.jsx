@@ -10,28 +10,43 @@ function PaperDetailPage() {
   const paper = useMemo(() => papers.find((item) => item.id === paperId), [paperId])
 
   if (!paper) {
-    return <p>Paper not found.</p>
+    return <p className={styles.notFound}>Paper not found.</p>
   }
 
   return (
-    <article className={styles.panel}>
-      <h1>{paper.title}</h1>
-      <p>
-        <strong>Authors:</strong> {paper.authors.join(', ')}
-      </p>
-      <p>
-        <strong>Year:</strong> {paper.year}
-      </p>
-      <p>
-        <strong>Journal:</strong> {paper.journal}
-      </p>
-      <p>
-        <strong>Abstract:</strong> {paper.abstract}
-      </p>
-      <button type="button" className={styles.button} onClick={() => setBookmarked((prev) => !prev)}>
-        {bookmarked ? 'Remove Bookmark' : 'Bookmark Paper'}
-      </button>
-    </article>
+    <div className={styles.detailPage}>
+      <article className={styles.panel}>
+        <h1 className={styles.title}>{paper.title}</h1>
+
+        <div className={styles.metaGrid}>
+          <div className={styles.metaCard}>
+            <div className={styles.metaLabel}>Authors</div>
+            <div className={styles.metaValue}>{paper.authors.join(', ')}</div>
+          </div>
+          <div className={styles.metaCard}>
+            <div className={styles.metaLabel}>Year</div>
+            <div className={styles.metaValue}>{paper.year}</div>
+          </div>
+          <div className={styles.metaCard}>
+            <div className={styles.metaLabel}>Journal</div>
+            <div className={styles.metaValue}>{paper.journal}</div>
+          </div>
+        </div>
+
+        <div className={styles.abstractSection}>
+          <div className={styles.abstractLabel}>Abstract</div>
+          <p className={styles.abstractText}>{paper.abstract}</p>
+        </div>
+
+        <button
+          type="button"
+          className={`${styles.button} ${bookmarked ? styles.bookmarked : ''}`}
+          onClick={() => setBookmarked((prev) => !prev)}
+        >
+          {bookmarked ? 'Bookmarked' : 'Bookmark Paper'}
+        </button>
+      </article>
+    </div>
   )
 }
 
