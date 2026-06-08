@@ -1,17 +1,17 @@
-/* ─── Simple List / User Pages · Dark Glassmorphism ─── */
+/* ─── Simple List / User Pages · Clean Light Theme ─── */
 
 .panel {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   padding: 2rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: var(--transition);
 }
 
 .panel:hover {
-  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.1);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border-hover);
 }
 
 .pageHeader {
@@ -27,8 +27,9 @@
   justify-content: center;
   width: 44px;
   height: 44px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  border-radius: 12px;
+  background: var(--color-brand);
+  color: #fff;
+  border-radius: var(--radius-md);
   font-size: 1.25rem;
   flex-shrink: 0;
 }
@@ -36,7 +37,8 @@
 .pageTitle {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #f1f5f9;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
 }
 
 .list {
@@ -49,23 +51,23 @@
 }
 
 .listItem {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   padding: 1rem 1.25rem;
-  color: #f1f5f9;
+  color: var(--color-text);
   font-size: 0.9375rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: var(--transition);
   display: flex;
   align-items: center;
   gap: 0.75rem;
 }
 
 .listItem:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(99, 102, 241, 0.2);
+  background: var(--color-surface-hover);
+  border-color: var(--color-border-hover);
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 .listItemIcon {
@@ -79,7 +81,7 @@
 
 .emptyState {
   text-align: center;
-  color: #64748b;
+  color: var(--color-text-muted);
   padding: 2rem;
   font-size: 0.9375rem;
 }

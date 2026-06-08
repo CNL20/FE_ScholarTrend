@@ -1,23 +1,20 @@
 /* ═══════════════════════════════════
-   PaperCard — Dark Glassmorphism
+   PaperCard — Clean Light Theme
    ═══════════════════════════════════ */
 
 .card {
-  background: var(--glass-bg);
-  backdrop-filter: var(--card-blur);
-  -webkit-backdrop-filter: var(--card-blur);
-  border: var(--card-border);
-  border-radius: var(--card-radius);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   padding: 1.5rem;
   transition: var(--transition);
-  animation: slideUp 0.4s ease backwards;
 }
 
 .card:hover {
-  transform: translateY(-3px);
-  background: var(--glass-hover);
-  border-color: rgba(99, 102, 241, 0.25);
-  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.12);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border-hover);
 }
 
 /* ── Header row ── */
@@ -38,12 +35,12 @@
 }
 
 .title a {
-  color: var(--text-primary);
+  color: var(--color-text);
   transition: var(--transition);
 }
 
 .title a:hover {
-  color: var(--primary-light);
+  color: var(--color-brand-light);
 }
 
 .yearBadge {
@@ -52,9 +49,9 @@
   border-radius: 999px;
   font-size: 0.75rem;
   font-weight: 700;
-  color: #06b6d4;
-  background: rgba(6, 182, 212, 0.12);
-  border: 1px solid rgba(6, 182, 212, 0.25);
+  color: var(--color-brand);
+  background: var(--color-brand-bg);
+  border: 1px solid var(--color-brand-border);
   line-height: 1.4;
 }
 
@@ -72,16 +69,16 @@
   border-radius: 999px;
   font-size: 0.75rem;
   font-weight: 500;
-  color: var(--text-secondary);
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--color-text-secondary);
+  background: var(--color-surface-hover);
+  border: 1px solid var(--color-border);
   transition: var(--transition);
 }
 
 .authorPill:hover {
-  color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.18);
+  color: var(--color-text);
+  background: #e2e8f0;
+  border-color: var(--color-border-hover);
 }
 
 /* ── Journal ── */
@@ -89,7 +86,7 @@
   margin: 0 0 0.6rem;
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--primary-light);
+  color: var(--color-brand-light);
   font-style: italic;
 }
 
@@ -97,6 +94,6 @@
 .abstract {
   margin: 0;
   font-size: 0.875rem;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   line-height: 1.65;
 }

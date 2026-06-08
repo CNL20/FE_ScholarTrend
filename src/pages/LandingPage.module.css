@@ -1,68 +1,18 @@
 /* ═══════════════════════════════════
-   Landing Page — Dark Glassmorphism
+   Landing Page — Clean Light Theme
    ═══════════════════════════════════ */
 
 .landing {
   position: relative;
-  overflow: hidden;
-}
-
-/* ── Animated Background Orbs ── */
-.orbContainer {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 0;
-  overflow: hidden;
-}
-
-.orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.25;
-  animation: float 8s ease-in-out infinite;
-}
-
-.orb1 {
-  width: 400px;
-  height: 400px;
-  background: #6366f1;
-  top: -10%;
-  right: -5%;
-  animation-delay: 0s;
-}
-
-.orb2 {
-  width: 350px;
-  height: 350px;
-  background: #8b5cf6;
-  bottom: 10%;
-  left: -8%;
-  animation-delay: 2s;
-}
-
-.orb3 {
-  width: 280px;
-  height: 280px;
-  background: #06b6d4;
-  top: 50%;
-  right: 20%;
-  animation-delay: 4s;
 }
 
 /* ── Hero Section ── */
 .hero {
-  position: relative;
-  z-index: 1;
   text-align: center;
   padding: 4rem 1rem 3rem;
   max-width: 740px;
   margin: 0 auto;
-  animation: slideUp 0.7s ease;
+  animation: fadeIn 0.4s ease;
 }
 
 .badge {
@@ -71,9 +21,9 @@
   border-radius: 999px;
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--primary-light);
-  background: rgba(99, 102, 241, 0.12);
-  border: 1px solid rgba(99, 102, 241, 0.25);
+  color: var(--color-brand);
+  background: var(--color-brand-bg);
+  border: 1px solid var(--color-brand-border);
   margin-bottom: 1.5rem;
   letter-spacing: 0.01em;
 }
@@ -82,23 +32,18 @@
   font-size: clamp(2rem, 5vw, 3.5rem);
   font-weight: 900;
   line-height: 1.15;
-  color: var(--text-primary);
+  color: var(--color-text);
   margin: 0 0 1.25rem;
   letter-spacing: -0.02em;
 }
 
 .gradientText {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6, #06b6d4);
-  background-size: 200% 200%;
-  animation: gradientShift 4s ease infinite;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--color-brand);
 }
 
 .subtitle {
   font-size: 1.1rem;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   line-height: 1.7;
   margin: 0 0 2rem;
   max-width: 600px;
@@ -117,7 +62,7 @@
 .primary,
 .secondary {
   padding: 0.75rem 1.75rem;
-  border-radius: 999px;
+  border-radius: var(--radius-md);
   font-weight: 600;
   font-size: 0.95rem;
   transition: var(--transition);
@@ -127,32 +72,31 @@
 }
 
 .primary {
-  background: var(--primary-gradient);
+  background: var(--color-brand);
   color: #fff;
-  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.35);
+  box-shadow: var(--shadow-md);
 }
 
 .primary:hover {
-  transform: scale(1.04) translateY(-1px);
-  box-shadow: 0 6px 30px rgba(99, 102, 241, 0.5);
+  filter: brightness(0.9);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-1px);
 }
 
 .secondary {
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text-primary);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
 }
 
 .secondary:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.22);
+  background: var(--color-surface-hover);
+  border-color: var(--color-border-hover);
   transform: translateY(-1px);
 }
 
 /* ── Features Section ── */
 .featuresSection {
-  position: relative;
-  z-index: 1;
   padding: 3rem 0;
 }
 
@@ -160,9 +104,9 @@
   text-align: center;
   font-size: 1.75rem;
   font-weight: 800;
-  color: var(--text-primary);
+  color: var(--color-text);
   margin: 0 0 2rem;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
 
 .featuresGrid {
@@ -172,25 +116,18 @@
 }
 
 .featureCard {
-  background: var(--glass-bg);
-  backdrop-filter: var(--card-blur);
-  -webkit-backdrop-filter: var(--card-blur);
-  border: var(--card-border);
-  border-radius: var(--card-radius);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
   padding: 1.75rem;
+  box-shadow: var(--shadow-sm);
   transition: var(--transition);
-  animation: slideUp 0.6s ease backwards;
 }
 
-.featureCard:nth-child(1) { animation-delay: 0.1s; }
-.featureCard:nth-child(2) { animation-delay: 0.2s; }
-.featureCard:nth-child(3) { animation-delay: 0.3s; }
-
 .featureCard:hover {
-  transform: translateY(-4px);
-  background: var(--glass-hover);
-  border-color: rgba(99, 102, 241, 0.3);
-  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.15);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border-hover);
 }
 
 .featureIcon {
@@ -199,8 +136,9 @@
   justify-content: center;
   width: 48px;
   height: 48px;
-  border-radius: 12px;
-  background: rgba(99, 102, 241, 0.12);
+  border-radius: var(--radius-md);
+  background: var(--color-brand-bg);
+  color: var(--color-brand);
   font-size: 1.4rem;
   margin-bottom: 1rem;
 }
@@ -209,20 +147,18 @@
   margin: 0 0 0.5rem;
   font-size: 1.1rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--color-text);
 }
 
 .featureDesc {
   margin: 0;
   font-size: 0.9rem;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   line-height: 1.6;
 }
 
 /* ── Stats Section ── */
 .statsSection {
-  position: relative;
-  z-index: 1;
   padding: 2.5rem 0;
 }
 
@@ -235,34 +171,30 @@
 .statItem {
   text-align: center;
   padding: 1.5rem 1rem;
-  border-radius: var(--card-radius);
-  background: var(--glass-bg);
-  border: var(--card-border);
-  backdrop-filter: var(--card-blur);
-  -webkit-backdrop-filter: var(--card-blur);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
   transition: var(--transition);
 }
 
 .statItem:hover {
-  transform: translateY(-2px);
-  border-color: rgba(6, 182, 212, 0.3);
-  box-shadow: 0 4px 20px rgba(6, 182, 212, 0.12);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border-hover);
 }
 
 .statValue {
   display: block;
   font-size: 1.75rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #6366f1, #06b6d4);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--color-brand);
   margin-bottom: 0.25rem;
 }
 
 .statLabel {
   font-size: 0.8rem;
-  color: var(--text-muted);
+  color: var(--color-text-muted);
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -270,30 +202,26 @@
 
 /* ── CTA Section ── */
 .ctaSection {
-  position: relative;
-  z-index: 1;
   padding: 2rem 0 3rem;
 }
 
 .ctaCard {
   text-align: center;
   padding: 3rem 2rem;
-  border-radius: 20px;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(139, 92, 246, 0.08));
-  border: 1px solid rgba(99, 102, 241, 0.2);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  border-radius: var(--radius-lg);
+  background: var(--color-brand-bg);
+  border: 1px solid var(--color-brand-border);
 }
 
 .ctaTitle {
   font-size: 1.6rem;
   font-weight: 800;
   margin: 0 0 0.75rem;
-  color: var(--text-primary);
+  color: var(--color-text);
 }
 
 .ctaSubtitle {
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   margin: 0 0 1.75rem;
   font-size: 1rem;
 }
@@ -305,19 +233,19 @@
 
 .ctaBtn {
   padding: 0.85rem 2.25rem;
-  border-radius: 999px;
+  border-radius: var(--radius-md);
   font-weight: 700;
   font-size: 1rem;
   color: #fff;
-  background: var(--primary-gradient);
-  box-shadow: 0 4px 24px rgba(99, 102, 241, 0.4);
+  background: var(--color-brand);
+  box-shadow: var(--shadow-md);
   transition: var(--transition);
-  animation: glow 3s ease-in-out infinite;
 }
 
 .ctaBtn:hover {
-  transform: scale(1.05) translateY(-2px);
-  box-shadow: 0 6px 36px rgba(99, 102, 241, 0.55);
+  filter: brightness(0.9);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-1px);
 }
 
 /* ── Responsive ── */

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { validateEmail, validatePassword } from "../../utils/validation";
 import { register } from "../../services/authService";
+import { ROLES } from "../../utils/roles";
 import styles from "./auth.module.css";
 
 function RegisterPage() {
@@ -10,6 +11,7 @@ function RegisterPage() {
     fullName: "",
     email: "",
     password: "",
+    role: ROLES.LECTURER_STUDENT,
     institution: "",
     researchField: "",
   });
@@ -42,7 +44,6 @@ function RegisterPage() {
       navigate("/dashboard");
     } catch (err) {
       const data = err.response?.data;
-      // Handle validation errors object from BE
       if (data?.errors) {
         const firstError = Object.values(data.errors).flat()[0];
         setError(firstError || "Registration failed.");
@@ -93,6 +94,18 @@ function RegisterPage() {
               value={form.password}
               onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
             />
+          </div>
+          <div className={styles.fieldGroup}>
+            <label htmlFor="reg-role" className={styles.label}>I am a</label>
+            <select
+              id="reg-role"
+              className={styles.input}
+              value={form.role}
+              onChange={(e) => setForm((prev) => ({ ...prev, role: e.target.value }))}
+            >
+              <option value={ROLES.LECTURER_STUDENT}>Lecturer / Student</option>
+              <option value={ROLES.RESEARCHER}>Researcher</option>
+            </select>
           </div>
           <div className={styles.fieldGroup}>
             <label htmlFor="reg-institution" className={styles.label}>Institution (optional)</label>

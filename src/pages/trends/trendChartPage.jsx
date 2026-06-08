@@ -66,54 +66,54 @@ function TrendChartPage() {
         <ResponsiveContainer width="100%" height="100%">
           {chartType === 'line' ? (
             <LineChart data={trendData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-              <XAxis dataKey="year" stroke="#64748b" tick={{ fill: '#94a3b8', fontSize: 12 }} />
-              <YAxis stroke="#64748b" tick={{ fill: '#94a3b8', fontSize: 12 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <XAxis dataKey="year" stroke="#cbd5e1" tick={{ fill: '#475569', fontSize: 12 }} />
+              <YAxis stroke="#cbd5e1" tick={{ fill: '#475569', fontSize: 12 }} />
               <Tooltip
                 contentStyle={{
-                  background: 'rgba(15, 15, 35, 0.95)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: '10px',
-                  color: '#f1f5f9',
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+                  background: '#ffffff',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '8px',
+                  color: '#0f172a',
+                  boxShadow: '0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05)',
                 }}
-                labelStyle={{ color: '#94a3b8' }}
+                labelStyle={{ color: '#475569' }}
               />
               <Line
                 type="monotone"
                 dataKey="publications"
                 stroke="url(#lineGradient)"
                 strokeWidth={3}
-                dot={{ fill: '#6366f1', r: 4, strokeWidth: 0 }}
-                activeDot={{ fill: '#8b5cf6', r: 6, strokeWidth: 2, stroke: '#fff' }}
+                dot={{ fill: '#1e40af', r: 4, strokeWidth: 0 }}
+                activeDot={{ fill: '#3b82f6', r: 6, strokeWidth: 2, stroke: '#fff' }}
               />
               <defs>
                 <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#6366f1" />
-                  <stop offset="100%" stopColor="#8b5cf6" />
+                  <stop offset="0%" stopColor="#1e40af" />
+                  <stop offset="100%" stopColor="#3b82f6" />
                 </linearGradient>
               </defs>
             </LineChart>
           ) : (
             <BarChart data={trendData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-              <XAxis dataKey="year" stroke="#64748b" tick={{ fill: '#94a3b8', fontSize: 12 }} />
-              <YAxis stroke="#64748b" tick={{ fill: '#94a3b8', fontSize: 12 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <XAxis dataKey="year" stroke="#cbd5e1" tick={{ fill: '#475569', fontSize: 12 }} />
+              <YAxis stroke="#cbd5e1" tick={{ fill: '#475569', fontSize: 12 }} />
               <Tooltip
                 contentStyle={{
-                  background: 'rgba(15, 15, 35, 0.95)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: '10px',
-                  color: '#f1f5f9',
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+                  background: '#ffffff',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '8px',
+                  color: '#0f172a',
+                  boxShadow: '0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05)',
                 }}
-                labelStyle={{ color: '#94a3b8' }}
+                labelStyle={{ color: '#475569' }}
               />
               <Bar dataKey="publications" fill="url(#barGradient)" radius={[6, 6, 0, 0]} />
               <defs>
                 <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#8b5cf6" />
-                  <stop offset="100%" stopColor="#6366f1" />
+                  <stop offset="0%" stopColor="#3b82f6" />
+                  <stop offset="100%" stopColor="#1e40af" />
                 </linearGradient>
               </defs>
             </BarChart>

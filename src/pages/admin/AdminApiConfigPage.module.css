@@ -1,4 +1,4 @@
-/* ─── Admin API Config · Dark Glassmorphism ─── */
+/* ─── Admin API Config · Clean Light Theme ─── */
 
 .configPage {
   padding: 0.5rem 0;
@@ -7,23 +7,24 @@
 .pageTitle {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #f1f5f9;
+  color: var(--color-text);
   margin-bottom: 1.5rem;
+  letter-spacing: -0.02em;
 }
 
 .panel {
   max-width: 700px;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   padding: 2rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: var(--transition);
 }
 
 .panel:hover {
-  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.1);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border-hover);
 }
 
 .form {
@@ -40,71 +41,70 @@
 .label {
   font-size: 0.8125rem;
   font-weight: 500;
-  color: #94a3b8;
+  color: var(--color-text-muted);
   letter-spacing: 0.025em;
 }
 
 .input {
   width: 100%;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   padding: 0.75rem 1rem;
-  color: #f1f5f9;
+  color: var(--color-text);
   font-size: 0.9375rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: var(--transition);
   outline: none;
 }
 
 .input::placeholder {
-  color: #64748b;
+  color: var(--color-text-muted);
 }
 
 .input:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
-  background: rgba(255, 255, 255, 0.07);
+  border-color: var(--color-brand-light);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .input:hover:not(:focus) {
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: var(--color-border-hover);
 }
 
 .button {
   width: fit-content;
   margin-top: 0.5rem;
   border: 0;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: var(--color-brand);
   color: #ffffff;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   padding: 0.75rem 2rem;
   font-size: 0.9375rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+  transition: var(--transition);
+  box-shadow: var(--shadow-sm);
   letter-spacing: 0.025em;
 }
 
 .button:hover {
-  transform: scale(1.02);
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
+  filter: brightness(0.9);
+  box-shadow: var(--shadow-md);
 }
 
 .button:active {
-  transform: scale(0.98);
+  filter: brightness(0.85);
 }
 
 .saved {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  color: #10b981;
+  color: var(--color-success);
   font-weight: 600;
   font-size: 0.9375rem;
   margin-top: 1rem;
   padding: 0.5rem 0.75rem;
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  border-radius: 8px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: var(--radius-md);
 }

@@ -1,4 +1,4 @@
-/* ─── Admin User Management · Dark Glassmorphism ─── */
+/* ─── Admin User Management · Clean Light Theme ─── */
 
 .userMgmtPage {
   padding: 0.5rem 0;
@@ -7,22 +7,23 @@
 .pageTitle {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #f1f5f9;
+  color: var(--color-text);
   margin-bottom: 1.5rem;
+  letter-spacing: -0.02em;
 }
 
 .panel {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   padding: 1.5rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: var(--transition);
 }
 
 .panel:hover {
-  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.1);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border-hover);
 }
 
 /* ── Add User Form ── */
@@ -32,73 +33,71 @@
   gap: 0.75rem;
   margin-bottom: 1.5rem;
   padding-bottom: 1.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .input {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   padding: 0.6rem 0.85rem;
-  color: #f1f5f9;
+  color: var(--color-text);
   font-size: 0.875rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: var(--transition);
   outline: none;
 }
 
 .input::placeholder {
-  color: #64748b;
+  color: var(--color-text-muted);
 }
 
 .input:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
-  background: rgba(255, 255, 255, 0.07);
+  border-color: var(--color-brand-light);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .input:hover:not(:focus) {
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: var(--color-border-hover);
 }
 
 .input option {
-  background: #1a1a2e;
-  color: #f1f5f9;
+  background: var(--color-surface);
+  color: var(--color-text);
 }
 
 /* ── Buttons ── */
 .button,
 .danger {
   border: 0;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   color: #fff;
   padding: 0.6rem 1.25rem;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: var(--transition);
   letter-spacing: 0.025em;
 }
 
 .button {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+  background: var(--color-brand);
+  box-shadow: var(--shadow-sm);
 }
 
 .button:hover {
-  transform: scale(1.02);
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
+  filter: brightness(0.9);
+  box-shadow: var(--shadow-md);
 }
 
 .danger {
-  background: rgba(239, 68, 68, 0.15);
-  color: #f87171;
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  background: #fef2f2;
+  color: var(--color-danger);
+  border: 1px solid #fecaca;
 }
 
 .danger:hover {
-  background: rgba(239, 68, 68, 0.25);
-  border-color: rgba(239, 68, 68, 0.4);
-  transform: scale(1.02);
+  background: #fee2e2;
+  border-color: #fca5a5;
 }
 
 /* ── Table ── */
@@ -113,26 +112,30 @@
   padding: 0.75rem 1rem;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #64748b;
+  color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 2px solid var(--color-border);
 }
 
 .table td {
   padding: 0.75rem 1rem;
-  color: #f1f5f9;
+  color: var(--color-text);
   font-size: 0.9375rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-bottom: 1px solid var(--color-border);
+  transition: var(--transition);
 }
 
 .table tbody tr {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: var(--transition);
+}
+
+.table tbody tr:nth-child(even) {
+  background: var(--color-surface-hover);
 }
 
 .table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--color-brand-bg);
 }
 
 .table tbody tr:last-child td {

@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
 import Layout from "./components/layout";
+import { ROLES } from "./utils/roles";
 
 // Public Pages
 import LandingPage from "./pages/landingPage";
@@ -22,9 +23,13 @@ import AdminDashboardPage from "./pages/admin/adminDashboardPage";
 import AdminUserManagementPage from "./pages/admin/adminUserManagementPage";
 import AdminApiConfigPage from "./pages/admin/adminApiConfigPage";
 
+/**
+ * ProtectedRoute — chặn truy cập nếu chưa login hoặc không đúng role
+ */
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   const token = localStorage.getItem("token");
   if (!token) return <Navigate to="/login" replace />;
+
   const role = localStorage.getItem("userRole");
   if (allowedRoles.length > 0 && !allowedRoles.includes(role)) {
     return <Navigate to="/dashboard" replace />;
@@ -32,14 +37,26 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   return children;
 };
 
+/**
+ * RequireAuth — chỉ cần đăng nhập, không giới hạn role
+ */
+const RequireAuth = ({ children }) => {
+  const token = localStorage.getItem("token");
+  if (!token) return <Navigate to="/login" replace />;
+  return children;
+};
+
 function App() {
   const router = createBrowserRouter([
+    // ─── Public ───
     { path: "/login", element: <LoginPage /> },
     { path: "/register", element: <RegisterPage /> },
+
+    // ─── Admin (chỉ Admin) ───
     {
       path: "/admin",
       element: (
-        <ProtectedRoute allowedRoles={["admin"]}>
+        <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
           <AdminLayout />
         </ProtectedRoute>
       ),
@@ -49,12 +66,14 @@ function App() {
         { path: "api-config", element: <AdminApiConfigPage /> },
       ],
     },
+
+    // ─── Main Layout ───
     {
       path: "/",
       element: <Layout />,
       children: [
+        // Public — ai cũng vào được
         { index: true, element: <LandingPage /> },
-        { path: "dashboard", element: <DashboardPage /> },
         {
           path: "search",
           children: [
@@ -64,9 +83,42 @@ function App() {
         },
         { path: "papers/:paperId", element: <PaperDetailPage /> },
         { path: "trends", element: <TrendChartPage /> },
-        { path: "bookmarks", element: <BookmarksPage /> },
-        { path: "following", element: <FollowingPage /> },
-        { path: "notifications", element: <NotificationsPage /> },
+
+        // Cần đăng nhập — tất cả roles
+        {
+          path: "dashboard",
+          element: (
+            <RequireAuth>
+              <DashboardPage />
+            </RequireAuth>
+          ),
+        },
+        {
+          path: "bookmarks",
+          element: (
+            <RequireAuth>
+              <BookmarksPage />
+            </RequireAuth>
+          ),
+        },
+
+        // Chỉ Researcher + Admin
+        {
+          path: "following",
+          element: (
+            <ProtectedRoute allowedRoles={[ROLES.RESEARCHER, ROLES.ADMIN]}>
+              <FollowingPage />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "notifications",
+          element: (
+            <ProtectedRoute allowedRoles={[ROLES.RESEARCHER, ROLES.ADMIN]}>
+              <NotificationsPage />
+            </ProtectedRoute>
+          ),
+        },
       ],
     },
   ]);

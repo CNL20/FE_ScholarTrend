@@ -17,11 +17,12 @@ export async function login({ email, password }) {
  * Đăng ký → trả { token, user }
  * Tự động đăng nhập luôn sau khi đăng ký
  */
-export async function register({ fullName, email, password, institution, researchField }) {
+export async function register({ fullName, email, password, role, institution, researchField }) {
   const { data } = await api.post('/auth/register', {
     fullName,
     email,
     password,
+    role: role || undefined,
     institution: institution || undefined,
     researchField: researchField || undefined,
   })

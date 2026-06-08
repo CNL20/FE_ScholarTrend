@@ -29,13 +29,6 @@ const stats = [
 function LandingPage() {
   return (
     <div className={styles.landing}>
-      {/* Background Orbs */}
-      <div className={styles.orbContainer}>
-        <div className={`${styles.orb} ${styles.orb1}`} />
-        <div className={`${styles.orb} ${styles.orb2}`} />
-        <div className={`${styles.orb} ${styles.orb3}`} />
-      </div>
-
       {/* Hero Section */}
       <section className={styles.hero}>
         <p className={styles.badge}>

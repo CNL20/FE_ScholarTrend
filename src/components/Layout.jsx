@@ -1,25 +1,33 @@
 import { NavLink, Outlet } from "react-router-dom";
+import { getNavItems, ROLES } from "../utils/roles";
 import styles from "./layout.module.css";
-
-const navItems = [
-  { to: "/", label: "Home" },
-  { to: "/dashboard", label: "Dashboard" },
-  { to: "/search", label: "Search" },
-  { to: "/trends", label: "Trends" },
-  { to: "/bookmarks", label: "Bookmarks" },
-  { to: "/following", label: "Following" },
-  { to: "/notifications", label: "Notifications" },
-];
 
 function Layout() {
   const token = localStorage.getItem("token");
   const userName = localStorage.getItem("userName");
+  const userRole = localStorage.getItem("userRole");
+
+  const navItems = getNavItems(token ? userRole : null);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("userRole");
     localStorage.removeItem("userName");
+    localStorage.removeItem("userId");
     window.location.href = "/";
+  };
+
+  const getRoleLabel = (role) => {
+    switch (role) {
+      case ROLES.ADMIN:
+        return "Admin";
+      case ROLES.RESEARCHER:
+        return "Researcher";
+      case ROLES.LECTURER_STUDENT:
+        return "Lecturer / Student";
+      default:
+        return "";
+    }
   };
 
   return (
@@ -40,7 +48,7 @@ function Layout() {
                   `${styles.link} ${isActive ? styles.active : ""}`
                 }
               >
-                  <span className={styles.navLabel}>{item.label}</span>
+                <span className={styles.navLabel}>{item.label}</span>
               </NavLink>
             ))}
           </nav>
@@ -52,7 +60,14 @@ function Layout() {
                   <span className={styles.userAvatar}>
                     {userName ? userName.charAt(0).toUpperCase() : "U"}
                   </span>
-                  <span className={styles.userName}>{userName}</span>
+                  <div className={styles.userInfo}>
+                    <span className={styles.userName}>{userName}</span>
+                    {userRole && (
+                      <span className={styles.userRole}>
+                        {getRoleLabel(userRole)}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <button
                   type="button"

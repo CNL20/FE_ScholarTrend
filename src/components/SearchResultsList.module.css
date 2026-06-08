@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════
-   SearchResultsList — Dark Glassmorphism
+   SearchResultsList — Clean Light Theme
    ═══════════════════════════════════ */
 
 .list {
@@ -7,34 +7,26 @@
   gap: 1rem;
 }
 
-/* stagger entrance animation on cards */
-.list > *:nth-child(1) { animation-delay: 0.05s; }
-.list > *:nth-child(2) { animation-delay: 0.10s; }
-.list > *:nth-child(3) { animation-delay: 0.15s; }
-.list > *:nth-child(4) { animation-delay: 0.20s; }
-.list > *:nth-child(5) { animation-delay: 0.25s; }
-
 /* ── Empty State ── */
 .emptyState {
   text-align: center;
   padding: 3rem 1rem;
-  background: var(--glass-bg);
-  border: var(--card-border);
-  border-radius: var(--card-radius);
-  backdrop-filter: var(--card-blur);
-  -webkit-backdrop-filter: var(--card-blur);
-  animation: fadeIn 0.5s ease;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  animation: fadeIn 0.3s ease;
 }
 
 .emptyIcon {
   display: block;
   font-size: 2.5rem;
   margin-bottom: 0.75rem;
-  opacity: 0.7;
+  opacity: 0.5;
 }
 
 .emptyText {
   margin: 0;
-  color: var(--text-muted);
+  color: var(--color-text-muted);
   font-size: 0.95rem;
 }

@@ -1,4 +1,4 @@
-/* ─── Admin Layout · Dark Glassmorphism ─── */
+/* ─── Admin Layout · Clean Light Theme ─── */
 
 .layout {
   display: flex;
@@ -8,10 +8,8 @@
 /* ── Sidebar ── */
 .sidebar {
   width: 260px;
-  background: rgba(10, 10, 26, 0.95);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
   padding-top: 1.5rem;
@@ -26,16 +24,13 @@
 .brandName {
   font-size: 1.25rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--color-brand);
   margin-bottom: 0.125rem;
 }
 
 .brandSub {
   font-size: 0.75rem;
-  color: #64748b;
+  color: var(--color-text-muted);
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
@@ -54,23 +49,24 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 1rem;
-  color: #94a3b8;
+  color: var(--color-text-secondary);
   text-decoration: none;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   font-size: 0.9375rem;
   font-weight: 500;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: var(--transition);
 }
 
 .navLink:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: #f1f5f9;
+  background: var(--color-surface-hover);
+  color: var(--color-text);
 }
 
 .navLinkActive {
-  background: rgba(99, 102, 241, 0.12);
-  color: #a5b4fc;
-  border-left: 3px solid #6366f1;
+  background: var(--color-brand-bg);
+  color: var(--color-brand);
+  border-left: 3px solid var(--color-brand);
+  font-weight: 600;
 }
 
 .navIcon {
@@ -83,26 +79,25 @@
 .logoutBtn {
   margin: 1rem 0.75rem 1.5rem;
   padding: 0.65rem 1rem;
-  background: rgba(239, 68, 68, 0.12);
-  color: #f87171;
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: 10px;
+  background: #fef2f2;
+  color: var(--color-danger);
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-md);
   cursor: pointer;
   font-size: 0.875rem;
   font-weight: 500;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: var(--transition);
 }
 
 .logoutBtn:hover {
-  background: rgba(239, 68, 68, 0.2);
-  border-color: rgba(239, 68, 68, 0.4);
-  transform: scale(1.02);
+  background: #fee2e2;
+  border-color: #fca5a5;
 }
 
 /* ── Main Content ── */
 .mainContent {
   flex: 1;
   padding: 2rem;
-  background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%);
+  background: var(--color-bg);
   overflow-y: auto;
 }
