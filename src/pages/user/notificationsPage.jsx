@@ -66,16 +66,8 @@ function NotificationsPage() {
         <h1 className={styles.pageTitle}>Notifications</h1>
         <button
           type="button"
+          className={styles.markReadBtn}
           onClick={handleMarkAllAsRead}
-          style={{
-            marginLeft: 'auto',
-            cursor: 'pointer',
-            background: 'none',
-            border: '1px solid rgba(255,255,255,0.15)',
-            color: '#94a3b8',
-            padding: '0.4rem 0.8rem',
-            borderRadius: '6px',
-          }}
         >
           Mark all read
         </button>
@@ -93,15 +85,11 @@ function NotificationsPage() {
           return (
             <li
               key={id}
-              className={styles.listItem}
-              style={{
-                opacity: isRead ? 0.6 : 1,
-                cursor: isRead ? 'default' : 'pointer',
-              }}
+              className={`${styles.listItem} ${isRead ? styles.listItemRead : ''}`}
               onClick={() => !isRead && handleMarkAsRead(id)}
             >
               <span className={styles.listItemText}>
-                {!isRead && '● '}{message}
+                {!isRead && <span className={styles.unreadDot}>●</span>}{message}
               </span>
             </li>
           )

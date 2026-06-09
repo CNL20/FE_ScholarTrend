@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import {
   Bar,
   BarChart,
@@ -25,8 +26,9 @@ function TrendChartPage() {
   const [keywordData, setKeywordData] = useState([])
   const [topicData, setTopicData] = useState([])
   const [selectedKeyword, setSelectedKeyword] = useState('')
-  const [yearFrom, setYearFrom] = useState('')
-  const [yearTo, setYearTo] = useState('')
+  const currentYear = new Date().getFullYear()
+  const [yearFrom, setYearFrom] = useState(String(currentYear - 10))
+  const [yearTo, setYearTo] = useState(String(currentYear))
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -214,10 +216,10 @@ function TrendChartPage() {
           {topicData.length > 0 && (
             <div className={styles.legend}>
               {topicData.slice(0, 5).map((t, i) => (
-                <span key={t.name} className={styles.legendItem}>
+                <Link key={t.name} to={`/search/results?keyword=${encodeURIComponent(t.name)}`} className={styles.legendItem}>
                   <span className={styles.legendDot} style={{ background: COLORS[i % COLORS.length] }} />
                   {t.name}
-                </span>
+                </Link>
               ))}
             </div>
           )}

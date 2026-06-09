@@ -84,7 +84,7 @@ function FollowingPage() {
           return (
             <li key={id} className={styles.listItem}>
               <span className={styles.listItemText}>{name}</span>
-              <button type="button" onClick={() => handleUnfollowTopic(id)} style={{ marginLeft: 'auto', cursor: 'pointer', background: 'none', border: 'none', color: '#f87171' }}>
+              <button type="button" className={styles.unfollowBtn} onClick={() => handleUnfollowTopic(id)}>
                 Unfollow
               </button>
             </li>
@@ -106,7 +106,7 @@ function FollowingPage() {
           return (
             <li key={id} className={styles.listItem}>
               <span className={styles.listItemText}>{name}</span>
-              <button type="button" onClick={() => handleUnfollowJournal(id)} style={{ marginLeft: 'auto', cursor: 'pointer', background: 'none', border: 'none', color: '#f87171' }}>
+              <button type="button" className={styles.unfollowBtn} onClick={() => handleUnfollowJournal(id)}>
                 Unfollow
               </button>
             </li>

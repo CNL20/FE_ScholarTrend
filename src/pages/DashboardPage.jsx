@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import {
   Bar,
   BarChart,
@@ -150,9 +150,9 @@ function DashboardPage() {
           <div className={styles.topicsGrid}>
             {topicData.length > 0 ? (
               topicData.map((t) => (
-                <span key={t.name} className={styles.topicPill}>
+                <Link key={t.name} to={`/search/results?keyword=${encodeURIComponent(t.name)}`} className={styles.topicPill}>
                   {t.name}
-                </span>
+                </Link>
               ))
             ) : (
               <p className={styles.emptyText}>No data available.</p>
