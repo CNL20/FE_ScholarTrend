@@ -16,8 +16,7 @@ function AuthorDetailPage() {
       setLoading(true)
       setError('')
       try {
-        const decodedName = decodeURIComponent(authorName)
-        const result = await getPapersByAuthor(decodedName)
+        const result = await getPapersByAuthor(authorName)
         setPapers(result.items ?? result ?? [])
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to load author papers')
@@ -49,7 +48,7 @@ function AuthorDetailPage() {
   return (
     <section className={styles.page}>
       <div className={styles.header}>
-        <h1 className={styles.title}>{decodeURIComponent(authorName)}</h1>
+        <h1 className={styles.title}>{authorName}</h1>
         <p className={styles.subtitle}>
           {papers.length} paper{papers.length !== 1 ? 's' : ''} authored
         </p>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import SearchResultsList from '../../components/SearchResultsList'
 import Pagination from '../../components/Pagination'
@@ -8,6 +8,8 @@ import styles from './searchResultsPage.module.css'
 
 function SearchResultsPage() {
   const [searchParams] = useSearchParams()
+  const searchKey = searchParams.toString()
+  const prevSearchKey = useRef(searchKey)
   const [papers, setPapers] = useState([])
   const [totalCount, setTotalCount] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
@@ -16,6 +18,9 @@ function SearchResultsPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
+    const isNewSearch = prevSearchKey.current !== searchKey
+    if (isNewSearch) prevSearchKey.current = searchKey
+
     async function fetchResults() {
       setLoading(true)
       setError('')
@@ -23,7 +28,9 @@ function SearchResultsPage() {
         const keyword = searchParams.get('keyword') ?? ''
         const author = searchParams.get('author') ?? ''
         const journal = searchParams.get('journal') ?? ''
-        const params = { page, pageSize: 10 }
+        const currentPage = isNewSearch ? 1 : page
+        if (isNewSearch) setPage(1)
+        const params = { page: currentPage, pageSize: 10 }
         if (keyword) params.keyword = keyword
         if (author) params.author = author
         if (journal) params.journal = journal
@@ -40,7 +47,8 @@ function SearchResultsPage() {
       }
     }
     fetchResults()
-  }, [searchParams, page])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchKey, page])
 
   if (loading) {
     return (

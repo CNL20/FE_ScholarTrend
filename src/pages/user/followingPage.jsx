@@ -33,7 +33,7 @@ function FollowingPage() {
     try {
       await unfollowTopic(topicId)
       setTopics((prev) => prev.filter((t) => (t.id ?? t) !== topicId))
-    } catch (err) {
+    } catch {
       // silently fail
     }
   }
@@ -42,7 +42,7 @@ function FollowingPage() {
     try {
       await unfollowJournal(journalId)
       setJournals((prev) => prev.filter((j) => (j.id ?? j) !== journalId))
-    } catch (err) {
+    } catch {
       // silently fail
     }
   }

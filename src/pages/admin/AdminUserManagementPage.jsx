@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getUsers, updateUserRole, deleteUser } from '../../services/adminService'
+import Skeleton from '../../components/Skeleton'
 import styles from './adminUserManagementPage.module.css'
 
 function AdminUserManagementPage() {
@@ -39,7 +40,7 @@ function AdminUserManagementPage() {
     try {
       await deleteUser(id)
       setUsers((prev) => prev.filter((user) => user.id !== id))
-    } catch (err) {
+    } catch {
       // silently fail
     }
   }
@@ -48,7 +49,7 @@ function AdminUserManagementPage() {
     try {
       await updateUserRole(id, role)
       setUsers((prev) => prev.map((user) => (user.id === id ? { ...user, role } : user)))
-    } catch (err) {
+    } catch {
       // silently fail
     }
   }

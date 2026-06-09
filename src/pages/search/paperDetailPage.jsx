@@ -40,7 +40,7 @@ function PaperDetailPage() {
         await addBookmark(paperId)
         setBookmarked(true)
       }
-    } catch (err) {
+    } catch {
       // silently fail bookmark toggle
     } finally {
       setBookmarkLoading(false)
