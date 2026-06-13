@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getPaperById, recordView } from '../../services/paperService'
-import { addBookmark, removeBookmark } from '../../services/bookmarkService'
+import { addBookmark, getBookmarks, removeBookmark } from '../../services/bookmarkService'
 import Skeleton from '../../components/Skeleton'
 import styles from './paperDetailPage.module.css'
 
@@ -12,6 +12,7 @@ function PaperDetailPage() {
   const [error, setError] = useState('')
   const [bookmarked, setBookmarked] = useState(false)
   const [bookmarkLoading, setBookmarkLoading] = useState(false)
+  const [bookmarkError, setBookmarkError] = useState('')
 
   useEffect(() => {
     async function fetchPaper() {
@@ -21,6 +22,11 @@ function PaperDetailPage() {
           recordView(paperId).catch(() => {}),
         ])
         setPaper(result)
+
+        if (localStorage.getItem('token')) {
+          const bookmarks = await getBookmarks().catch(() => [])
+          setBookmarked(bookmarks.some((bookmark) => String(bookmark.paperId) === String(paperId)))
+        }
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to load paper details')
       } finally {
@@ -32,6 +38,7 @@ function PaperDetailPage() {
 
   const handleBookmarkToggle = async () => {
     setBookmarkLoading(true)
+    setBookmarkError('')
     try {
       if (bookmarked) {
         await removeBookmark(paperId)
@@ -40,8 +47,8 @@ function PaperDetailPage() {
         await addBookmark(paperId)
         setBookmarked(true)
       }
-    } catch {
-      // silently fail bookmark toggle
+    } catch (err) {
+      setBookmarkError(err.response?.data?.message || err.message || 'Failed to update bookmark.')
     } finally {
       setBookmarkLoading(false)
     }
@@ -110,6 +117,7 @@ function PaperDetailPage() {
         >
           {bookmarkLoading ? 'Saving...' : bookmarked ? 'Bookmarked' : 'Bookmark Paper'}
         </button>
+        {bookmarkError && <p className={styles.bookmarkError}>{bookmarkError}</p>}
       </article>
     </div>
   )

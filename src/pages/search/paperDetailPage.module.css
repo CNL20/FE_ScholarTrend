@@ -138,3 +138,9 @@
   filter: brightness(0.9);
   box-shadow: var(--shadow-md);
 }
+
+.bookmarkError {
+  margin: 0.75rem 0 0;
+  color: var(--color-danger);
+  font-size: 0.82rem;
+}

@@ -16,9 +16,16 @@ function BookmarksPage() {
     async function fetchBookmarks() {
       try {
         const result = await getBookmarks()
-        setPapers(result ?? [])
+        setPapers(result.map((bookmark) => ({
+          id: bookmark.paperId,
+          title: bookmark.title,
+          year: bookmark.publicationYear ?? 'N/A',
+          authors: [],
+          journal: bookmark.journalName || 'Unknown journal',
+          abstract: `${bookmark.citationCount ?? 0} citations · Saved ${new Date(bookmark.savedAt).toLocaleDateString()}`,
+        })))
       } catch (err) {
-        setError(err.response?.data?.message || 'Failed to load bookmarks')
+        setError(err.response?.data?.message || err.message || 'Failed to load bookmarks')
         setPapers([])
       } finally {
         setLoading(false)
