@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { validateEmail, validatePassword } from "../../utils/validation";
 import { login } from "../../services/authService";
 import styles from "./auth.module.css";
 
 function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -28,10 +29,18 @@ function LoginPage() {
 
     try {
       const result = await login(form);
-      const role = result?.user?.role?.toLowerCase();
-      navigate(role === "admin" ? "/admin" : "/dashboard");
+      const role = result?.roles?.[0]?.toLowerCase();
+      navigate(role === "admin" ? "/admin" : "/dashboard", { replace: true });
     } catch (err) {
-      const msg = err.response?.data?.message || "Login failed. Please check your credentials.";
+      const data = err.response?.data;
+      const firstValidationError = data?.errors
+        ? Object.values(data.errors).flat()[0]
+        : null;
+      const msg =
+        firstValidationError ||
+        data?.message ||
+        err.message ||
+        "Login failed. Please check your credentials.";
       setError(msg);
     } finally {
       setLoading(false);
@@ -44,6 +53,9 @@ function LoginPage() {
         <div className={styles.logo}>ScholarTrend</div>
         <p className={styles.subtitle}>Academic Research Intelligence</p>
         <h1 className={styles.heading}>Welcome Back</h1>
+        {location.state?.message && (
+          <p className={styles.success}>{location.state.message}</p>
+        )}
         <form className={styles.form} onSubmit={handleSubmit} noValidate>
           <div className={styles.fieldGroup}>
             <label htmlFor="login-email" className={styles.label}>Email Address</label>
@@ -52,6 +64,8 @@ function LoginPage() {
               className={styles.input}
               type="email"
               placeholder="you@university.edu"
+              autoComplete="email"
+              required
               value={form.email}
               onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
             />
@@ -62,6 +76,8 @@ function LoginPage() {
               id="login-password"
               className={styles.input}
               type="password"
+              autoComplete="current-password"
+              required
               placeholder="••••••••"
               value={form.password}
               onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}

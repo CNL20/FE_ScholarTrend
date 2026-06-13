@@ -5,32 +5,54 @@ import api from './api'
  * Lưu token + user info vào localStorage
  */
 export async function login({ email, password }) {
-  const { data } = await api.post('/auth/login', { email, password })
-  localStorage.setItem('token', data.token)
-  localStorage.setItem('userName', data.user.fullName)
-  localStorage.setItem('userRole', data.user.role)
-  localStorage.setItem('userId', data.user.id)
-  return data
+  const { data: response } = await api.post('/auth/login', {
+    email: email.trim(),
+    password,
+  })
+
+  if (!response.success || !response.data?.token) {
+    throw new Error(response.message || 'Login failed.')
+  }
+
+  const auth = response.data
+  localStorage.setItem('token', auth.token)
+  localStorage.setItem('refreshToken', auth.refreshToken || '')
+  localStorage.setItem('userName', auth.fullName || '')
+  localStorage.setItem('userRole', auth.roles?.[0] || '')
+  localStorage.setItem('userId', auth.userId || '')
+  return auth
 }
 
 /**
- * Đăng ký → trả { token, user }
- * Tự động đăng nhập luôn sau khi đăng ký
+ * Đăng ký tài khoản và tự động lưu phiên nếu API trả token + user.
  */
-export async function register({ fullName, email, password, role, institution, researchField }) {
-  const { data } = await api.post('/auth/register', {
-    fullName,
-    email,
+export async function register({
+  fullName,
+  email,
+  password,
+  confirmPassword,
+  institution,
+  researchField,
+}) {
+  const { data: response } = await api.post('/auth/register', {
+    fullName: fullName.trim(),
+    email: email.trim(),
     password,
-    role: role || undefined,
-    institution: institution || undefined,
-    researchField: researchField || undefined,
+    confirmPassword,
+    institution: institution.trim(),
+    researchField: researchField.trim(),
   })
-  localStorage.setItem('token', data.token)
-  localStorage.setItem('userName', data.user.fullName)
-  localStorage.setItem('userRole', data.user.role)
-  localStorage.setItem('userId', data.user.id)
-  return data
+
+  const auth = response.data
+  if (response.success && auth?.token) {
+    localStorage.setItem('token', auth.token)
+    localStorage.setItem('refreshToken', auth.refreshToken || '')
+    localStorage.setItem('userName', auth.fullName || '')
+    localStorage.setItem('userRole', auth.roles?.[0] || '')
+    localStorage.setItem('userId', auth.userId || '')
+  }
+
+  return auth
 }
 
 /**
@@ -63,6 +85,7 @@ export async function changePassword(data) {
  */
 export function logout() {
   localStorage.removeItem('token')
+  localStorage.removeItem('refreshToken')
   localStorage.removeItem('userName')
   localStorage.removeItem('userRole')
   localStorage.removeItem('userId')

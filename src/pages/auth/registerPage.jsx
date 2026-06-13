@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { validateEmail, validatePassword } from "../../utils/validation";
 import { register } from "../../services/authService";
-import { ROLES } from "../../utils/roles";
 import styles from "./auth.module.css";
 
 function RegisterPage() {
@@ -11,7 +10,7 @@ function RegisterPage() {
     fullName: "",
     email: "",
     password: "",
-    role: ROLES.LECTURER_STUDENT,
+    confirmPassword: "",
     institution: "",
     researchField: "",
   });
@@ -36,12 +35,22 @@ function RegisterPage() {
       return;
     }
 
+    if (form.password !== form.confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
     try {
-      await register(form);
-      navigate("/dashboard");
+      const result = await register(form);
+      navigate(result?.token ? "/dashboard" : "/login", {
+        replace: true,
+        state: result?.token
+          ? undefined
+          : { message: "Account created successfully. Please sign in." },
+      });
     } catch (err) {
       const data = err.response?.data;
       if (data?.errors) {
@@ -96,16 +105,15 @@ function RegisterPage() {
             />
           </div>
           <div className={styles.fieldGroup}>
-            <label htmlFor="reg-role" className={styles.label}>I am a</label>
-            <select
-              id="reg-role"
+            <label htmlFor="reg-confirm-password" className={styles.label}>Confirm Password</label>
+            <input
+              id="reg-confirm-password"
               className={styles.input}
-              value={form.role}
-              onChange={(e) => setForm((prev) => ({ ...prev, role: e.target.value }))}
-            >
-              <option value={ROLES.LECTURER_STUDENT}>Lecturer / Student</option>
-              <option value={ROLES.RESEARCHER}>Researcher</option>
-            </select>
+              type="password"
+              placeholder="••••••••"
+              value={form.confirmPassword}
+              onChange={(e) => setForm((prev) => ({ ...prev, confirmPassword: e.target.value }))}
+            />
           </div>
           <div className={styles.fieldGroup}>
             <label htmlFor="reg-institution" className={styles.label}>Institution (optional)</label>

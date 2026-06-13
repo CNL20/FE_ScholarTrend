@@ -17,8 +17,11 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const isLoginRequest = error.config?.url?.endsWith('/auth/login')
+
+    if (error.response?.status === 401 && !isLoginRequest) {
       localStorage.removeItem('token')
+      localStorage.removeItem('refreshToken')
       localStorage.removeItem('userName')
       localStorage.removeItem('userRole')
       localStorage.removeItem('userId')
