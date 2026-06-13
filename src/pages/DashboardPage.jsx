@@ -11,7 +11,7 @@ import {
 } from 'recharts'
 import StatsCard from '../components/StatsCard'
 import Skeleton from '../components/Skeleton'
-import { getTrendOverview, getKeywordTrends, getTopicTrends } from '../services/trendService'
+import { getPersonalDashboard } from '../services/dashboardService'
 import styles from './dashboardPage.module.css'
 
 const quickActions = [
@@ -24,44 +24,17 @@ const quickActions = [
 function DashboardPage() {
   const navigate = useNavigate()
   const userName = localStorage.getItem('userName') || 'Researcher'
-  const [quickStats, setQuickStats] = useState([])
-  const [keywordData, setKeywordData] = useState([])
-  const [topicData, setTopicData] = useState([])
+  const [dashboardData, setDashboardData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   useEffect(() => {
     async function fetchDashboardData() {
       try {
-        const [overview, keywords, topics] = await Promise.all([
-          getTrendOverview(),
-          getKeywordTrends(),
-          getTopicTrends(),
-        ])
-
-        if (overview) {
-          const statsArr = Object.entries(overview).map(([key, value]) => ({
-            label: key.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase()),
-            value: String(value),
-          }))
-          setQuickStats(statsArr)
-        }
-
-        if (Array.isArray(keywords)) {
-          setKeywordData(keywords.map((k) => ({
-            name: k.keyword || k.name || k.topic || String(k),
-            value: k.count || k.publications || 0,
-          })))
-        }
-
-        if (Array.isArray(topics)) {
-          setTopicData(topics.map((t) => ({
-            name: t.name || t.topic || String(t),
-            value: t.count || t.publications || 0,
-          })))
-        }
+        const result = await getPersonalDashboard()
+        setDashboardData(result)
       } catch (err) {
-        setError(err.response?.data?.message || 'Failed to load dashboard data')
+        setError(err.response?.data?.message || err.message || 'Failed to load dashboard data')
       } finally {
         setLoading(false)
       }
@@ -91,6 +64,20 @@ function DashboardPage() {
     )
   }
 
+  const quickStats = [
+    { label: 'Bookmarks', value: dashboardData?.bookmarkCount ?? 0 },
+    { label: 'Followed Topics', value: dashboardData?.followedTopicsCount ?? 0 },
+    { label: 'Followed Journals', value: dashboardData?.followedJournalsCount ?? 0 },
+    { label: 'Unread Notifications', value: dashboardData?.unreadNotifications ?? 0 },
+  ]
+  const recommendedTopics = dashboardData?.recommendedTopics ?? []
+  const chartData = recommendedTopics.map((topic) => ({
+    name: topic.name,
+    citations: topic.citationCount ?? 0,
+  }))
+  const recentBookmarks = dashboardData?.recentBookmarks ?? []
+  const recentNotifications = dashboardData?.recentNotifications ?? []
+
   return (
     <section className={styles.dashboard}>
       {/* Welcome Header */}
@@ -106,7 +93,7 @@ function DashboardPage() {
       {/* Stats Grid */}
       <div className={styles.statsGrid}>
         {quickStats.map((item) => (
-          <StatsCard key={item.label} label={item.label} value={item.value} />
+          <StatsCard key={item.label} label={item.label} value={String(item.value)} />
         ))}
       </div>
 
@@ -124,38 +111,97 @@ function DashboardPage() {
 
       {/* Charts Row */}
       <div className={styles.chartsRow}>
-        {/* Top Keywords Chart */}
         <article className={styles.panel}>
-          <h2 className={styles.panelTitle}>Top Keywords</h2>
+          <h2 className={styles.panelTitle}>Recommended Topic Citations</h2>
           <div className={styles.chartWrapSmall}>
-            {keywordData.length > 0 ? (
+            {chartData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={keywordData} layout="vertical" margin={{ left: 20 }}>
+                <BarChart data={chartData} layout="vertical" margin={{ left: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                   <XAxis type="number" stroke="#cbd5e1" tick={{ fill: '#475569', fontSize: 11 }} />
                   <YAxis type="category" dataKey="name" stroke="#cbd5e1" tick={{ fill: '#475569', fontSize: 11 }} width={100} />
                   <Tooltip contentStyle={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px', color: '#0f172a' }} />
-                  <Bar dataKey="value" fill="#3b82f6" radius={[0, 6, 6, 0]} />
+                  <Bar dataKey="citations" fill="#3b82f6" radius={[0, 6, 6, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <p className={styles.emptyText}>No data available.</p>
+              <p className={styles.emptyText}>No recommended topics yet.</p>
             )}
           </div>
         </article>
 
-        {/* Trending Topics */}
         <article className={styles.panel}>
-          <h2 className={styles.panelTitle}>Trending Topics</h2>
-          <div className={styles.topicsGrid}>
-            {topicData.length > 0 ? (
-              topicData.map((t) => (
-                <Link key={t.name} to={`/search/results?keyword=${encodeURIComponent(t.name)}`} className={styles.topicPill}>
-                  {t.name}
+          <h2 className={styles.panelTitle}>Recommended Topics</h2>
+          <div className={styles.recommendedList}>
+            {recommendedTopics.length > 0 ? (
+              recommendedTopics.map((topic) => (
+                <Link
+                  key={topic.id}
+                  to={`/search/results?keyword=${encodeURIComponent(topic.name)}`}
+                  className={styles.recommendedItem}
+                >
+                  <span>
+                    <strong>{topic.name}</strong>
+                    <small>{topic.paperCount} papers · {topic.citationCount} citations</small>
+                  </span>
+                  <span className={styles.topicScore}>
+                    {Number(topic.trendingScore ?? 0).toFixed(2)}
+                  </span>
                 </Link>
               ))
             ) : (
-              <p className={styles.emptyText}>No data available.</p>
+              <p className={styles.emptyText}>No recommended topics yet.</p>
+            )}
+          </div>
+        </article>
+      </div>
+
+      <div className={styles.activityRow}>
+        <article className={styles.panel}>
+          <div className={styles.panelHeading}>
+            <h2 className={styles.panelTitle}>Recent Bookmarks</h2>
+            <Link to="/bookmarks" className={styles.viewAll}>View all</Link>
+          </div>
+          <div className={styles.activityList}>
+            {recentBookmarks.length > 0 ? (
+              recentBookmarks.map((bookmark) => (
+                <Link
+                  key={bookmark.id}
+                  to={`/papers/${bookmark.paperId}`}
+                  className={styles.activityItem}
+                >
+                  <strong>{bookmark.title}</strong>
+                  <span>
+                    {bookmark.journalName || 'Unknown journal'}
+                    {bookmark.publicationYear ? ` · ${bookmark.publicationYear}` : ''}
+                  </span>
+                </Link>
+              ))
+            ) : (
+              <p className={styles.emptyText}>You have no recent bookmarks.</p>
+            )}
+          </div>
+        </article>
+
+        <article className={styles.panel}>
+          <div className={styles.panelHeading}>
+            <h2 className={styles.panelTitle}>Recent Notifications</h2>
+            <Link to="/notifications" className={styles.viewAll}>View all</Link>
+          </div>
+          <div className={styles.activityList}>
+            {recentNotifications.length > 0 ? (
+              recentNotifications.map((notification) => (
+                <Link
+                  key={notification.id}
+                  to={notification.targetUrl || '/notifications'}
+                  className={styles.activityItem}
+                >
+                  <strong>{notification.title}</strong>
+                  <span>{notification.message}</span>
+                </Link>
+              ))
+            ) : (
+              <p className={styles.emptyText}>You have no recent notifications.</p>
             )}
           </div>
         </article>
