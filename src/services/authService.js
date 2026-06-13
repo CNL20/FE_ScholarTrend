@@ -59,17 +59,34 @@ export async function register({
  * Lấy thông tin user hiện tại (dùng JWT token)
  */
 export async function getMe() {
-  const { data } = await api.get('/auth/me')
-  return data
+  const { data: response } = await api.get('/auth/profile')
+
+  if (!response.success || !response.data) {
+    throw new Error(response.message || 'Failed to load profile.')
+  }
+
+  return response.data
 }
 
 /**
  * Cập nhật thông tin profile
  */
-export async function updateProfile(data) {
-  const res = await api.put('/auth/profile', data)
-  if (res.data.fullName) localStorage.setItem('userName', res.data.fullName)
-  return res.data
+export async function updateProfile({ fullName, institution, researchField }) {
+  const { data: response } = await api.put('/auth/profile', {
+    fullName: fullName.trim(),
+    institution: institution.trim(),
+    researchField: researchField.trim(),
+  })
+
+  if (!response.success || !response.data) {
+    throw new Error(response.message || 'Failed to update profile.')
+  }
+
+  const profile = response.data
+  localStorage.setItem('userName', profile.fullName || '')
+  localStorage.setItem('userRole', profile.roles?.[0] || '')
+  localStorage.setItem('userId', profile.id || '')
+  return profile
 }
 
 /**

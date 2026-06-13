@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { getNavItems, ROLES } from "../utils/roles";
 import styles from "./layout.module.css";
@@ -6,11 +7,28 @@ function Layout() {
   const token = localStorage.getItem("token");
   const userName = localStorage.getItem("userName");
   const userRole = localStorage.getItem("userRole");
+  const userId = localStorage.getItem("userId");
+  const avatarStorageKey = userId ? `profileAvatar:${userId}` : "";
+  const [userAvatar, setUserAvatar] = useState(
+    avatarStorageKey ? localStorage.getItem(avatarStorageKey) || "" : "",
+  );
 
   const navItems = getNavItems(token ? userRole : null);
 
+  useEffect(() => {
+    const handleAvatarUpdated = (event) => {
+      if (event.detail?.userId === userId) {
+        setUserAvatar(event.detail.image || "");
+      }
+    };
+
+    window.addEventListener("profile-avatar-updated", handleAvatarUpdated);
+    return () => window.removeEventListener("profile-avatar-updated", handleAvatarUpdated);
+  }, [userId]);
+
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
     localStorage.removeItem("userRole");
     localStorage.removeItem("userName");
     localStorage.removeItem("userId");
@@ -58,7 +76,11 @@ function Layout() {
               <>
                 <div className={styles.userGreeting}>
                   <span className={styles.userAvatar}>
-                    {userName ? userName.charAt(0).toUpperCase() : "U"}
+                    {userAvatar ? (
+                      <img src={userAvatar} alt="" />
+                    ) : (
+                      userName ? userName.charAt(0).toUpperCase() : "U"
+                    )}
                   </span>
                   <div className={styles.userInfo}>
                     <span className={styles.userName}>{userName}</span>
