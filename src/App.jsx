@@ -1,14 +1,14 @@
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
-import Layout from "./components/layout";
+import Layout from "./components/Layout";
 import { ROLES } from "./utils/roles";
 
 // Public Pages
-import LandingPage from "./pages/landingPage";
+import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/auth/loginPage";
 import RegisterPage from "./pages/auth/registerPage";
 
 // User Pages
-import DashboardPage from "./pages/dashboardPage";
+import DashboardPage from "./pages/DashboardPage";
 import SearchPage from "./pages/search/searchPage";
 import SearchResultsPage from "./pages/search/searchResultsPage";
 import PaperDetailPage from "./pages/search/paperDetailPage";
@@ -21,9 +21,9 @@ import ProfilePage from "./pages/user/profilePage";
 
 // Admin Pages
 import AdminLayout from "./components/admin/AdminLayout";
-import AdminDashboardPage from "./pages/admin/adminDashboardPage";
-import AdminUserManagementPage from "./pages/admin/adminUserManagementPage";
-import AdminApiConfigPage from "./pages/admin/adminApiConfigPage";
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
+import AdminUserManagementPage from "./pages/admin/AdminUserManagementPage";
+import AdminApiConfigPage from "./pages/admin/AdminApiConfigPage";
 
 // Error Pages
 import NotFoundPage from "./pages/notFoundPage";
@@ -36,7 +36,12 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   if (!token) return <Navigate to="/login" replace />;
 
   const role = localStorage.getItem("userRole");
-  if (allowedRoles.length > 0 && !allowedRoles.includes(role)) {
+  const normalizedRole = role?.toLowerCase();
+  const canAccess = allowedRoles.some(
+    (allowedRole) => allowedRole.toLowerCase() === normalizedRole,
+  );
+
+  if (allowedRoles.length > 0 && !canAccess) {
     return <Navigate to="/dashboard" replace />;
   }
   return children;

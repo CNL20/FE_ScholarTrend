@@ -27,8 +27,9 @@ function LoginPage() {
     setError("");
 
     try {
-      await login(form);
-      navigate("/dashboard");
+      const result = await login(form);
+      const role = result?.user?.role?.toLowerCase();
+      navigate(role === "admin" ? "/admin" : "/dashboard");
     } catch (err) {
       const msg = err.response?.data?.message || "Login failed. Please check your credentials.";
       setError(msg);
