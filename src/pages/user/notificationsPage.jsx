@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Skeleton from '../../components/Skeleton'
 import {
+  getNotificationSettings,
   getNotifications,
   markAllAsRead,
   markAsRead,
@@ -20,12 +21,34 @@ function formatDate(value) {
 
 function NotificationsPage() {
   const [notifications, setNotifications] = useState([])
+  const [settings, setSettings] = useState(null)
   const [filter, setFilter] = useState('all')
   const [limit, setLimit] = useState('20')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [markingId, setMarkingId] = useState(null)
   const [markingAll, setMarkingAll] = useState(false)
+  const [settingsLoading, setSettingsLoading] = useState(true)
+  const [settingsError, setSettingsError] = useState('')
+
+  useEffect(() => {
+    async function fetchSettings() {
+      setSettingsLoading(true)
+      setSettingsError('')
+      try {
+        setSettings(await getNotificationSettings())
+      } catch (err) {
+        setSettingsError(
+          err.response?.data?.message || err.message || 'Failed to load notification settings.',
+        )
+        setSettings(null)
+      } finally {
+        setSettingsLoading(false)
+      }
+    }
+
+    fetchSettings()
+  }, [])
 
   useEffect(() => {
     async function fetchNotifications() {
@@ -135,6 +158,40 @@ function NotificationsPage() {
           <option value="50">50 latest</option>
         </select>
       </div>
+
+      <section className={styles.settingsPanel}>
+        <div className={styles.settingsHeader}>
+          <div>
+            <span>Preferences</span>
+            <h2>Notification settings</h2>
+          </div>
+          <small>Read only</small>
+        </div>
+        {settingsLoading ? (
+          <Skeleton variant="text" count={3} />
+        ) : settingsError ? (
+          <p className={styles.listError}>{settingsError}</p>
+        ) : settings ? (
+          <div className={styles.settingsGrid}>
+            <article>
+              <span>Email notifications</span>
+              <strong className={settings.emailEnabled ? styles.settingOn : styles.settingOff}>
+                {settings.emailEnabled ? 'Enabled' : 'Disabled'}
+              </strong>
+            </article>
+            <article>
+              <span>Topic alerts</span>
+              <strong className={settings.topicAlertEnabled ? styles.settingOn : styles.settingOff}>
+                {settings.topicAlertEnabled ? 'Enabled' : 'Disabled'}
+              </strong>
+            </article>
+            <article>
+              <span>Frequency</span>
+              <strong>{settings.frequency}</strong>
+            </article>
+          </div>
+        ) : null}
+      </section>
 
       {error && <p className={styles.listError}>{error}</p>}
 

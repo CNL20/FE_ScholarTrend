@@ -178,6 +178,74 @@
   font-size: 0.72rem;
 }
 
+.settingsPanel {
+  margin-bottom: 1.2rem;
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: linear-gradient(145deg, #f8fbff, #ffffff);
+}
+
+.settingsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.8rem;
+}
+
+.settingsHeader span {
+  color: var(--color-brand-light);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.settingsHeader h2 {
+  margin: 0.15rem 0 0;
+  color: var(--color-text);
+  font-size: 0.9rem;
+}
+
+.settingsHeader small {
+  color: var(--color-text-muted);
+  font-size: 0.65rem;
+}
+
+.settingsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.settingsGrid article {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 9px;
+  background: var(--color-surface);
+}
+
+.settingsGrid article > span {
+  color: var(--color-text-muted);
+  font-size: 0.68rem;
+}
+
+.settingsGrid strong {
+  color: var(--color-text);
+  font-size: 0.8rem;
+}
+
+.settingsGrid .settingOn {
+  color: #15803d;
+}
+
+.settingsGrid .settingOff {
+  color: var(--color-text-muted);
+}
+
 .notificationContent {
   display: grid;
   flex: 1;
@@ -254,5 +322,9 @@
   .notificationTitle time {
     width: 100%;
     margin-left: 1rem;
+  }
+
+  .settingsGrid {
+    grid-template-columns: 1fr;
   }
 }

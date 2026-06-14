@@ -40,6 +40,17 @@ export async function getUnreadNotificationCount() {
   return Number.isFinite(count) && count > 0 ? Math.floor(count) : 0
 }
 
+export async function getNotificationSettings() {
+  const { data: response } = await api.get('/notifications/settings')
+  const result = unwrapResponse(response, 'Failed to load notification settings.')
+
+  return {
+    emailEnabled: Boolean(result.emailEnabled),
+    topicAlertEnabled: Boolean(result.topicAlertEnabled),
+    frequency: result.frequency ?? 'Not set',
+  }
+}
+
 export async function markAsRead(notificationId) {
   const normalizedId = Number(notificationId)
   if (!Number.isInteger(normalizedId) || normalizedId <= 0) {
