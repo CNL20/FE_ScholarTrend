@@ -3,7 +3,11 @@ import { Link, useSearchParams } from 'react-router-dom'
 import SearchResultsList from '../../components/SearchResultsList'
 import Pagination from '../../components/Pagination'
 import Skeleton from '../../components/Skeleton'
-import { searchPapers } from '../../services/paperService'
+import {
+  getPapersByJournal,
+  getPapersByTopic,
+  searchPapers,
+} from '../../services/paperService'
 import styles from './searchResultsPage.module.css'
 
 function getPositiveNumber(value, fallback) {
@@ -25,6 +29,10 @@ function SearchResultsPage() {
   const [error, setError] = useState('')
 
   const query = searchParams.get('query') ?? searchParams.get('keyword') ?? ''
+  const topicId = searchParams.get('topicId')
+  const topicName = searchParams.get('topicName') ?? ''
+  const journalId = searchParams.get('journalId')
+  const journalName = searchParams.get('journalName') ?? ''
   const searchType = searchParams.get('searchType') ?? 'All'
   const currentPage = getPositiveNumber(searchParams.get('page'), 1)
   const pageSize = getPositiveNumber(searchParams.get('pageSize'), 10)
@@ -36,15 +44,28 @@ function SearchResultsPage() {
       setLoading(true)
       setError('')
       try {
-        const response = await searchPapers({
-          query: params.get('query') ?? params.get('keyword') ?? '',
-          searchType: params.get('searchType') ?? 'All',
-          yearFrom: params.get('yearFrom') || undefined,
-          yearTo: params.get('yearTo') || undefined,
-          minCitations: params.get('minCitations') || undefined,
+        const requestParams = {
           page: getPositiveNumber(params.get('page'), 1),
           pageSize: getPositiveNumber(params.get('pageSize'), 10),
-        })
+        }
+        const selectedTopicId = params.get('topicId')
+        const selectedJournalId = params.get('journalId')
+        let response
+
+        if (selectedTopicId) {
+          response = await getPapersByTopic(selectedTopicId, requestParams)
+        } else if (selectedJournalId) {
+          response = await getPapersByJournal(selectedJournalId, requestParams)
+        } else {
+          response = await searchPapers({
+            ...requestParams,
+            query: params.get('query') ?? params.get('keyword') ?? '',
+            searchType: params.get('searchType') ?? 'All',
+            yearFrom: params.get('yearFrom') || undefined,
+            yearTo: params.get('yearTo') || undefined,
+            minCitations: params.get('minCitations') || undefined,
+          })
+        }
         setResult({
           items: response.items ?? [],
           totalCount: response.totalCount ?? 0,
@@ -72,6 +93,8 @@ function SearchResultsPage() {
   }
 
   const activeFilters = [
+    topicId ? `Topic: ${topicName || `#${topicId}`}` : null,
+    journalId ? `Journal: ${journalName || `#${journalId}`}` : null,
     searchType !== 'All' ? searchType : null,
     searchParams.get('yearFrom') ? `From ${searchParams.get('yearFrom')}` : null,
     searchParams.get('yearTo') ? `To ${searchParams.get('yearTo')}` : null,
@@ -97,7 +120,13 @@ function SearchResultsPage() {
         <div>
           <span className={styles.eyebrow}>Research library</span>
           <h1 className={styles.pageTitle}>
-            {query ? `Results for "${query}"` : 'All publications'}
+            {topicId
+              ? `Papers in "${topicName || `Topic ${topicId}`}"`
+              : journalId
+                ? `Papers from "${journalName || `Journal ${journalId}`}"`
+                : query
+                  ? `Results for "${query}"`
+                  : 'All publications'}
           </h1>
           {!error && (
             <p className={styles.summary}>

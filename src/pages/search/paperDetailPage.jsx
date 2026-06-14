@@ -105,7 +105,15 @@ function PaperDetailPage() {
       <header className={styles.hero}>
         <div className={styles.heroTop}>
           <div className={styles.journalLine}>
-            <span>{paper.journalName}</span>
+            {paper.journal?.id ? (
+              <Link
+                to={`/search/results?journalId=${paper.journal.id}&journalName=${encodeURIComponent(paper.journalName)}&page=1&pageSize=10`}
+              >
+                {paper.journalName}
+              </Link>
+            ) : (
+              <span>{paper.journalName}</span>
+            )}
             {paper.journal?.issn && <span>ISSN {paper.journal.issn}</span>}
           </div>
           <span className={styles.yearBadge}>{paper.year ?? 'Year unavailable'}</span>

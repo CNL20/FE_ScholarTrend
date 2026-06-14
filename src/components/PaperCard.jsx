@@ -20,7 +20,16 @@ function PaperCard({ paper }) {
         ))}
       </div>
       <div className={styles.metadata}>
-        <span className={styles.journal}>{paper.journal || 'Unknown journal'}</span>
+        {paper.journalId ? (
+          <Link
+            className={styles.journal}
+            to={`/search/results?journalId=${paper.journalId}&journalName=${encodeURIComponent(paper.journal)}&page=1&pageSize=10`}
+          >
+            {paper.journal}
+          </Link>
+        ) : (
+          <span className={styles.journal}>{paper.journal || 'Unknown journal'}</span>
+        )}
         <span>{paper.citationCount ?? 0} citations</span>
         {paper.doi && (
           <a

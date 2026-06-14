@@ -1,6 +1,19 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { getSearchHistory } from '../../services/paperService'
 import styles from './searchPage.module.css'
+
+function formatSearchDate(value) {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+
+  return new Intl.DateTimeFormat('en', {
+    day: '2-digit',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date)
+}
 
 function SearchPage() {
   const navigate = useNavigate()
@@ -13,6 +26,30 @@ function SearchPage() {
     pageSize: '10',
   })
   const [error, setError] = useState('')
+  const [history, setHistory] = useState([])
+  const [historyLoading, setHistoryLoading] = useState(false)
+  const [historyError, setHistoryError] = useState('')
+
+  useEffect(() => {
+    if (!localStorage.getItem('token')) return
+
+    async function fetchSearchHistory() {
+      setHistoryLoading(true)
+      setHistoryError('')
+      try {
+        const result = await getSearchHistory(20)
+        setHistory(result)
+      } catch (err) {
+        setHistoryError(
+          err.response?.data?.message || err.message || 'Failed to load search history.',
+        )
+      } finally {
+        setHistoryLoading(false)
+      }
+    }
+
+    fetchSearchHistory()
+  }, [])
 
   const handleChange = (field) => (event) => {
     setForm((current) => ({ ...current, [field]: event.target.value }))
@@ -38,6 +75,19 @@ function SearchPage() {
     if (form.minCitations) params.set('minCitations', form.minCitations)
     params.set('page', '1')
     params.set('pageSize', form.pageSize)
+
+    navigate(`/search/results?${params.toString()}`)
+  }
+
+  const handleHistoryClick = (item) => {
+    const params = new URLSearchParams({
+      query: item.query || '',
+      page: '1',
+      pageSize: form.pageSize,
+    })
+    if (item.searchType && item.searchType !== 'All') {
+      params.set('searchType', item.searchType)
+    }
 
     navigate(`/search/results?${params.toString()}`)
   }
@@ -154,6 +204,58 @@ function SearchPage() {
           </div>
         </form>
       </div>
+
+      {localStorage.getItem('token') && (
+        <section className={styles.historyPanel}>
+          <div className={styles.historyHeader}>
+            <div>
+              <span className={styles.historyEyebrow}>Your activity</span>
+              <h2>Recent searches</h2>
+            </div>
+            {!historyLoading && history.length > 0 && (
+              <span className={styles.historyCount}>{history.length} searches</span>
+            )}
+          </div>
+
+          {historyLoading ? (
+            <div className={styles.historyLoading}>
+              <span />
+              <span />
+              <span />
+            </div>
+          ) : historyError ? (
+            <p className={styles.historyError}>{historyError}</p>
+          ) : history.length > 0 ? (
+            <div className={styles.historyList}>
+              {history.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={styles.historyItem}
+                  onClick={() => handleHistoryClick(item)}
+                >
+                  <span className={styles.historyIcon}>
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M13 3a9 9 0 1 0 8.49 6h-2.1A7 7 0 1 1 17.9 5.1L15 8h7V1l-2.68 2.68A8.96 8.96 0 0 0 13 3Zm-1 4v6h5v-2h-3V7h-2Z" />
+                    </svg>
+                  </span>
+                  <span className={styles.historyDetails}>
+                    <strong>{item.query || 'All publications'}</strong>
+                    <small>
+                      {item.searchType || 'All fields'} · {item.resultCount ?? 0} results
+                    </small>
+                  </span>
+                  <time>{formatSearchDate(item.searchedAt)}</time>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className={styles.historyEmpty}>
+              Your searches will appear here after you explore the research library.
+            </div>
+          )}
+        </section>
+      )}
     </section>
   )
 }

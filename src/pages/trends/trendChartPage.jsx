@@ -46,6 +46,7 @@ function TrendChartPage() {
           value: k.count || k.publications || 0,
         })) : [])
         setTopicData(Array.isArray(topics) ? topics.map((t) => ({
+          id: typeof t === 'object' ? t.id : null,
           name: t.name || t.topic || String(t),
           value: t.count || t.publications || 0,
         })) : [])
@@ -216,7 +217,13 @@ function TrendChartPage() {
           {topicData.length > 0 && (
             <div className={styles.legend}>
               {topicData.slice(0, 5).map((t, i) => (
-                <Link key={t.name} to={`/search/results?keyword=${encodeURIComponent(t.name)}`} className={styles.legendItem}>
+                <Link
+                  key={t.id ?? t.name}
+                  to={t.id
+                    ? `/search/results?topicId=${encodeURIComponent(t.id)}&topicName=${encodeURIComponent(t.name)}&page=1&pageSize=10`
+                    : `/search/results?keyword=${encodeURIComponent(t.name)}&page=1&pageSize=10`}
+                  className={styles.legendItem}
+                >
                   <span className={styles.legendDot} style={{ background: COLORS[i % COLORS.length] }} />
                   {t.name}
                 </Link>

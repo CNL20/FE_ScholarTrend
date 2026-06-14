@@ -9,12 +9,15 @@ function unwrapResponse(response, fallbackMessage) {
 }
 
 function normalizePaperListItem(paper) {
+  const journal = typeof paper.journal === 'string'
+    ? { name: paper.journal }
+    : paper.journal
+
   return {
     ...paper,
     year: paper.publicationYear ?? paper.year,
-    journal:
-      (typeof paper.journal === 'string' ? paper.journal : paper.journal?.name) ||
-      'Unknown journal',
+    journal: journal?.name || 'Unknown journal',
+    journalId: journal?.id ?? null,
     authors: (paper.authors ?? [])
       .map((author) => (typeof author === 'string' ? author : author.name))
       .filter(Boolean),
@@ -47,6 +50,17 @@ function normalizePaperDetail(paper) {
   }
 }
 
+function normalizePaginatedPapers(result, fallbackPage, fallbackPageSize) {
+  return {
+    ...result,
+    items: (result.items ?? []).map(normalizePaperListItem),
+    totalCount: result.totalCount ?? 0,
+    page: Number(result.page) > 0 ? result.page : fallbackPage,
+    pageSize: Number(result.pageSize) > 0 ? result.pageSize : fallbackPageSize,
+    totalPages: result.totalPages ?? 0,
+  }
+}
+
 export async function searchPapers(params = {}) {
   let query = params.query ?? params.keyword ?? ''
   let searchType = params.searchType ?? 'All'
@@ -73,14 +87,50 @@ export async function searchPapers(params = {}) {
   const { data: response } = await api.get('/papers/search', { params: apiParams })
   const result = unwrapResponse(response, 'Failed to search papers.')
 
-  return {
-    ...result,
-    items: (result.items ?? []).map(normalizePaperListItem),
-    totalCount: result.totalCount ?? 0,
-    page: Number(result.page) > 0 ? result.page : apiParams.Page,
-    pageSize: Number(result.pageSize) > 0 ? result.pageSize : apiParams.PageSize,
-    totalPages: result.totalPages ?? 0,
+  return normalizePaginatedPapers(result, apiParams.Page, apiParams.PageSize)
+}
+
+export async function getPapersByTopic(topicId, params = {}) {
+  const normalizedTopicId = Number(topicId)
+  if (!Number.isInteger(normalizedTopicId) || normalizedTopicId <= 0) {
+    throw new Error('Invalid topic id.')
   }
+
+  const page = params.page ?? 1
+  const pageSize = params.pageSize ?? 10
+  const { data: response } = await api.get(
+    `/papers/by-topic/${normalizedTopicId}`,
+    { params: { page, pageSize } },
+  )
+  const result = unwrapResponse(response, 'Failed to load papers for this topic.')
+
+  return normalizePaginatedPapers(result, page, pageSize)
+}
+
+export async function getPapersByJournal(journalId, params = {}) {
+  const normalizedJournalId = Number(journalId)
+  if (!Number.isInteger(normalizedJournalId) || normalizedJournalId <= 0) {
+    throw new Error('Invalid journal id.')
+  }
+
+  const page = params.page ?? 1
+  const pageSize = params.pageSize ?? 10
+  const { data: response } = await api.get(
+    `/papers/by-journal/${normalizedJournalId}`,
+    { params: { page, pageSize } },
+  )
+  const result = unwrapResponse(response, 'Failed to load papers for this journal.')
+
+  return normalizePaginatedPapers(result, page, pageSize)
+}
+
+export async function getSearchHistory(limit = 20) {
+  const normalizedLimit = Math.min(Math.max(Number(limit) || 20, 1), 100)
+  const { data: response } = await api.get('/papers/search-history', {
+    params: { limit: normalizedLimit },
+  })
+
+  return unwrapResponse(response, 'Failed to load search history.') ?? []
 }
 
 /**

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { getFollowedTopics, getFollowedJournals, unfollowTopic, unfollowJournal } from '../../services/followService'
 import Skeleton from '../../components/Skeleton'
 import styles from './simpleListPage.module.css'
@@ -83,7 +84,12 @@ function FollowingPage() {
           const name = item.name ?? item.topic ?? String(item)
           return (
             <li key={id} className={styles.listItem}>
-              <span className={styles.listItemText}>{name}</span>
+              <Link
+                className={styles.listItemText}
+                to={`/search/results?journalId=${encodeURIComponent(id)}&journalName=${encodeURIComponent(name)}&page=1&pageSize=10`}
+              >
+                {name}
+              </Link>
               <button type="button" className={styles.unfollowBtn} onClick={() => handleUnfollowTopic(id)}>
                 Unfollow
               </button>
@@ -101,7 +107,7 @@ function FollowingPage() {
           </li>
         )}
         {journals.map((item) => {
-          const id = item.id ?? item
+          const id = item.targetId ?? item.id ?? item
           const name = item.name ?? item.journal ?? String(item)
           return (
             <li key={id} className={styles.listItem}>

@@ -137,7 +137,9 @@ function DashboardPage() {
               recommendedTopics.map((topic) => (
                 <Link
                   key={topic.id}
-                  to={`/search/results?keyword=${encodeURIComponent(topic.name)}`}
+                  to={topic.id
+                    ? `/search/results?topicId=${encodeURIComponent(topic.id)}&topicName=${encodeURIComponent(topic.name)}&page=1&pageSize=10`
+                    : `/search/results?keyword=${encodeURIComponent(topic.name)}&page=1&pageSize=10`}
                   className={styles.recommendedItem}
                 >
                   <span>
