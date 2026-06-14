@@ -6,6 +6,7 @@ import {
   getNotifications,
   markAllAsRead,
   markAsRead,
+  updateNotificationSettings,
 } from '../../services/notificationService'
 import styles from './simpleListPage.module.css'
 
@@ -30,6 +31,8 @@ function NotificationsPage() {
   const [markingAll, setMarkingAll] = useState(false)
   const [settingsLoading, setSettingsLoading] = useState(true)
   const [settingsError, setSettingsError] = useState('')
+  const [settingsSaving, setSettingsSaving] = useState(false)
+  const [settingsMessage, setSettingsMessage] = useState('')
 
   useEffect(() => {
     async function fetchSettings() {
@@ -49,6 +52,35 @@ function NotificationsPage() {
 
     fetchSettings()
   }, [])
+
+  const handleSettingChange = (field) => (event) => {
+    const value = event.target.type === 'checkbox'
+      ? event.target.checked
+      : event.target.value
+
+    setSettings((current) => ({ ...current, [field]: value }))
+    setSettingsError('')
+    setSettingsMessage('')
+  }
+
+  const handleSaveSettings = async (event) => {
+    event.preventDefault()
+    if (!settings || settingsSaving) return
+
+    setSettingsSaving(true)
+    setSettingsError('')
+    setSettingsMessage('')
+    try {
+      setSettings(await updateNotificationSettings(settings))
+      setSettingsMessage('Notification settings saved.')
+    } catch (err) {
+      setSettingsError(
+        err.response?.data?.message || err.message || 'Failed to update notification settings.',
+      )
+    } finally {
+      setSettingsSaving(false)
+    }
+  }
 
   useEffect(() => {
     async function fetchNotifications() {
@@ -165,31 +197,64 @@ function NotificationsPage() {
             <span>Preferences</span>
             <h2>Notification settings</h2>
           </div>
-          <small>Read only</small>
+          <small>Manage delivery preferences</small>
         </div>
         {settingsLoading ? (
           <Skeleton variant="text" count={3} />
-        ) : settingsError ? (
+        ) : settingsError && !settings ? (
           <p className={styles.listError}>{settingsError}</p>
         ) : settings ? (
-          <div className={styles.settingsGrid}>
-            <article>
-              <span>Email notifications</span>
-              <strong className={settings.emailEnabled ? styles.settingOn : styles.settingOff}>
-                {settings.emailEnabled ? 'Enabled' : 'Disabled'}
-              </strong>
-            </article>
-            <article>
-              <span>Topic alerts</span>
-              <strong className={settings.topicAlertEnabled ? styles.settingOn : styles.settingOff}>
-                {settings.topicAlertEnabled ? 'Enabled' : 'Disabled'}
-              </strong>
-            </article>
-            <article>
-              <span>Frequency</span>
-              <strong>{settings.frequency}</strong>
-            </article>
-          </div>
+          <form className={styles.settingsForm} onSubmit={handleSaveSettings}>
+            <div className={styles.settingsGrid}>
+              <label className={styles.settingToggle}>
+                <span>
+                  <strong>Email notifications</strong>
+                  <small>Receive research updates by email.</small>
+                </span>
+                <input
+                  type="checkbox"
+                  checked={settings.emailEnabled}
+                  onChange={handleSettingChange('emailEnabled')}
+                  disabled={settingsSaving}
+                />
+              </label>
+              <label className={styles.settingToggle}>
+                <span>
+                  <strong>Topic alerts</strong>
+                  <small>Get alerts for followed research topics.</small>
+                </span>
+                <input
+                  type="checkbox"
+                  checked={settings.topicAlertEnabled}
+                  onChange={handleSettingChange('topicAlertEnabled')}
+                  disabled={settingsSaving}
+                />
+              </label>
+              <label className={styles.frequencyField}>
+                <span>Frequency</span>
+                <input
+                  type="text"
+                  list="notification-frequency-options"
+                  value={settings.frequency}
+                  onChange={handleSettingChange('frequency')}
+                  disabled={settingsSaving}
+                  required
+                />
+                <datalist id="notification-frequency-options">
+                  <option value="Immediate" />
+                  <option value="Daily" />
+                  <option value="Weekly" />
+                </datalist>
+              </label>
+            </div>
+            <div className={styles.settingsActions}>
+              {settingsError && <span className={styles.settingsSaveError}>{settingsError}</span>}
+              {settingsMessage && <span className={styles.settingsSuccess}>{settingsMessage}</span>}
+              <button type="submit" disabled={settingsSaving}>
+                {settingsSaving ? 'Saving...' : 'Save settings'}
+              </button>
+            </div>
+          </form>
         ) : null}
       </section>
 

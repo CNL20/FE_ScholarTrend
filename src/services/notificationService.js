@@ -51,6 +51,26 @@ export async function getNotificationSettings() {
   }
 }
 
+export async function updateNotificationSettings(settings) {
+  const frequency = String(settings.frequency ?? '').trim()
+  if (!frequency) {
+    throw new Error('Notification frequency is required.')
+  }
+
+  const { data: response } = await api.put('/notifications/settings', {
+    emailEnabled: Boolean(settings.emailEnabled),
+    topicAlertEnabled: Boolean(settings.topicAlertEnabled),
+    frequency,
+  })
+  const result = unwrapResponse(response, 'Failed to update notification settings.')
+
+  return {
+    emailEnabled: Boolean(result.emailEnabled),
+    topicAlertEnabled: Boolean(result.topicAlertEnabled),
+    frequency: result.frequency ?? frequency,
+  }
+}
+
 export async function markAsRead(notificationId) {
   const normalizedId = Number(notificationId)
   if (!Number.isInteger(normalizedId) || normalizedId <= 0) {
