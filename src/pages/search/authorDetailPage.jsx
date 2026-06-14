@@ -17,9 +17,9 @@ function AuthorDetailPage() {
       setError('')
       try {
         const result = await getPapersByAuthor(authorName)
-        setPapers(result.items ?? result ?? [])
+        setPapers(result.items)
       } catch (err) {
-        setError(err.response?.data?.message || 'Failed to load author papers')
+        setError(err.response?.data?.message || err.message || 'Failed to load author papers')
         setPapers([])
       } finally {
         setLoading(false)

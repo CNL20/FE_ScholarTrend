@@ -1,13 +1,54 @@
 import api from './api'
 
-/**
- * Tìm kiếm papers
- * @param {{ keyword?, author?, journal?, yearFrom?, yearTo?, page?, pageSize? }} params
- * @returns {{ items: Paper[], totalCount, page, pageSize, totalPages }}
- */
+function unwrapResponse(response, fallbackMessage) {
+  if (!response.success || response.data == null) {
+    throw new Error(response.message || response.errors?.[0] || fallbackMessage)
+  }
+
+  return response.data
+}
+
+function normalizePaper(paper) {
+  return {
+    ...paper,
+    year: paper.publicationYear,
+    journal: paper.journal?.name || 'Unknown journal',
+    authors: (paper.authors ?? [])
+      .map((author) => (typeof author === 'string' ? author : author.name))
+      .filter(Boolean),
+  }
+}
+
 export async function searchPapers(params = {}) {
-  const { data } = await api.get('/papers', { params })
-  return data
+  let query = params.query ?? params.keyword ?? ''
+  let searchType = params.searchType ?? 'All'
+
+  if (!query && params.author) {
+    query = params.author
+    searchType = 'Author'
+  } else if (!query && params.journal) {
+    query = params.journal
+    searchType = 'Journal'
+  }
+
+  const apiParams = {
+    Query: query || undefined,
+    SearchType: searchType && searchType !== 'All' ? searchType : undefined,
+    JournalId: params.journalId,
+    TopicId: params.topicId,
+    YearFrom: params.yearFrom,
+    YearTo: params.yearTo,
+    MinCitations: params.minCitations,
+    Page: params.page ?? 1,
+    PageSize: params.pageSize ?? 10,
+  }
+  const { data: response } = await api.get('/papers/search', { params: apiParams })
+  const result = unwrapResponse(response, 'Failed to search papers.')
+
+  return {
+    ...result,
+    items: (result.items ?? []).map(normalizePaper),
+  }
 }
 
 /**
@@ -16,8 +57,8 @@ export async function searchPapers(params = {}) {
  * @returns {Paper}
  */
 export async function getPaperById(id) {
-  const { data } = await api.get(`/papers/${id}`)
-  return data
+  const { data: response } = await api.get(`/papers/${id}`)
+  return normalizePaper(unwrapResponse(response, 'Failed to load paper details.'))
 }
 
 /**
@@ -34,8 +75,11 @@ export async function getRecentPapers(count = 10) {
  * Lấy papers theo tác giả
  */
 export async function getPapersByAuthor(authorName, params = {}) {
-  const { data } = await api.get('/papers', { params: { ...params, author: authorName } })
-  return data
+  return searchPapers({
+    ...params,
+    query: authorName,
+    searchType: 'Author',
+  })
 }
 
 /**

@@ -4,11 +4,15 @@ import styles from './searchPage.module.css'
 
 function SearchPage() {
   const navigate = useNavigate()
-  const [form, setForm] = useState({ keyword: '', author: '', journal: '' })
+  const [form, setForm] = useState({ query: '', searchType: 'All' })
 
   const handleSubmit = (event) => {
     event.preventDefault()
-    const params = new URLSearchParams(form)
+    const params = new URLSearchParams()
+
+    if (form.query.trim()) params.set('query', form.query.trim())
+    if (form.searchType !== 'All') params.set('searchType', form.searchType)
+
     navigate(`/search/results?${params.toString()}`)
   }
 
@@ -21,34 +25,29 @@ function SearchPage() {
       <div className={styles.panel}>
         <form className={styles.form} onSubmit={handleSubmit}>
           <div className={styles.fieldGroup}>
-            <label htmlFor="keyword" className={styles.label}>Keyword</label>
+            <label htmlFor="query" className={styles.label}>Search query</label>
             <input
-              id="keyword"
+              id="query"
               className={styles.input}
-              placeholder="e.g. machine learning, neural networks…"
-              value={form.keyword}
-              onChange={(event) => setForm((prev) => ({ ...prev, keyword: event.target.value }))}
+              placeholder="e.g. machine learning, neural networks..."
+              value={form.query}
+              onChange={(event) => setForm((prev) => ({ ...prev, query: event.target.value }))}
             />
           </div>
           <div className={styles.fieldGroup}>
-            <label htmlFor="author" className={styles.label}>Author</label>
-            <input
-              id="author"
+            <label htmlFor="searchType" className={styles.label}>Search in</label>
+            <select
+              id="searchType"
               className={styles.input}
-              placeholder="e.g. John Smith"
-              value={form.author}
-              onChange={(event) => setForm((prev) => ({ ...prev, author: event.target.value }))}
-            />
-          </div>
-          <div className={styles.fieldGroup}>
-            <label htmlFor="journal" className={styles.label}>Journal</label>
-            <input
-              id="journal"
-              className={styles.input}
-              placeholder="e.g. Nature, IEEE Access"
-              value={form.journal}
-              onChange={(event) => setForm((prev) => ({ ...prev, journal: event.target.value }))}
-            />
+              value={form.searchType}
+              onChange={(event) => setForm((prev) => ({ ...prev, searchType: event.target.value }))}
+            >
+              <option value="All">All fields</option>
+              <option value="Title">Title</option>
+              <option value="Abstract">Abstract</option>
+              <option value="Author">Author</option>
+              <option value="Keyword">Keyword</option>
+            </select>
           </div>
           <button type="submit" className={styles.button}>
             Search Publications

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getPaperById, recordView } from '../../services/paperService'
-import { addBookmark, getBookmarks, removeBookmark } from '../../services/bookmarkService'
+import { addBookmark, removeBookmark } from '../../services/bookmarkService'
 import Skeleton from '../../components/Skeleton'
 import styles from './paperDetailPage.module.css'
 
@@ -22,13 +22,9 @@ function PaperDetailPage() {
           recordView(paperId).catch(() => {}),
         ])
         setPaper(result)
-
-        if (localStorage.getItem('token')) {
-          const bookmarks = await getBookmarks().catch(() => [])
-          setBookmarked(bookmarks.some((bookmark) => String(bookmark.paperId) === String(paperId)))
-        }
+        setBookmarked(Boolean(result.isBookmarked))
       } catch (err) {
-        setError(err.response?.data?.message || 'Failed to load paper details')
+        setError(err.response?.data?.message || err.message || 'Failed to load paper details')
       } finally {
         setLoading(false)
       }

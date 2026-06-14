@@ -25,22 +25,18 @@ function SearchResultsPage() {
       setLoading(true)
       setError('')
       try {
-        const keyword = searchParams.get('keyword') ?? ''
-        const author = searchParams.get('author') ?? ''
-        const journal = searchParams.get('journal') ?? ''
+        const query = searchParams.get('query') ?? searchParams.get('keyword') ?? ''
+        const searchType = searchParams.get('searchType') ?? 'All'
         const currentPage = isNewSearch ? 1 : page
         if (isNewSearch) setPage(1)
-        const params = { page: currentPage, pageSize: 10 }
-        if (keyword) params.keyword = keyword
-        if (author) params.author = author
-        if (journal) params.journal = journal
+        const params = { query, searchType, page: currentPage, pageSize: 10 }
 
         const result = await searchPapers(params)
-        setPapers(result.items ?? result ?? [])
-        setTotalCount(result.totalCount ?? (result.items ? result.items.length : result.length ?? 0))
-        setTotalPages(result.totalPages ?? 1)
+        setPapers(result.items)
+        setTotalCount(result.totalCount)
+        setTotalPages(result.totalPages)
       } catch (err) {
-        setError(err.response?.data?.message || 'Failed to load search results')
+        setError(err.response?.data?.message || err.message || 'Failed to load search results')
         setPapers([])
       } finally {
         setLoading(false)
