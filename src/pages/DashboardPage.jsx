@@ -138,7 +138,7 @@ function DashboardPage() {
                 <Link
                   key={topic.id}
                   to={topic.id
-                    ? `/search/results?topicId=${encodeURIComponent(topic.id)}&topicName=${encodeURIComponent(topic.name)}&page=1&pageSize=10`
+                    ? `/topics/${encodeURIComponent(topic.id)}`
                     : `/search/results?keyword=${encodeURIComponent(topic.name)}&page=1&pageSize=10`}
                   className={styles.recommendedItem}
                 >

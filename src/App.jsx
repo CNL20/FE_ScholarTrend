@@ -13,6 +13,7 @@ import SearchPage from "./pages/search/searchPage";
 import SearchResultsPage from "./pages/search/searchResultsPage";
 import PaperDetailPage from "./pages/search/paperDetailPage";
 import AuthorDetailPage from "./pages/search/authorDetailPage";
+import TopicDetailPage from "./pages/topics/topicDetailPage";
 import TrendChartPage from "./pages/trends/trendChartPage";
 import BookmarksPage from "./pages/user/bookmarksPage";
 import FollowingPage from "./pages/user/followingPage";
@@ -93,6 +94,7 @@ function App() {
         },
         { path: "papers/:paperId", element: <PaperDetailPage /> },
         { path: "authors/:authorName", element: <AuthorDetailPage /> },
+        { path: "topics/:topicId", element: <TopicDetailPage /> },
         { path: "trends", element: <TrendChartPage /> },
 
         // Cần đăng nhập — tất cả roles

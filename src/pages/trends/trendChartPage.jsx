@@ -25,6 +25,7 @@ import {
   getTopicTrends,
   getTrendDashboard,
 } from '../../services/trendService'
+import { getTopics } from '../../services/topicService'
 import Skeleton from '../../components/Skeleton'
 import styles from './trendChartPage.module.css'
 
@@ -93,7 +94,7 @@ function getCompareLink(type, series) {
     return `/search/results?keyword=${encodeURIComponent(series.name)}&searchType=Keyword&page=1&pageSize=10`
   }
   if (type === 'topic') {
-    return `/search/results?topicId=${series.id}&topicName=${encodeURIComponent(series.name)}&page=1&pageSize=10`
+    return `/topics/${series.id}`
   }
   return `/search/results?journalId=${series.id}&journalName=${encodeURIComponent(series.name)}&page=1&pageSize=10`
 }
@@ -135,6 +136,7 @@ function TrendChartPage() {
           journalResult,
           topJournalResult,
           publicationResult,
+          allTopicsResult,
         ] = await Promise.all([
           getTrendDashboard(initialFilters),
           getKeywordTrends(initialFilters),
@@ -144,6 +146,7 @@ function TrendChartPage() {
           getJournalTrends(initialFilters),
           getTopJournalTrends(initialFilters),
           getPublicationTrends(initialFilters),
+          getTopics(),
         ])
         setDashboard({
           ...dashboardResult,
@@ -157,7 +160,7 @@ function TrendChartPage() {
         setJournalSeries(journalResult)
         setOptions({
           keywords: topKeywordResult,
-          topics: topTopicResult,
+          topics: allTopicsResult,
           journals: topJournalResult,
         })
       } catch (err) {
@@ -773,7 +776,7 @@ function TrendChartPage() {
             {topicSeries.map((series, index) => (
               <Link
                 key={series.id}
-                to={`/search/results?topicId=${series.id}&topicName=${encodeURIComponent(series.name)}&page=1&pageSize=10`}
+                to={`/topics/${series.id}`}
                 className={styles.seriesLegendItem}
               >
                 <span style={{ background: COLORS[index % COLORS.length] }} />
@@ -927,7 +930,7 @@ function TrendChartPage() {
             {dashboard.topTopics.slice(0, 5).map((item, index) => (
               <Link
                 key={item.id}
-                to={`/search/results?topicId=${item.id}&topicName=${encodeURIComponent(item.name)}&page=1&pageSize=10`}
+                to={`/topics/${item.id}`}
                 className={styles.rankItem}
               >
                 <span
