@@ -11,11 +11,15 @@ function unwrapResponse(response, fallbackMessage) {
 function normalizePaper(paper) {
   return {
     ...paper,
-    year: paper.publicationYear,
-    journal: paper.journal?.name || 'Unknown journal',
+    year: paper.publicationYear ?? paper.year,
+    journal:
+      (typeof paper.journal === 'string' ? paper.journal : paper.journal?.name) ||
+      'Unknown journal',
     authors: (paper.authors ?? [])
       .map((author) => (typeof author === 'string' ? author : author.name))
       .filter(Boolean),
+    keywords: paper.keywords ?? [],
+    citationCount: paper.citationCount ?? 0,
   }
 }
 
@@ -48,6 +52,10 @@ export async function searchPapers(params = {}) {
   return {
     ...result,
     items: (result.items ?? []).map(normalizePaper),
+    totalCount: result.totalCount ?? 0,
+    page: Number(result.page) > 0 ? result.page : apiParams.Page,
+    pageSize: Number(result.pageSize) > 0 ? result.pageSize : apiParams.PageSize,
+    totalPages: result.totalPages ?? 0,
   }
 }
 

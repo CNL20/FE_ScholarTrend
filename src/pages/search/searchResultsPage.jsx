@@ -1,50 +1,84 @@
-import { useEffect, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import SearchResultsList from '../../components/SearchResultsList'
 import Pagination from '../../components/Pagination'
 import Skeleton from '../../components/Skeleton'
 import { searchPapers } from '../../services/paperService'
 import styles from './searchResultsPage.module.css'
 
+function getPositiveNumber(value, fallback) {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback
+}
+
 function SearchResultsPage() {
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const searchKey = searchParams.toString()
-  const prevSearchKey = useRef(searchKey)
-  const [papers, setPapers] = useState([])
-  const [totalCount, setTotalCount] = useState(0)
-  const [totalPages, setTotalPages] = useState(0)
-  const [page, setPage] = useState(1)
+  const [result, setResult] = useState({
+    items: [],
+    totalCount: 0,
+    page: 1,
+    pageSize: 10,
+    totalPages: 0,
+  })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  useEffect(() => {
-    const isNewSearch = prevSearchKey.current !== searchKey
-    if (isNewSearch) prevSearchKey.current = searchKey
+  const query = searchParams.get('query') ?? searchParams.get('keyword') ?? ''
+  const searchType = searchParams.get('searchType') ?? 'All'
+  const currentPage = getPositiveNumber(searchParams.get('page'), 1)
+  const pageSize = getPositiveNumber(searchParams.get('pageSize'), 10)
 
+  useEffect(() => {
     async function fetchResults() {
+      const params = new URLSearchParams(searchKey)
+
       setLoading(true)
       setError('')
       try {
-        const query = searchParams.get('query') ?? searchParams.get('keyword') ?? ''
-        const searchType = searchParams.get('searchType') ?? 'All'
-        const currentPage = isNewSearch ? 1 : page
-        if (isNewSearch) setPage(1)
-        const params = { query, searchType, page: currentPage, pageSize: 10 }
-
-        const result = await searchPapers(params)
-        setPapers(result.items)
-        setTotalCount(result.totalCount)
-        setTotalPages(result.totalPages)
+        const response = await searchPapers({
+          query: params.get('query') ?? params.get('keyword') ?? '',
+          searchType: params.get('searchType') ?? 'All',
+          yearFrom: params.get('yearFrom') || undefined,
+          yearTo: params.get('yearTo') || undefined,
+          minCitations: params.get('minCitations') || undefined,
+          page: getPositiveNumber(params.get('page'), 1),
+          pageSize: getPositiveNumber(params.get('pageSize'), 10),
+        })
+        setResult({
+          items: response.items ?? [],
+          totalCount: response.totalCount ?? 0,
+          page: response.page ?? 1,
+          pageSize: response.pageSize ?? 10,
+          totalPages: response.totalPages ?? 0,
+        })
       } catch (err) {
         setError(err.response?.data?.message || err.message || 'Failed to load search results')
-        setPapers([])
+        setResult({ items: [], totalCount: 0, page: 1, pageSize: 10, totalPages: 0 })
       } finally {
         setLoading(false)
       }
     }
+
     fetchResults()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchKey, page])
+  }, [searchKey])
+
+  const handlePageChange = (nextPage) => {
+    const nextParams = new URLSearchParams(searchParams)
+    nextParams.set('page', String(nextPage))
+    if (!nextParams.has('pageSize')) nextParams.set('pageSize', String(pageSize))
+    setSearchParams(nextParams)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const activeFilters = [
+    searchType !== 'All' ? searchType : null,
+    searchParams.get('yearFrom') ? `From ${searchParams.get('yearFrom')}` : null,
+    searchParams.get('yearTo') ? `To ${searchParams.get('yearTo')}` : null,
+    searchParams.get('minCitations')
+      ? `${searchParams.get('minCitations')}+ citations`
+      : null,
+  ].filter(Boolean)
 
   if (loading) {
     return (
@@ -57,24 +91,49 @@ function SearchResultsPage() {
     )
   }
 
-  if (error) {
-    return (
-      <section className={styles.resultsPage}>
-        <p>{error}</p>
-      </section>
-    )
-  }
-
   return (
     <section className={styles.resultsPage}>
       <div className={styles.pageHeader}>
-        <h1 className={styles.pageTitle}>Search Results</h1>
-        <p className={styles.summary}>
-          Found <span className={styles.summaryCount}>{totalCount}</span> matching paper(s).
-        </p>
+        <div>
+          <span className={styles.eyebrow}>Research library</span>
+          <h1 className={styles.pageTitle}>
+            {query ? `Results for "${query}"` : 'All publications'}
+          </h1>
+          {!error && (
+            <p className={styles.summary}>
+              Found <span className={styles.summaryCount}>{result.totalCount}</span> matching
+              paper(s)
+              {result.totalPages > 0 && ` · Page ${result.page} of ${result.totalPages}`}
+            </p>
+          )}
+        </div>
+        <Link to="/search" className={styles.newSearchButton}>New search</Link>
       </div>
-      <SearchResultsList papers={papers} />
-      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+
+      {activeFilters.length > 0 && (
+        <div className={styles.filterBar}>
+          <span className={styles.filterLabel}>Active filters</span>
+          {activeFilters.map((filter) => (
+            <span key={filter} className={styles.filterChip}>{filter}</span>
+          ))}
+        </div>
+      )}
+
+      {error ? (
+        <div className={styles.errorState}>
+          <strong>Search could not be completed</strong>
+          <p>{error}</p>
+        </div>
+      ) : (
+        <>
+          <SearchResultsList papers={result.items} />
+          <Pagination
+            page={result.page || currentPage}
+            totalPages={result.totalPages}
+            onPageChange={handlePageChange}
+          />
+        </>
+      )}
     </section>
   )
 }
