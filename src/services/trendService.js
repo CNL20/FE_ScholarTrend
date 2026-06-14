@@ -77,6 +77,27 @@ export async function getTopTopicTrends(filters = {}) {
 }
 
 /** Tổng quan: total papers, journals, users... */
+export async function getJournalTrends(filters = {}) {
+  const { data: response } = await api.get('/trends/journals', {
+    params: getTrendParams(filters),
+  })
+  const result = unwrapResponse(response, 'Failed to load journal trends.')
+
+  return (Array.isArray(result) ? result : []).map((series) => ({
+    ...series,
+    dataPoints: series.dataPoints ?? [],
+  }))
+}
+
+export async function getTopJournalTrends(filters = {}) {
+  const { data: response } = await api.get('/trends/journals/top', {
+    params: getTrendParams(filters),
+  })
+
+  const result = unwrapResponse(response, 'Failed to load top journals.')
+  return Array.isArray(result) ? result : []
+}
+
 export async function getTrendOverview() {
   const { data } = await api.get('/trends/overview')
   return data

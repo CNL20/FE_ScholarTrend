@@ -15,7 +15,9 @@ import {
   YAxis,
 } from 'recharts'
 import {
+  getJournalTrends,
   getKeywordTrends,
+  getTopJournalTrends,
   getTopKeywordTrends,
   getTopTopicTrends,
   getTopicTrends,
@@ -88,9 +90,11 @@ function TrendChartPage() {
   const [chartType, setChartType] = useState('line')
   const [keywordMetric, setKeywordMetric] = useState('paperCount')
   const [topicMetric, setTopicMetric] = useState('paperCount')
+  const [journalMetric, setJournalMetric] = useState('paperCount')
   const [dashboard, setDashboard] = useState(EMPTY_DASHBOARD)
   const [keywordSeries, setKeywordSeries] = useState([])
   const [topicSeries, setTopicSeries] = useState([])
+  const [journalSeries, setJournalSeries] = useState([])
   const [options, setOptions] = useState({
     keywords: [],
     topics: [],
@@ -110,24 +114,30 @@ function TrendChartPage() {
           topKeywordResult,
           topicResult,
           topTopicResult,
+          journalResult,
+          topJournalResult,
         ] = await Promise.all([
           getTrendDashboard(initialFilters),
           getKeywordTrends(initialFilters),
           getTopKeywordTrends(initialFilters),
           getTopicTrends(initialFilters),
           getTopTopicTrends(initialFilters),
+          getJournalTrends(initialFilters),
+          getTopJournalTrends(initialFilters),
         ])
         setDashboard({
           ...dashboardResult,
           topKeywords: topKeywordResult,
           topTopics: topTopicResult,
+          topJournals: topJournalResult,
         })
         setKeywordSeries(keywordResult)
         setTopicSeries(topicResult)
+        setJournalSeries(journalResult)
         setOptions({
           keywords: topKeywordResult,
           topics: topTopicResult,
-          journals: dashboardResult.topJournals,
+          journals: topJournalResult,
         })
       } catch (err) {
         setError(err.response?.data?.message || err.message || 'Failed to load trend data')
@@ -153,20 +163,26 @@ function TrendChartPage() {
         topKeywordResult,
         topicResult,
         topTopicResult,
+        journalResult,
+        topJournalResult,
       ] = await Promise.all([
         getTrendDashboard(nextFilters),
         getKeywordTrends(nextFilters),
         getTopKeywordTrends(nextFilters),
         getTopicTrends(nextFilters),
         getTopTopicTrends(nextFilters),
+        getJournalTrends(nextFilters),
+        getTopJournalTrends(nextFilters),
       ])
       setDashboard({
         ...dashboardResult,
         topKeywords: topKeywordResult,
         topTopics: topTopicResult,
+        topJournals: topJournalResult,
       })
       setKeywordSeries(keywordResult)
       setTopicSeries(topicResult)
+      setJournalSeries(journalResult)
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Failed to filter trend data')
     } finally {
@@ -217,6 +233,7 @@ function TrendChartPage() {
     : 0
   const keywordChartData = buildSeriesChartData(keywordSeries, keywordMetric, 'keyword')
   const topicChartData = buildSeriesChartData(topicSeries, topicMetric, 'topic')
+  const journalChartData = buildSeriesChartData(journalSeries, journalMetric, 'journal')
 
   if (loading && !publicationTrend.length) {
     return (
@@ -565,6 +582,73 @@ function TrendChartPage() {
               <Link
                 key={series.id}
                 to={`/search/results?topicId=${series.id}&topicName=${encodeURIComponent(series.name)}&page=1&pageSize=10`}
+                className={styles.seriesLegendItem}
+              >
+                <span style={{ background: COLORS[index % COLORS.length] }} />
+                {series.name}
+              </Link>
+            ))}
+          </div>
+        )}
+      </article>
+
+      <article className={styles.panel}>
+        <div className={styles.panelHeader}>
+          <div>
+            <span className={styles.panelEyebrow}>Journal series</span>
+            <h2 className={styles.panelTitle}>Journal momentum over time</h2>
+          </div>
+          <div className={styles.metricSwitch}>
+            <button
+              type="button"
+              className={journalMetric === 'paperCount' ? styles.metricActive : ''}
+              onClick={() => setJournalMetric('paperCount')}
+            >
+              Papers
+            </button>
+            <button
+              type="button"
+              className={journalMetric === 'citationCount' ? styles.metricActive : ''}
+              onClick={() => setJournalMetric('citationCount')}
+            >
+              Citations
+            </button>
+          </div>
+        </div>
+        <div className={styles.chartWrap}>
+          {loading ? (
+            <Skeleton variant="chart" />
+          ) : journalChartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={journalChartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis dataKey="period" stroke="#cbd5e1" tick={{ fill: '#475569', fontSize: 11 }} />
+                <YAxis stroke="#cbd5e1" tick={{ fill: '#475569', fontSize: 11 }} />
+                <Tooltip contentStyle={{ border: '1px solid #e2e8f0', borderRadius: 10 }} />
+                {journalSeries.map((series, index) => (
+                  <Line
+                    key={series.id}
+                    type="monotone"
+                    dataKey={`journal_${series.id}`}
+                    name={series.name}
+                    stroke={COLORS[index % COLORS.length]}
+                    strokeWidth={2.5}
+                    connectNulls
+                    dot={{ r: 2.5 }}
+                  />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <p className={styles.emptyText}>No journal series data for these filters.</p>
+          )}
+        </div>
+        {journalSeries.length > 0 && (
+          <div className={styles.seriesLegend}>
+            {journalSeries.map((series, index) => (
+              <Link
+                key={series.id}
+                to={`/search/results?journalId=${series.id}&journalName=${encodeURIComponent(series.name)}&page=1&pageSize=10`}
                 className={styles.seriesLegendItem}
               >
                 <span style={{ background: COLORS[index % COLORS.length] }} />
