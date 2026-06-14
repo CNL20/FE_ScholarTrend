@@ -1,9 +1,49 @@
 import api from './api'
 
-/** Top trending keywords */
-export async function getKeywordTrends(top = 10) {
-  const { data } = await api.get('/trends/keywords', { params: { top } })
-  return data
+function unwrapResponse(response, fallbackMessage) {
+  if (!response.success || response.data == null) {
+    throw new Error(response.message || response.errors?.[0] || fallbackMessage)
+  }
+
+  return response.data
+}
+
+function getTrendParams(filters = {}) {
+  return {
+    YearFrom: filters.yearFrom || undefined,
+    YearTo: filters.yearTo || undefined,
+    MonthFrom: filters.monthFrom || undefined,
+    MonthTo: filters.monthTo || undefined,
+    KeywordId: filters.keywordId || undefined,
+    TopicId: filters.topicId || undefined,
+    JournalId: filters.journalId || undefined,
+    Top: filters.top || 10,
+  }
+}
+
+export async function getTrendDashboard(filters = {}) {
+  const params = getTrendParams(filters)
+  const { data: response } = await api.get('/trends/dashboard', { params })
+  const result = unwrapResponse(response, 'Failed to load trend dashboard.')
+
+  return {
+    topKeywords: result.topKeywords ?? [],
+    topTopics: result.topTopics ?? [],
+    topJournals: result.topJournals ?? [],
+    publicationTrend: result.publicationTrend ?? [],
+  }
+}
+
+export async function getKeywordTrends(filters = {}) {
+  const { data: response } = await api.get('/trends/keywords', {
+    params: getTrendParams(filters),
+  })
+  const result = unwrapResponse(response, 'Failed to load keyword trends.')
+
+  return result.map((series) => ({
+    ...series,
+    dataPoints: series.dataPoints ?? [],
+  }))
 }
 
 /** Top trending topics */
