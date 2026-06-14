@@ -52,5 +52,6 @@ export async function markAsRead(notificationId) {
 
 /** Đánh dấu tất cả đã đọc */
 export async function markAllAsRead() {
-  await api.patch('/notifications/read-all')
+  const { data: response } = await api.patch('/notifications/read_all')
+  return unwrapResponse(response, 'Failed to mark all notifications as read.')
 }

@@ -25,6 +25,7 @@ function NotificationsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [markingId, setMarkingId] = useState(null)
+  const [markingAll, setMarkingAll] = useState(false)
 
   useEffect(() => {
     async function fetchNotifications() {
@@ -72,6 +73,10 @@ function NotificationsPage() {
   }
 
   const handleMarkAllAsRead = async () => {
+    if (markingAll) return
+
+    setMarkingAll(true)
+    setError('')
     try {
       await markAllAsRead()
       setNotifications((current) =>
@@ -87,6 +92,8 @@ function NotificationsPage() {
       window.dispatchEvent(new Event('notifications-updated'))
     } catch {
       setError('Failed to mark all notifications as read.')
+    } finally {
+      setMarkingAll(false)
     }
   }
 
@@ -98,9 +105,9 @@ function NotificationsPage() {
           type="button"
           className={styles.markReadBtn}
           onClick={handleMarkAllAsRead}
-          disabled={loading || notifications.every((item) => item.isRead)}
+          disabled={loading || markingAll || notifications.every((item) => item.isRead)}
         >
-          Mark all read
+          {markingAll ? 'Marking...' : 'Mark all read'}
         </button>
       </div>
 
