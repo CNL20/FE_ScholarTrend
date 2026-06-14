@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
+import { getUnreadNotificationCount } from "../services/notificationService";
 import { getNavItems, ROLES } from "../utils/roles";
 import styles from "./layout.module.css";
 
@@ -12,6 +13,7 @@ function Layout() {
   const [userAvatar, setUserAvatar] = useState(
     avatarStorageKey ? localStorage.getItem(avatarStorageKey) || "" : "",
   );
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   const navItems = getNavItems(token ? userRole : null);
 
@@ -25,6 +27,35 @@ function Layout() {
     window.addEventListener("profile-avatar-updated", handleAvatarUpdated);
     return () => window.removeEventListener("profile-avatar-updated", handleAvatarUpdated);
   }, [userId]);
+
+  useEffect(() => {
+    const canViewNotifications =
+      token && [ROLES.RESEARCHER, ROLES.ADMIN].includes(userRole);
+
+    if (!canViewNotifications) {
+      return undefined;
+    }
+
+    let active = true;
+    const refreshUnreadCount = async () => {
+      try {
+        const count = await getUnreadNotificationCount();
+        if (active) setUnreadNotifications(count);
+      } catch {
+        if (active) setUnreadNotifications(0);
+      }
+    };
+
+    refreshUnreadCount();
+    window.addEventListener("focus", refreshUnreadCount);
+    window.addEventListener("notifications-updated", refreshUnreadCount);
+
+    return () => {
+      active = false;
+      window.removeEventListener("focus", refreshUnreadCount);
+      window.removeEventListener("notifications-updated", refreshUnreadCount);
+    };
+  }, [token, userRole]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -67,6 +98,14 @@ function Layout() {
                 }
               >
                 <span className={styles.navLabel}>{item.label}</span>
+                {item.to === "/notifications" && unreadNotifications > 0 && (
+                  <span
+                    className={styles.notificationBadge}
+                    aria-label={`${unreadNotifications} unread notifications`}
+                  >
+                    {unreadNotifications > 99 ? "99+" : unreadNotifications}
+                  </span>
+                )}
               </NavLink>
             ))}
           </nav>

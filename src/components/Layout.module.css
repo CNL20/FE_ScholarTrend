@@ -108,6 +108,21 @@
   line-height: 1;
 }
 
+.notificationBadge {
+  display: inline-grid;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  place-items: center;
+  border: 2px solid var(--color-surface);
+  border-radius: 999px;
+  background: var(--color-danger);
+  color: #ffffff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
 /* ── Auth Actions ── */
 .authActions {
   display: flex;
@@ -264,6 +279,12 @@
 
   .navLabel {
     display: none;
+  }
+
+  .notificationBadge {
+    position: absolute;
+    top: -0.2rem;
+    right: -0.25rem;
   }
 
   .link {
