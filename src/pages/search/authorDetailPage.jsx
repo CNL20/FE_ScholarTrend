@@ -3,6 +3,11 @@ import { Link, useParams } from 'react-router-dom'
 import SearchResultsList from '../../components/SearchResultsList'
 import Skeleton from '../../components/Skeleton'
 import { getAuthorById, getAuthorByName } from '../../services/authorService'
+import {
+  followAuthor,
+  getFollowedAuthors,
+  unfollowAuthor,
+} from '../../services/followService'
 import styles from './authorDetailPage.module.css'
 
 function formatNumber(value) {
@@ -14,16 +19,39 @@ function AuthorDetailPage() {
   const [author, setAuthor] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [isFollowing, setIsFollowing] = useState(false)
+  const [followLoading, setFollowLoading] = useState(false)
+  const [followError, setFollowError] = useState('')
 
   useEffect(() => {
     let active = true
 
     async function fetchAuthor() {
+      setLoading(true)
+      setError('')
+      setFollowError('')
+      setIsFollowing(false)
       try {
+        const hasToken = Boolean(localStorage.getItem('token'))
         const result = authorId
           ? await getAuthorById(authorId)
           : await getAuthorByName(authorName)
-        if (active) setAuthor(result)
+        if (!active) return
+
+        setAuthor(result)
+
+        if (hasToken && result?.id) {
+          try {
+            const followedAuthors = await getFollowedAuthors()
+            if (active) {
+              setIsFollowing(
+                followedAuthors.some((item) => Number(item.id) === Number(result.id)),
+              )
+            }
+          } catch {
+            // Ignore follow-status lookup errors so author details still render.
+          }
+        }
       } catch (err) {
         if (active) {
           setError(err.response?.data?.message || err.message || 'Failed to load author details.')
@@ -39,6 +67,30 @@ function AuthorDetailPage() {
       active = false
     }
   }, [authorId, authorName])
+
+  const handleFollowToggle = async () => {
+    if (!author?.id || followLoading) return
+
+    setFollowLoading(true)
+    setFollowError('')
+    try {
+      if (isFollowing) {
+        await unfollowAuthor(author.id)
+        setIsFollowing(false)
+      } else {
+        await followAuthor(author.id)
+        setIsFollowing(true)
+      }
+    } catch (err) {
+      setFollowError(
+        err.response?.data?.message ||
+          err.message ||
+          `Failed to ${isFollowing ? 'unfollow' : 'follow'} author.`,
+      )
+    } finally {
+      setFollowLoading(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -73,13 +125,31 @@ function AuthorDetailPage() {
             {author.externalId && <span>External ID {author.externalId}</span>}
           </div>
         </div>
-        <Link
-          className={styles.primaryLink}
-          to={`/search/results?query=${encodeURIComponent(author.name)}&searchType=Author&page=1&pageSize=10`}
-        >
-          View all papers
-        </Link>
+        <div className={styles.heroActions}>
+          {localStorage.getItem('token') ? (
+            <button
+              type="button"
+              className={`${styles.followButton} ${isFollowing ? styles.followingButton : ''}`}
+              onClick={handleFollowToggle}
+              disabled={followLoading}
+            >
+              {followLoading
+                ? isFollowing ? 'Unfollowing...' : 'Following...'
+                : isFollowing ? 'Unfollow author' : 'Follow author'}
+            </button>
+          ) : (
+            <Link className={styles.followButton} to="/login">Sign in to follow</Link>
+          )}
+          <Link
+            className={styles.primaryLink}
+            to={`/search/results?query=${encodeURIComponent(author.name)}&searchType=Author&page=1&pageSize=10`}
+          >
+            View all papers
+          </Link>
+        </div>
       </header>
+
+      {followError && <p className={styles.followError}>{followError}</p>}
 
       <div className={styles.statsGrid}>
         <article>

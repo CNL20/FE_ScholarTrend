@@ -89,3 +89,24 @@ export async function getFollowedAuthors() {
 
   return (Array.isArray(result) ? result : []).map((item) => normalizeFollow(item, 'Author'))
 }
+
+export async function followAuthor(authorId) {
+  const normalizedAuthorId = Number(authorId)
+  if (!Number.isInteger(normalizedAuthorId) || normalizedAuthorId <= 0) {
+    throw new Error('Invalid author id.')
+  }
+
+  const { data: response } = await api.post(`/follows/authors/${normalizedAuthorId}`)
+  const result = unwrapResponse(response, 'Failed to follow author.')
+  return normalizeFollow(result, 'Author')
+}
+
+export async function unfollowAuthor(authorId) {
+  const normalizedAuthorId = Number(authorId)
+  if (!Number.isInteger(normalizedAuthorId) || normalizedAuthorId <= 0) {
+    throw new Error('Invalid author id.')
+  }
+
+  const { data: response } = await api.delete(`/follows/authors/${normalizedAuthorId}`)
+  return unwrapResponse(response, 'Failed to unfollow author.')
+}

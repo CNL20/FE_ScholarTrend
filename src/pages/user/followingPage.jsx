@@ -4,6 +4,7 @@ import {
   getFollowedAuthors,
   getFollowedJournals,
   getFollowedTopics,
+  unfollowAuthor,
   unfollowJournal,
   unfollowTopic,
 } from '../../services/followService'
@@ -53,6 +54,15 @@ function FollowingPage() {
     try {
       await unfollowJournal(journalId)
       setJournals((prev) => prev.filter((j) => (j.id ?? j) !== journalId))
+    } catch {
+      // silently fail
+    }
+  }
+
+  const handleUnfollowAuthor = async (authorId) => {
+    try {
+      await unfollowAuthor(authorId)
+      setAuthors((prev) => prev.filter((a) => (a.id ?? a) !== authorId))
     } catch {
       // silently fail
     }
@@ -127,6 +137,9 @@ function FollowingPage() {
               >
                 {name}
               </Link>
+              <button type="button" className={styles.unfollowBtn} onClick={() => handleUnfollowAuthor(id)}>
+                Unfollow
+              </button>
             </li>
           )
         })}
