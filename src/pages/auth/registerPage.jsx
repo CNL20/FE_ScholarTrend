@@ -1,18 +1,27 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { validateEmail, validatePassword } from "../../utils/validation";
+import { register } from "../../services/authService";
 import styles from "./auth.module.css";
 
 function RegisterPage() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: "", email: "", password: "", role: "student" });
+  const [form, setForm] = useState({
+    fullName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    institution: "",
+    researchField: "",
+  });
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!form.name.trim()) {
-      setError("Please enter your name.");
+    if (!form.fullName.trim()) {
+      setError("Please enter your full name.");
       return;
     }
 
@@ -26,61 +35,118 @@ function RegisterPage() {
       return;
     }
 
-    // TODO: Replace with real API call
-    localStorage.setItem("token", "fake-jwt-token");
-    localStorage.setItem("userName", form.name);
-    localStorage.setItem("userRole", form.role);
+    if (form.password !== form.confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    setLoading(true);
     setError("");
-    navigate("/dashboard");
+
+    try {
+      const result = await register(form);
+      navigate(result?.token ? "/dashboard" : "/login", {
+        replace: true,
+        state: result?.token
+          ? undefined
+          : { message: "Account created successfully. Please sign in." },
+      });
+    } catch (err) {
+      const data = err.response?.data;
+      if (data?.errors) {
+        const firstError = Object.values(data.errors).flat()[0];
+        setError(firstError || "Registration failed.");
+      } else {
+        setError(data?.message || "Registration failed. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <section className={styles.container}>
-      <h1>Register</h1>
-      <form className={styles.form} onSubmit={handleSubmit} noValidate>
-        <label htmlFor="reg-name">Name</label>
-        <input
-          id="reg-name"
-          className={styles.input}
-          type="text"
-          value={form.name}
-          onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
-        />
-        <label htmlFor="reg-email">Email</label>
-        <input
-          id="reg-email"
-          className={styles.input}
-          type="email"
-          value={form.email}
-          onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
-        />
-        <label htmlFor="reg-password">Password</label>
-        <input
-          id="reg-password"
-          className={styles.input}
-          type="password"
-          value={form.password}
-          onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
-        />
-        <label htmlFor="reg-role">Role</label>
-        <select
-          id="reg-role"
-          className={styles.input}
-          value={form.role}
-          onChange={(e) => setForm((prev) => ({ ...prev, role: e.target.value }))}
-        >
-          <option value="student">Student / Lecturer</option>
-          <option value="researcher">Researcher</option>
-        </select>
-        {error && <p className={styles.error}>{error}</p>}
-        <button type="submit" className={styles.button}>
-          Create Account
-        </button>
-      </form>
-      <p style={{ marginTop: "16px" }}>
-        Already have an account? <Link to="/login">Login</Link>
-      </p>
-    </section>
+    <div className={styles.wrapper}>
+      <section className={styles.container}>
+        <div className={styles.logo}>ScholarTrend</div>
+        <p className={styles.subtitle}>Academic Research Intelligence</p>
+        <h1 className={styles.heading}>Create Account</h1>
+        <form className={styles.form} onSubmit={handleSubmit} noValidate>
+          <div className={styles.fieldGroup}>
+            <label htmlFor="reg-name" className={styles.label}>Full Name</label>
+            <input
+              id="reg-name"
+              className={styles.input}
+              type="text"
+              placeholder="Nguyen Van A"
+              value={form.fullName}
+              onChange={(e) => setForm((prev) => ({ ...prev, fullName: e.target.value }))}
+            />
+          </div>
+          <div className={styles.fieldGroup}>
+            <label htmlFor="reg-email" className={styles.label}>Email Address</label>
+            <input
+              id="reg-email"
+              className={styles.input}
+              type="email"
+              placeholder="you@university.edu"
+              value={form.email}
+              onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
+            />
+          </div>
+          <div className={styles.fieldGroup}>
+            <label htmlFor="reg-password" className={styles.label}>Password</label>
+            <input
+              id="reg-password"
+              className={styles.input}
+              type="password"
+              placeholder="••••••••"
+              value={form.password}
+              onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
+            />
+          </div>
+          <div className={styles.fieldGroup}>
+            <label htmlFor="reg-confirm-password" className={styles.label}>Confirm Password</label>
+            <input
+              id="reg-confirm-password"
+              className={styles.input}
+              type="password"
+              placeholder="••••••••"
+              value={form.confirmPassword}
+              onChange={(e) => setForm((prev) => ({ ...prev, confirmPassword: e.target.value }))}
+            />
+          </div>
+          <div className={styles.fieldGroup}>
+            <label htmlFor="reg-institution" className={styles.label}>Institution (optional)</label>
+            <input
+              id="reg-institution"
+              className={styles.input}
+              type="text"
+              placeholder="FPT University"
+              value={form.institution}
+              onChange={(e) => setForm((prev) => ({ ...prev, institution: e.target.value }))}
+            />
+          </div>
+          <div className={styles.fieldGroup}>
+            <label htmlFor="reg-field" className={styles.label}>Research Field (optional)</label>
+            <input
+              id="reg-field"
+              className={styles.input}
+              type="text"
+              placeholder="Artificial Intelligence"
+              value={form.researchField}
+              onChange={(e) => setForm((prev) => ({ ...prev, researchField: e.target.value }))}
+            />
+          </div>
+          {error && <p className={styles.error}>{error}</p>}
+          <button type="submit" className={styles.button} disabled={loading}>
+            {loading ? "Creating account..." : "Create Account"}
+          </button>
+        </form>
+        <p className={styles.footer}>
+          Already have an account? <Link to="/login">Sign in</Link>
+        </p>
+      </section>
+    </div>
   );
 }
 

@@ -1,14 +1,17 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { validateEmail, validatePassword } from "../../utils/validation";
+import { login } from "../../services/authService";
 import styles from "./auth.module.css";
 
 function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!validateEmail(form.email)) {
@@ -21,44 +24,75 @@ function LoginPage() {
       return;
     }
 
-    // TODO: Replace with real API call
-    // For now, fake login with localStorage
-    localStorage.setItem("token", "fake-jwt-token");
-    localStorage.setItem("userName", form.email.split("@")[0]);
-    localStorage.setItem("userRole", "researcher");
+    setLoading(true);
     setError("");
-    navigate("/dashboard");
+
+    try {
+      const result = await login(form);
+      const role = result?.roles?.[0]?.toLowerCase();
+      navigate(role === "admin" ? "/admin" : "/dashboard", { replace: true });
+    } catch (err) {
+      const data = err.response?.data;
+      const firstValidationError = data?.errors
+        ? Object.values(data.errors).flat()[0]
+        : null;
+      const msg =
+        firstValidationError ||
+        data?.message ||
+        err.message ||
+        "Login failed. Please check your credentials.";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <section className={styles.container}>
-      <h1>Login</h1>
-      <form className={styles.form} onSubmit={handleSubmit} noValidate>
-        <label htmlFor="login-email">Email</label>
-        <input
-          id="login-email"
-          className={styles.input}
-          type="email"
-          value={form.email}
-          onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
-        />
-        <label htmlFor="login-password">Password</label>
-        <input
-          id="login-password"
-          className={styles.input}
-          type="password"
-          value={form.password}
-          onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
-        />
-        {error && <p className={styles.error}>{error}</p>}
-        <button type="submit" className={styles.button}>
-          Sign In
-        </button>
-      </form>
-      <p style={{ marginTop: "16px" }}>
-        Don't have an account? <Link to="/register">Register</Link>
-      </p>
-    </section>
+    <div className={styles.wrapper}>
+      <section className={styles.container}>
+        <div className={styles.logo}>ScholarTrend</div>
+        <p className={styles.subtitle}>Academic Research Intelligence</p>
+        <h1 className={styles.heading}>Welcome Back</h1>
+        {location.state?.message && (
+          <p className={styles.success}>{location.state.message}</p>
+        )}
+        <form className={styles.form} onSubmit={handleSubmit} noValidate>
+          <div className={styles.fieldGroup}>
+            <label htmlFor="login-email" className={styles.label}>Email Address</label>
+            <input
+              id="login-email"
+              className={styles.input}
+              type="email"
+              placeholder="you@university.edu"
+              autoComplete="email"
+              required
+              value={form.email}
+              onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
+            />
+          </div>
+          <div className={styles.fieldGroup}>
+            <label htmlFor="login-password" className={styles.label}>Password</label>
+            <input
+              id="login-password"
+              className={styles.input}
+              type="password"
+              autoComplete="current-password"
+              required
+              placeholder="••••••••"
+              value={form.password}
+              onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
+            />
+          </div>
+          {error && <p className={styles.error}>{error}</p>}
+          <button type="submit" className={styles.button} disabled={loading}>
+            {loading ? "Signing in..." : "Sign In"}
+          </button>
+        </form>
+        <p className={styles.footer}>
+          Don&apos;t have an account? <Link to="/register">Create one</Link>
+        </p>
+      </section>
+    </div>
   );
 }
 

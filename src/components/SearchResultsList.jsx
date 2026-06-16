@@ -3,7 +3,11 @@ import styles from './SearchResultsList.module.css'
 
 function SearchResultsList({ papers }) {
   if (!papers.length) {
-    return <p className={styles.empty}>No papers found for the current criteria.</p>
+    return (
+      <div className={styles.emptyState}>
+        <p className={styles.emptyText}>No papers found for the current criteria.</p>
+      </div>
+    )
   }
 
   return (

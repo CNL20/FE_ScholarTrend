@@ -1,19 +1,158 @@
+/* ═══════════════════════════════════
+   PaperCard — Clean Light Theme
+   ═══════════════════════════════════ */
+
 .card {
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-  padding: 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 1.5rem;
+  transition: var(--transition);
+}
+
+.card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border-hover);
+}
+
+/* ── Header row ── */
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
 }
 
 .title {
   margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.4;
+  flex: 1;
 }
 
-.meta {
-  color: #6b7280;
-  margin: 0.5rem 0;
+.title a {
+  color: var(--color-text);
+  transition: var(--transition);
 }
 
+.title a:hover {
+  color: var(--color-brand-light);
+}
+
+.yearBadge {
+  flex-shrink: 0;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-brand);
+  background: var(--color-brand-bg);
+  border: 1px solid var(--color-brand-border);
+  line-height: 1.4;
+}
+
+/* ── Authors ── */
+.authors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+
+.authorPill {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: var(--color-surface-hover);
+  border: 1px solid var(--color-border);
+  transition: var(--transition);
+}
+
+.authorPill:hover {
+  color: var(--color-text);
+  background: #e2e8f0;
+  border-color: var(--color-border-hover);
+}
+
+/* ── Journal ── */
+.metadata {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.8rem;
+  margin-bottom: 0.7rem;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+.metadata > *:not(:last-child)::after {
+  margin-left: 0.8rem;
+  color: var(--color-border-hover);
+  content: '•';
+}
+
+.journal {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-brand-light);
+  font-style: italic;
+}
+
+.doiLink {
+  color: var(--color-brand);
+  font-weight: 700;
+}
+
+.doiLink:hover {
+  text-decoration: underline;
+}
+
+/* ── Abstract ── */
 .abstract {
   margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  line-height: 1.65;
+}
+
+.keywords {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.9rem;
+}
+
+.keyword {
+  padding: 0.2rem 0.55rem;
+  border: 1px solid #dbe4ef;
+  border-radius: 999px;
+  background: #f8fafc;
+  color: var(--color-text-secondary);
+  font-size: 0.68rem;
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.keyword:hover {
+  border-color: var(--color-brand-border);
+  background: var(--color-brand-bg);
+  color: var(--color-brand);
+}
+
+@media (max-width: 520px) {
+  .card {
+    padding: 1.1rem;
+  }
+
+  .header {
+    flex-direction: column;
+  }
 }

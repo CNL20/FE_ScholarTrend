@@ -1,71 +1,169 @@
+import { useEffect, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
+import { getUnreadNotificationCount } from "../services/notificationService";
+import { getNavItems, ROLES } from "../utils/roles";
 import styles from "./layout.module.css";
-
-const navItems = [
-  { to: "/", label: "Home" },
-  { to: "/dashboard", label: "Dashboard" },
-  { to: "/search", label: "Search" },
-  { to: "/trends", label: "Trends" },
-  { to: "/bookmarks", label: "Bookmarks" },
-  { to: "/following", label: "Following" },
-  { to: "/notifications", label: "Notifications" },
-];
 
 function Layout() {
   const token = localStorage.getItem("token");
   const userName = localStorage.getItem("userName");
+  const userRole = localStorage.getItem("userRole");
+  const userId = localStorage.getItem("userId");
+  const avatarStorageKey = userId ? `profileAvatar:${userId}` : "";
+  const [userAvatar, setUserAvatar] = useState(
+    avatarStorageKey ? localStorage.getItem(avatarStorageKey) || "" : "",
+  );
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+
+  const navItems = getNavItems(token ? userRole : null);
+
+  useEffect(() => {
+    const handleAvatarUpdated = (event) => {
+      if (event.detail?.userId === userId) {
+        setUserAvatar(event.detail.image || "");
+      }
+    };
+
+    window.addEventListener("profile-avatar-updated", handleAvatarUpdated);
+    return () => window.removeEventListener("profile-avatar-updated", handleAvatarUpdated);
+  }, [userId]);
+
+  useEffect(() => {
+    const canViewNotifications =
+      token && [ROLES.RESEARCHER, ROLES.ADMIN].includes(userRole);
+
+    if (!canViewNotifications) {
+      return undefined;
+    }
+
+    let active = true;
+    const refreshUnreadCount = async () => {
+      try {
+        const count = await getUnreadNotificationCount();
+        if (active) setUnreadNotifications(count);
+      } catch {
+        if (active) setUnreadNotifications(0);
+      }
+    };
+
+    refreshUnreadCount();
+    window.addEventListener("focus", refreshUnreadCount);
+    window.addEventListener("notifications-updated", refreshUnreadCount);
+
+    return () => {
+      active = false;
+      window.removeEventListener("focus", refreshUnreadCount);
+      window.removeEventListener("notifications-updated", refreshUnreadCount);
+    };
+  }, [token, userRole]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
     localStorage.removeItem("userRole");
     localStorage.removeItem("userName");
+    localStorage.removeItem("userId");
     window.location.href = "/";
   };
 
+  const getRoleLabel = (role) => {
+    switch (role) {
+      case ROLES.ADMIN:
+        return "Admin";
+      case ROLES.RESEARCHER:
+        return "Researcher";
+      case ROLES.LECTURER_STUDENT:
+        return "Lecturer / Student";
+      default:
+        return "";
+    }
+  };
+
   return (
-    <div>
+    <div className={styles.wrapper}>
       <header className={styles.header}>
-        <div className={styles.brand}>ScholarTrend</div>
-        <nav className={styles.nav}>
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                isActive ? styles.active : styles.link
-              }
-            >
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
-        <div className={styles.authActions}>
-          {token ? (
-            <>
-              <span className={styles.userName}>{userName}</span>
-              <button
-                type="button"
-                className={styles.button}
-                onClick={handleLogout}
+        <div className={styles.headerInner}>
+          <NavLink to="/" className={styles.brand}>
+            <span className={styles.brandText}>ScholarTrend</span>
+          </NavLink>
+
+          <nav className={styles.nav}>
+            {navItems.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.to === "/"}
+                className={({ isActive }) =>
+                  `${styles.link} ${isActive ? styles.active : ""}`
+                }
               >
-                Logout
-              </button>
-            </>
-          ) : (
-            <>
-              <NavLink to="/login" className={styles.link}>
-                Login
+                <span className={styles.navLabel}>{item.label}</span>
+                {item.to === "/notifications" && unreadNotifications > 0 && (
+                  <span
+                    className={styles.notificationBadge}
+                    aria-label={`${unreadNotifications} unread notifications`}
+                  >
+                    {unreadNotifications > 99 ? "99+" : unreadNotifications}
+                  </span>
+                )}
               </NavLink>
-              <NavLink to="/register" className={styles.link}>
-                Register
-              </NavLink>
-            </>
-          )}
+            ))}
+          </nav>
+
+          <div className={styles.authActions}>
+            {token ? (
+              <>
+                <div className={styles.userGreeting}>
+                  <span className={styles.userAvatar}>
+                    {userAvatar ? (
+                      <img src={userAvatar} alt="" />
+                    ) : (
+                      userName ? userName.charAt(0).toUpperCase() : "U"
+                    )}
+                  </span>
+                  <div className={styles.userInfo}>
+                    <span className={styles.userName}>{userName}</span>
+                    {userRole && (
+                      <span className={styles.userRole}>
+                        {getRoleLabel(userRole)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className={styles.logoutBtn}
+                  onClick={handleLogout}
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <NavLink to="/login" className={styles.loginBtn}>
+                  Login
+                </NavLink>
+                <NavLink to="/register" className={styles.registerBtn}>
+                  Register
+                </NavLink>
+              </>
+            )}
+          </div>
         </div>
       </header>
+
       <main className={styles.main}>
         <Outlet />
       </main>
+
+      <footer className={styles.footer}>
+        <div className={styles.footerInner}>
+          <span className={styles.footerBrand}>ScholarTrend</span>
+          <span className={styles.footerCopy}>
+            © {new Date().getFullYear()} ScholarTrend. Built for researchers.
+          </span>
+        </div>
+      </footer>
     </div>
   );
 }
