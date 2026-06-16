@@ -128,3 +128,13 @@ export async function followPaper(paperId) {
   const result = unwrapResponse(response, 'Failed to follow paper.')
   return normalizeFollow(result, 'Paper')
 }
+
+export async function unfollowPaper(paperId) {
+  const normalizedPaperId = Number(paperId)
+  if (!Number.isInteger(normalizedPaperId) || normalizedPaperId <= 0) {
+    throw new Error('Invalid paper id.')
+  }
+
+  const { data: response } = await api.delete(`/follows/papers/${normalizedPaperId}`)
+  return unwrapResponse(response, 'Failed to unfollow paper.')
+}

@@ -39,10 +39,14 @@ function SearchResultsList({ papers }) {
     }
   }, [hasToken])
 
-  const handleFollowSuccess = (paperId) => {
+  const handleFollowChange = (paperId, nextIsFollowing) => {
     setFollowedPaperIds((prev) => {
       const next = new Set(prev)
-      next.add(Number(paperId))
+      if (nextIsFollowing) {
+        next.add(Number(paperId))
+      } else {
+        next.delete(Number(paperId))
+      }
       return next
     })
   }
@@ -63,7 +67,7 @@ function SearchResultsList({ papers }) {
           paper={paper}
           canFollow={hasToken}
           isFollowing={followedPaperIds.has(Number(paper.id))}
-          onFollowSuccess={handleFollowSuccess}
+          onFollowChange={handleFollowChange}
         />
       ))}
     </div>

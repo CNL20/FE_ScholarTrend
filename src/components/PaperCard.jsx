@@ -1,23 +1,32 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { followPaper } from '../services/followService'
+import { followPaper, unfollowPaper } from '../services/followService'
 import styles from './PaperCard.module.css'
 
-function PaperCard({ paper, canFollow = false, isFollowing = false, onFollowSuccess }) {
+function PaperCard({ paper, canFollow = false, isFollowing = false, onFollowChange }) {
   const keywords = paper.keywords ?? []
   const [followLoading, setFollowLoading] = useState(false)
   const [followError, setFollowError] = useState('')
 
-  const handleFollow = async () => {
-    if (!paper?.id || isFollowing || followLoading) return
+  const handleFollowToggle = async () => {
+    if (!paper?.id || followLoading) return
 
     setFollowLoading(true)
     setFollowError('')
     try {
-      await followPaper(paper.id)
-      onFollowSuccess?.(paper.id)
+      if (isFollowing) {
+        await unfollowPaper(paper.id)
+        onFollowChange?.(paper.id, false)
+      } else {
+        await followPaper(paper.id)
+        onFollowChange?.(paper.id, true)
+      }
     } catch (err) {
-      setFollowError(err.response?.data?.message || err.message || 'Failed to follow paper.')
+      setFollowError(
+        err.response?.data?.message ||
+          err.message ||
+          `Failed to ${isFollowing ? 'unfollow' : 'follow'} paper.`,
+      )
     } finally {
       setFollowLoading(false)
     }
@@ -84,10 +93,12 @@ function PaperCard({ paper, canFollow = false, isFollowing = false, onFollowSucc
           <button
             type="button"
             className={`${styles.followButton} ${isFollowing ? styles.following : ''}`}
-            onClick={handleFollow}
-            disabled={followLoading || isFollowing}
+            onClick={handleFollowToggle}
+            disabled={followLoading}
           >
-            {followLoading ? 'Following...' : isFollowing ? 'Following' : 'Follow paper'}
+            {followLoading
+              ? isFollowing ? 'Unfollowing...' : 'Following...'
+              : isFollowing ? 'Unfollow paper' : 'Follow paper'}
           </button>
         ) : (
           <Link to="/login" className={styles.followButton}>

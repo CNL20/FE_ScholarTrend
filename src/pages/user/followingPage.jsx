@@ -7,6 +7,7 @@ import {
   getFollowedTopics,
   unfollowAuthor,
   unfollowJournal,
+  unfollowPaper,
   unfollowTopic,
 } from '../../services/followService'
 import Skeleton from '../../components/Skeleton'
@@ -68,6 +69,15 @@ function FollowingPage() {
     try {
       await unfollowAuthor(authorId)
       setAuthors((prev) => prev.filter((a) => (a.id ?? a) !== authorId))
+    } catch {
+      // silently fail
+    }
+  }
+
+  const handleUnfollowPaper = async (paperId) => {
+    try {
+      await unfollowPaper(paperId)
+      setPapers((prev) => prev.filter((p) => (p.id ?? p) !== paperId))
     } catch {
       // silently fail
     }
@@ -169,6 +179,9 @@ function FollowingPage() {
               >
                 {name}
               </Link>
+              <button type="button" className={styles.unfollowBtn} onClick={() => handleUnfollowPaper(id)}>
+                Unfollow
+              </button>
             </li>
           )
         })}
