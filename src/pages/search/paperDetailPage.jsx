@@ -2,6 +2,11 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getPaperById } from '../../services/paperService'
 import { addBookmark, removeBookmark } from '../../services/bookmarkService'
+import {
+  followPaper,
+  getFollowedPapers,
+  unfollowPaper,
+} from '../../services/followService'
 import Skeleton from '../../components/Skeleton'
 import styles from './paperDetailPage.module.css'
 
@@ -33,15 +38,32 @@ function PaperDetailPage() {
   const [bookmarked, setBookmarked] = useState(false)
   const [bookmarkLoading, setBookmarkLoading] = useState(false)
   const [bookmarkError, setBookmarkError] = useState('')
+  const [isFollowing, setIsFollowing] = useState(false)
+  const [followLoading, setFollowLoading] = useState(false)
+  const [followError, setFollowError] = useState('')
 
   useEffect(() => {
     async function fetchPaper() {
       setLoading(true)
       setError('')
+      setFollowError('')
+      setIsFollowing(false)
       try {
+        const hasToken = Boolean(localStorage.getItem('token'))
         const result = await getPaperById(paperId)
         setPaper(result)
         setBookmarked(result.isBookmarked)
+
+        if (hasToken) {
+          try {
+            const followedPapers = await getFollowedPapers()
+            setIsFollowing(
+              followedPapers.some((item) => Number(item.id) === Number(result.id)),
+            )
+          } catch {
+            // Ignore follow-status lookup errors so paper details still render.
+          }
+        }
       } catch (err) {
         setError(err.response?.data?.message || err.message || 'Failed to load paper details')
       } finally {
@@ -51,6 +73,30 @@ function PaperDetailPage() {
 
     fetchPaper()
   }, [paperId])
+
+  const handleFollowToggle = async () => {
+    if (!paper?.id || followLoading) return
+
+    setFollowLoading(true)
+    setFollowError('')
+    try {
+      if (isFollowing) {
+        await unfollowPaper(paper.id)
+        setIsFollowing(false)
+      } else {
+        await followPaper(paper.id)
+        setIsFollowing(true)
+      }
+    } catch (err) {
+      setFollowError(
+        err.response?.data?.message ||
+          err.message ||
+          `Failed to ${isFollowing ? 'unfollow' : 'follow'} paper.`,
+      )
+    } finally {
+      setFollowLoading(false)
+    }
+  }
 
   const handleBookmarkToggle = async () => {
     setBookmarkLoading(true)
@@ -137,6 +183,22 @@ function PaperDetailPage() {
         </div>
 
         <div className={styles.actions}>
+          {localStorage.getItem('token') ? (
+            <button
+              type="button"
+              className={`${styles.followButton} ${isFollowing ? styles.followingButton : ''}`}
+              onClick={handleFollowToggle}
+              disabled={followLoading}
+            >
+              {followLoading
+                ? isFollowing ? 'Unfollowing...' : 'Following...'
+                : isFollowing ? 'Unfollow paper' : 'Follow paper'}
+            </button>
+          ) : (
+            <Link className={styles.followButton} to="/login">
+              Sign in to follow
+            </Link>
+          )}
           <button
             type="button"
             className={`${styles.bookmarkButton} ${bookmarked ? styles.bookmarked : ''}`}
@@ -159,6 +221,7 @@ function PaperDetailPage() {
             </a>
           )}
         </div>
+        {followError && <p className={styles.followError}>{followError}</p>}
         {bookmarkError && <p className={styles.bookmarkError}>{bookmarkError}</p>}
       </header>
 

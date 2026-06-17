@@ -44,15 +44,54 @@
   font-size: 0.76rem;
 }
 
-.primaryLink {
+.heroActions {
+  display: flex;
   flex-shrink: 0;
+  gap: 0.7rem;
+}
+
+.followButton,
+.primaryLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 0.68rem 0.9rem;
+  border: 1px solid transparent;
   border-radius: 9px;
-  background: var(--color-brand);
-  color: #ffffff;
   font-size: 0.75rem;
   font-weight: 750;
+  text-decoration: none;
+}
+
+.followButton {
+  background: #ffffff;
+  border-color: #bfdbfe;
+  color: var(--color-brand);
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(30, 64, 175, 0.08);
+}
+
+.followButton:disabled {
+  cursor: default;
+  opacity: 0.8;
+}
+
+.followingButton {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.primaryLink {
+  background: var(--color-brand);
+  color: #ffffff;
   box-shadow: 0 6px 16px rgba(30, 64, 175, 0.18);
+}
+
+.followError {
+  margin: -0.6rem 0 1rem;
+  color: var(--color-danger);
+  font-size: 0.76rem;
 }
 
 .statsGrid {
@@ -138,6 +177,12 @@
     flex-direction: column;
   }
 
+  .heroActions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .followButton,
   .primaryLink {
     width: 100%;
     text-align: center;

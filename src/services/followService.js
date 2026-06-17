@@ -82,3 +82,59 @@ export async function unfollowJournal(journalId) {
   const { data: response } = await api.delete(`/follows/journals/${normalizedJournalId}`)
   return unwrapResponse(response, 'Failed to unfollow journal.')
 }
+
+export async function getFollowedAuthors() {
+  const { data: response } = await api.get('/follows/authors')
+  const result = unwrapResponse(response, 'Failed to load followed authors.')
+
+  return (Array.isArray(result) ? result : []).map((item) => normalizeFollow(item, 'Author'))
+}
+
+export async function followAuthor(authorId) {
+  const normalizedAuthorId = Number(authorId)
+  if (!Number.isInteger(normalizedAuthorId) || normalizedAuthorId <= 0) {
+    throw new Error('Invalid author id.')
+  }
+
+  const { data: response } = await api.post(`/follows/authors/${normalizedAuthorId}`)
+  const result = unwrapResponse(response, 'Failed to follow author.')
+  return normalizeFollow(result, 'Author')
+}
+
+export async function unfollowAuthor(authorId) {
+  const normalizedAuthorId = Number(authorId)
+  if (!Number.isInteger(normalizedAuthorId) || normalizedAuthorId <= 0) {
+    throw new Error('Invalid author id.')
+  }
+
+  const { data: response } = await api.delete(`/follows/authors/${normalizedAuthorId}`)
+  return unwrapResponse(response, 'Failed to unfollow author.')
+}
+
+export async function getFollowedPapers() {
+  const { data: response } = await api.get('/follows/papers')
+  const result = unwrapResponse(response, 'Failed to load followed papers.')
+
+  return (Array.isArray(result) ? result : []).map((item) => normalizeFollow(item, 'Paper'))
+}
+
+export async function followPaper(paperId) {
+  const normalizedPaperId = Number(paperId)
+  if (!Number.isInteger(normalizedPaperId) || normalizedPaperId <= 0) {
+    throw new Error('Invalid paper id.')
+  }
+
+  const { data: response } = await api.post(`/follows/papers/${normalizedPaperId}`)
+  const result = unwrapResponse(response, 'Failed to follow paper.')
+  return normalizeFollow(result, 'Paper')
+}
+
+export async function unfollowPaper(paperId) {
+  const normalizedPaperId = Number(paperId)
+  if (!Number.isInteger(normalizedPaperId) || normalizedPaperId <= 0) {
+    throw new Error('Invalid paper id.')
+  }
+
+  const { data: response } = await api.delete(`/follows/papers/${normalizedPaperId}`)
+  return unwrapResponse(response, 'Failed to unfollow paper.')
+}
