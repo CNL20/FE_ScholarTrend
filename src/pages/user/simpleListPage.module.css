@@ -47,6 +47,25 @@
   font-size: 0.86rem;
 }
 
+.followingHero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.totalBadge {
+  flex-shrink: 0;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--color-brand-border);
+  border-radius: var(--radius-md);
+  background: var(--color-brand-bg);
+  color: var(--color-brand);
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
 .summaryGrid {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -78,6 +97,168 @@
   color: var(--color-text);
   font-size: 1.55rem;
   line-height: 1;
+}
+
+.followingToolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.followTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.followTab,
+.followTabActive {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 36px;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: 0.76rem;
+  font-weight: 750;
+  transition: var(--transition);
+}
+
+.followTab:hover,
+.followTabActive {
+  border-color: var(--color-brand-border);
+  background: var(--color-brand-bg);
+  color: var(--color-brand);
+}
+
+.followTab span,
+.followTabActive span {
+  min-width: 22px;
+  padding: 0.08rem 0.35rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  color: inherit;
+  text-align: center;
+  font-size: 0.68rem;
+}
+
+.followingSearch {
+  display: grid;
+  flex: 0 0 260px;
+  gap: 0.35rem;
+}
+
+.followingSearch span {
+  color: var(--color-text-muted);
+  font-size: 0.68rem;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.followingSearch input {
+  min-height: 38px;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  outline: none;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.82rem;
+}
+
+.followingSearch input:focus {
+  border-color: var(--color-brand-light);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.followingList {
+  display: grid;
+  gap: 0.7rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.followingItem {
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  transition: var(--transition);
+}
+
+.followingItem:hover {
+  border-color: var(--color-border-hover);
+  background: var(--color-surface-hover);
+  box-shadow: var(--shadow-sm);
+}
+
+.followBadge {
+  width: fit-content;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: #f8fafc;
+  color: var(--color-text-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.followMain {
+  display: grid;
+  min-width: 0;
+  gap: 0.2rem;
+}
+
+.followLink {
+  overflow: hidden;
+  color: var(--color-text);
+  font-size: 0.92rem;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.followLink:hover {
+  color: var(--color-brand);
+}
+
+.followMeta {
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+}
+
+.emptyFollowing {
+  display: grid;
+  justify-items: center;
+  gap: 0.35rem;
+  padding: 2rem 1rem;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  background: #f8fafc;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.emptyFollowing strong {
+  color: var(--color-text);
+  font-size: 0.95rem;
+}
+
+.emptyFollowing p {
+  margin: 0;
+  font-size: 0.82rem;
 }
 
 .list {
@@ -150,6 +331,11 @@
 
 .unfollowBtn:hover {
   background: #fef2f2;
+}
+
+.unfollowBtn:disabled {
+  cursor: wait;
+  opacity: 0.6;
 }
 
 .markReadBtn {
@@ -414,9 +600,25 @@
   }
 
   .pageHeader,
-  .listToolbar {
+  .listToolbar,
+  .followingHero,
+  .followingToolbar {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .totalBadge,
+  .followingSearch {
+    width: 100%;
+  }
+
+  .followingItem {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .followLink {
+    white-space: normal;
   }
 
   .markReadBtn {

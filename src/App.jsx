@@ -136,9 +136,9 @@ function App() {
         {
           path: "following",
           element: (
-            <ProtectedRoute allowedRoles={[ROLES.RESEARCHER, ROLES.ADMIN]}>
+            <RequireAuth>
               <FollowingPage />
-            </ProtectedRoute>
+            </RequireAuth>
           ),
         },
         {

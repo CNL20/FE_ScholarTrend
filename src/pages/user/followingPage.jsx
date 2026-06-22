@@ -13,13 +13,76 @@ import {
 import Skeleton from '../../components/Skeleton'
 import styles from './simpleListPage.module.css'
 
+const FOLLOW_TYPES = [
+  { key: 'All', label: 'All', singular: 'Item' },
+  { key: 'Topic', label: 'Topics', singular: 'Topic' },
+  { key: 'Author', label: 'Authors', singular: 'Author' },
+  { key: 'Paper', label: 'Papers', singular: 'Paper' },
+  { key: 'Journal', label: 'Journals', singular: 'Journal' },
+]
+
+const FOLLOW_CONFIG = {
+  Topic: {
+    route: (id) => `/topics/${encodeURIComponent(id)}`,
+    unfollow: unfollowTopic,
+  },
+  Author: {
+    route: (id) => `/authors/id/${encodeURIComponent(id)}`,
+    unfollow: unfollowAuthor,
+  },
+  Paper: {
+    route: (id) => `/papers/${encodeURIComponent(id)}`,
+    unfollow: unfollowPaper,
+  },
+  Journal: {
+    route: (id) => `/journals/${encodeURIComponent(id)}`,
+    unfollow: unfollowJournal,
+  },
+}
+
+function normalizeFollowItem(item, type) {
+  const id = item.targetId ?? item.id ?? item
+  const fallbackName = `${type} ${id}`
+
+  return {
+    ...item,
+    id,
+    type,
+    name: item.name ?? item[type.toLowerCase()] ?? fallbackName,
+    followedAt: item.followedAt ?? null,
+  }
+}
+
+function formatFollowedAt(value) {
+  if (!value) return 'Followed recently'
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return 'Followed recently'
+
+  return `Followed ${new Intl.DateTimeFormat('en', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).format(date)}`
+}
+
+function sortByFollowedAt(items) {
+  return [...items].sort((a, b) => {
+    const firstTime = a.followedAt ? new Date(a.followedAt).getTime() : 0
+    const secondTime = b.followedAt ? new Date(b.followedAt).getTime() : 0
+
+    return secondTime - firstTime
+  })
+}
+
 function FollowingPage() {
-  const [topics, setTopics] = useState([])
-  const [journals, setJournals] = useState([])
-  const [authors, setAuthors] = useState([])
-  const [papers, setPapers] = useState([])
+  const [items, setItems] = useState([])
+  const [activeType, setActiveType] = useState('All')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [pendingKey, setPendingKey] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [actionError, setActionError] = useState('')
 
   useEffect(() => {
     async function fetchFollowing() {
@@ -30,56 +93,47 @@ function FollowingPage() {
           getFollowedAuthors(),
           getFollowedPapers(),
         ])
-        setTopics(topicsResult ?? [])
-        setJournals(journalsResult ?? [])
-        setAuthors(authorsResult ?? [])
-        setPapers(papersResult ?? [])
+
+        const mergedItems = [
+          ...(topicsResult ?? []).map((item) => normalizeFollowItem(item, 'Topic')),
+          ...(authorsResult ?? []).map((item) => normalizeFollowItem(item, 'Author')),
+          ...(papersResult ?? []).map((item) => normalizeFollowItem(item, 'Paper')),
+          ...(journalsResult ?? []).map((item) => normalizeFollowItem(item, 'Journal')),
+        ]
+
+        setItems(sortByFollowedAt(mergedItems))
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to load following data')
-        setTopics([])
-        setJournals([])
-        setAuthors([])
-        setPapers([])
+        setItems([])
       } finally {
         setLoading(false)
       }
     }
+
     fetchFollowing()
   }, [])
 
-  const handleUnfollowTopic = async (topicId) => {
-    try {
-      await unfollowTopic(topicId)
-      setTopics((prev) => prev.filter((t) => (t.id ?? t) !== topicId))
-    } catch {
-      // silently fail
-    }
-  }
+  const handleUnfollow = async (item) => {
+    const config = FOLLOW_CONFIG[item.type]
+    if (!config) return
 
-  const handleUnfollowJournal = async (journalId) => {
-    try {
-      await unfollowJournal(journalId)
-      setJournals((prev) => prev.filter((j) => (j.id ?? j) !== journalId))
-    } catch {
-      // silently fail
-    }
-  }
+    const itemKey = `${item.type}-${item.id}`
+    setPendingKey(itemKey)
+    setActionError('')
 
-  const handleUnfollowAuthor = async (authorId) => {
     try {
-      await unfollowAuthor(authorId)
-      setAuthors((prev) => prev.filter((a) => (a.id ?? a) !== authorId))
-    } catch {
-      // silently fail
-    }
-  }
-
-  const handleUnfollowPaper = async (paperId) => {
-    try {
-      await unfollowPaper(paperId)
-      setPapers((prev) => prev.filter((p) => (p.id ?? p) !== paperId))
-    } catch {
-      // silently fail
+      await config.unfollow(item.id)
+      setItems((prev) => prev.filter((current) => (
+        current.type !== item.type || String(current.id) !== String(item.id)
+      )))
+    } catch (err) {
+      setActionError(
+        err.response?.data?.message ||
+          err.message ||
+          `Failed to unfollow ${item.type.toLowerCase()}.`,
+      )
+    } finally {
+      setPendingKey('')
     }
   }
 
@@ -95,27 +149,39 @@ function FollowingPage() {
   if (error) {
     return (
       <section className={styles.panel}>
-        <p>{error}</p>
+        <p className={styles.listError}>{error}</p>
       </section>
     )
   }
 
-  const totalFollowing = topics.length + authors.length + papers.length + journals.length
-  const summaryItems = [
-    { label: 'Total following', value: totalFollowing },
-    { label: 'Topics', value: topics.length },
-    { label: 'Authors', value: authors.length },
-    { label: 'Papers', value: papers.length },
-    { label: 'Journals', value: journals.length },
-  ]
+  const counts = FOLLOW_TYPES.reduce((result, type) => {
+    result[type.key] = type.key === 'All'
+      ? items.length
+      : items.filter((item) => item.type === type.key).length
+    return result
+  }, {})
+  const normalizedSearch = searchTerm.trim().toLowerCase()
+  const visibleItems = items.filter((item) => {
+    const matchesType = activeType === 'All' || item.type === activeType
+    const matchesSearch = !normalizedSearch ||
+      item.name.toLowerCase().includes(normalizedSearch) ||
+      item.type.toLowerCase().includes(normalizedSearch)
+
+    return matchesType && matchesSearch
+  })
+  const summaryItems = FOLLOW_TYPES.map((type) => ({
+    label: type.key === 'All' ? 'Total following' : type.label,
+    value: counts[type.key],
+  }))
 
   return (
     <section className={styles.panel}>
-      <div className={styles.pageHeader}>
+      <div className={styles.followingHero}>
         <div>
           <h1 className={styles.pageTitle}>My Following</h1>
-          <p className={styles.pageSubtitle}>See everything this user is following in one place.</p>
+          <p className={styles.pageSubtitle}>Everything this user follows is grouped here.</p>
         </div>
+        <span className={styles.totalBadge}>{counts.All} followed</span>
       </div>
 
       <section className={styles.summaryGrid} aria-label="Following summary">
@@ -127,113 +193,66 @@ function FollowingPage() {
         ))}
       </section>
 
-      {/* Topics Section */}
-      <h2 className={styles.pageTitle} style={{ fontSize: '1.1rem', marginTop: '1rem' }}>Topics</h2>
-      <ul className={styles.list}>
-        {topics.length === 0 && (
-          <li className={styles.listItem}>
-            <span className={styles.listItemText}>No followed topics yet.</span>
-          </li>
-        )}
-        {topics.map((item) => {
-          const id = item.targetId ?? item.id ?? item
-          const name = item.name ?? item.topic ?? String(item)
-          return (
-            <li key={id} className={styles.listItem}>
-              <Link
-                className={styles.listItemText}
-                to={`/topics/${encodeURIComponent(id)}`}
-              >
-                {name}
-              </Link>
-              <button type="button" className={styles.unfollowBtn} onClick={() => handleUnfollowTopic(id)}>
-                Unfollow
-              </button>
-            </li>
-          )
-        })}
-      </ul>
+      <div className={styles.followingToolbar}>
+        <div className={styles.followTabs} aria-label="Filter followed items">
+          {FOLLOW_TYPES.map((type) => (
+            <button
+              key={type.key}
+              type="button"
+              className={activeType === type.key ? styles.followTabActive : styles.followTab}
+              onClick={() => setActiveType(type.key)}
+            >
+              {type.label}
+              <span>{counts[type.key]}</span>
+            </button>
+          ))}
+        </div>
+        <label className={styles.followingSearch} htmlFor="following-search">
+          <span>Search</span>
+          <input
+            id="following-search"
+            type="search"
+            placeholder="Search followed items"
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+          />
+        </label>
+      </div>
 
-      {/* Authors Section */}
-      <h2 className={styles.pageTitle} style={{ fontSize: '1.1rem', marginTop: '1.5rem' }}>Authors</h2>
-      <ul className={styles.list}>
-        {authors.length === 0 && (
-          <li className={styles.listItem}>
-            <span className={styles.listItemText}>No followed authors yet.</span>
-          </li>
-        )}
-        {authors.map((item) => {
-          const id = item.targetId ?? item.id ?? item
-          const name = item.name ?? item.author ?? String(item)
-          return (
-            <li key={id} className={styles.listItem}>
-              <Link
-                className={styles.listItemText}
-                to={`/authors/id/${encodeURIComponent(id)}`}
-              >
-                {name}
-              </Link>
-              <button type="button" className={styles.unfollowBtn} onClick={() => handleUnfollowAuthor(id)}>
-                Unfollow
-              </button>
-            </li>
-          )
-        })}
-      </ul>
+      {actionError && <p className={styles.listError}>{actionError}</p>}
 
-      {/* Papers Section */}
-      <h2 className={styles.pageTitle} style={{ fontSize: '1.1rem', marginTop: '1.5rem' }}>Papers</h2>
-      <ul className={styles.list}>
-        {papers.length === 0 && (
-          <li className={styles.listItem}>
-            <span className={styles.listItemText}>No followed papers yet.</span>
-          </li>
-        )}
-        {papers.map((item) => {
-          const id = item.targetId ?? item.id ?? item
-          const name = item.name ?? item.paper ?? String(item)
-          return (
-            <li key={id} className={styles.listItem}>
-              <Link
-                className={styles.listItemText}
-                to={`/papers/${encodeURIComponent(id)}`}
-              >
-                {name}
-              </Link>
-              <button type="button" className={styles.unfollowBtn} onClick={() => handleUnfollowPaper(id)}>
-                Unfollow
-              </button>
-            </li>
-          )
-        })}
-      </ul>
-
-      {/* Journals Section */}
-      <h2 className={styles.pageTitle} style={{ fontSize: '1.1rem', marginTop: '1.5rem' }}>Journals</h2>
-      <ul className={styles.list}>
-        {journals.length === 0 && (
-          <li className={styles.listItem}>
-            <span className={styles.listItemText}>No followed journals yet.</span>
-          </li>
-        )}
-        {journals.map((item) => {
-          const id = item.targetId ?? item.id ?? item
-          const name = item.name ?? item.journal ?? String(item)
-          return (
-            <li key={id} className={styles.listItem}>
-              <Link
-                className={styles.listItemText}
-                to={`/journals/${encodeURIComponent(id)}`}
-              >
-                {name}
-              </Link>
-              <button type="button" className={styles.unfollowBtn} onClick={() => handleUnfollowJournal(id)}>
-                Unfollow
-              </button>
-            </li>
-          )
-        })}
-      </ul>
+      {visibleItems.length === 0 ? (
+        <div className={styles.emptyFollowing}>
+          <strong>No followed items found</strong>
+          <p>Try another filter or search term.</p>
+        </div>
+      ) : (
+        <ul className={styles.followingList}>
+          {visibleItems.map((item) => {
+            const config = FOLLOW_CONFIG[item.type]
+            const itemKey = `${item.type}-${item.id}`
+            return (
+              <li key={itemKey} className={styles.followingItem}>
+                <span className={styles.followBadge}>{item.type}</span>
+                <div className={styles.followMain}>
+                  <Link className={styles.followLink} to={config.route(item.id)}>
+                    {item.name}
+                  </Link>
+                  <span className={styles.followMeta}>{formatFollowedAt(item.followedAt)}</span>
+                </div>
+                <button
+                  type="button"
+                  className={styles.unfollowBtn}
+                  onClick={() => handleUnfollow(item)}
+                  disabled={pendingKey === itemKey}
+                >
+                  {pendingKey === itemKey ? 'Removing...' : 'Unfollow'}
+                </button>
+              </li>
+            )
+          })}
+        </ul>
+      )}
     </section>
   )
 }

@@ -19,10 +19,10 @@ export const PERMISSIONS = {
   public: ['/', '/login', '/register', '/search', '/search/results'],
 
   // Cần đăng nhập
-  authenticated: ['/dashboard', '/papers'],
+  authenticated: ['/dashboard', '/papers', '/following'],
 
   // Chỉ Researcher + Admin
-  researcherOnly: ['/following', '/notifications'],
+  researcherOnly: ['/notifications'],
 
   // Chỉ Admin
   adminOnly: ['/admin'],

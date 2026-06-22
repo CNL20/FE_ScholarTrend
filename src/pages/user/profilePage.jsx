@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { getMe, updateProfile, changePassword } from '../../services/authService'
 import Skeleton from '../../components/Skeleton'
 import styles from './profilePage.module.css'
@@ -272,10 +273,15 @@ function ProfilePage() {
             Keep your academic identity and account details up to date.
           </p>
         </div>
-        <span className={styles.statusBadge}>
-          <span className={styles.statusDot} />
-          Active account
-        </span>
+        <div className={styles.headerActions}>
+          <Link className={styles.followingButton} to="/following">
+            Following
+          </Link>
+          <span className={styles.statusBadge}>
+            <span className={styles.statusDot} />
+            Active account
+          </span>
+        </div>
       </header>
 
       {error && <div className={styles.alertError}>{error}</div>}

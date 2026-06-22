@@ -161,6 +161,37 @@
   opacity: 0.72;
 }
 
+.googleTokenForm {
+  display: grid;
+  width: 100%;
+  gap: 0.6rem;
+  text-align: left;
+}
+
+.googleTokenButton {
+  width: 100%;
+  padding: 0.68rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: #ffffff;
+  color: var(--color-text);
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 700;
+  transition: var(--transition);
+}
+
+.googleTokenButton:hover:not(:disabled) {
+  border-color: var(--color-brand-light);
+  color: var(--color-brand);
+  box-shadow: var(--shadow-sm);
+}
+
+.googleTokenButton:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
 .helperText {
   margin: 0;
   color: var(--color-text-muted);
