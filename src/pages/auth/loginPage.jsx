@@ -37,10 +37,24 @@ function LoginPage() {
   const location = useLocation();
   const googleButtonRef = useRef(null);
   const [form, setForm] = useState({ email: "", password: "" });
+  const [googleToken, setGoogleToken] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [googleReady, setGoogleReady] = useState(false);
+
+  const navigateAfterAuth = (result) => {
+    const role = result?.roles?.[0]?.toLowerCase();
+    navigate(role === "admin" ? "/admin" : "/dashboard", { replace: true });
+  };
+
+  const getAuthErrorMessage = (err, fallback) => {
+    const data = err.response?.data;
+    const firstValidationError = data?.errors
+      ? Object.values(data.errors).flat()[0]
+      : null;
+    return firstValidationError || data?.message || err.message || fallback;
+  };
 
   useEffect(() => {
     let active = true;
@@ -80,16 +94,7 @@ function LoginPage() {
             } catch (err) {
               if (!active) return;
 
-              const data = err.response?.data;
-              const firstValidationError = data?.errors
-                ? Object.values(data.errors).flat()[0]
-                : null;
-              const msg =
-                firstValidationError ||
-                data?.message ||
-                err.message ||
-                "Google login failed. Please try again.";
-              setError(msg);
+              setError(getAuthErrorMessage(err, "Google login failed. Please try again."));
             } finally {
               if (active) {
                 setGoogleLoading(false);
@@ -142,21 +147,32 @@ function LoginPage() {
 
     try {
       const result = await login(form);
-      const role = result?.roles?.[0]?.toLowerCase();
-      navigate(role === "admin" ? "/admin" : "/dashboard", { replace: true });
+      navigateAfterAuth(result);
     } catch (err) {
-      const data = err.response?.data;
-      const firstValidationError = data?.errors
-        ? Object.values(data.errors).flat()[0]
-        : null;
-      const msg =
-        firstValidationError ||
-        data?.message ||
-        err.message ||
-        "Login failed. Please check your credentials.";
-      setError(msg);
+      setError(getAuthErrorMessage(err, "Login failed. Please check your credentials."));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleTokenSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!googleToken.trim()) {
+      setError("Please enter a Google ID token.");
+      return;
+    }
+
+    setGoogleLoading(true);
+    setError("");
+
+    try {
+      const result = await googleLogin(googleToken);
+      navigateAfterAuth(result);
+    } catch (err) {
+      setError(getAuthErrorMessage(err, "Google login failed. Please try again."));
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -218,9 +234,23 @@ function LoginPage() {
               )}
             </>
           ) : (
-            <p className={styles.helperText}>
-              Google Sign-In will appear after configuring <code>VITE_GOOGLE_CLIENT_ID</code>.
-            </p>
+            <form className={styles.googleTokenForm} onSubmit={handleGoogleTokenSubmit}>
+              <label htmlFor="google-id-token" className={styles.label}>Google ID Token</label>
+              <input
+                id="google-id-token"
+                className={styles.input}
+                type="text"
+                placeholder="Paste Google idToken"
+                value={googleToken}
+                onChange={(e) => setGoogleToken(e.target.value)}
+              />
+              <button type="submit" className={styles.googleTokenButton} disabled={googleLoading || loading}>
+                {googleLoading ? "Signing in with Google..." : "Sign in with Google token"}
+              </button>
+              <p className={styles.helperText}>
+                Configure <code>VITE_GOOGLE_CLIENT_ID</code> to show the real Google button.
+              </p>
+            </form>
           )}
         </div>
 
