@@ -96,8 +96,11 @@ export async function updateProfile({ fullName, institution, researchField }) {
 }
 
 export async function changePassword(data) {
-  const res = await api.put('/auth/change-password', data)
-  return res.data
+  const { data: response } = await api.post('/auth/change-password', data)
+  if (!response.success) {
+    throw new Error(response.message || 'Failed to change password.')
+  }
+  return response
 }
 
 export async function verifyEmail({ email, token }) {
