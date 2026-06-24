@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { validateEmail, validatePassword } from "../../utils/validation";
-import { googleLogin, login } from "../../services/authService";
+import { googleLogin, login, resendVerification } from "../../services/authService";
 import styles from "./auth.module.css";
 
 const GOOGLE_SCRIPT_ID = "google-identity-services";
@@ -42,6 +42,9 @@ function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [googleReady, setGoogleReady] = useState(false);
+  const [showResend, setShowResend] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState("");
 
   const navigateAfterAuth = (result) => {
     const role = result?.roles?.[0]?.toLowerCase();
@@ -144,12 +147,19 @@ function LoginPage() {
 
     setLoading(true);
     setError("");
+    setResendSuccess("");   // Xóa thông báo xanh cũ
+    setShowResend(false);   // Ẩn nút Resend cũ
 
     try {
       const result = await login(form);
       navigateAfterAuth(result);
     } catch (err) {
-      setError(getAuthErrorMessage(err, "Login failed. Please check your credentials."));
+      const msg = getAuthErrorMessage(err, "Login failed. Please check your credentials.");
+      setError(msg);
+      // Nếu lỗi liên quan đến email chưa xác nhận → hiện nút resend
+      if (msg.toLowerCase().includes("confirm your email") || msg.toLowerCase().includes("verify")) {
+        setShowResend(true);
+      }
     } finally {
       setLoading(false);
     }
@@ -213,6 +223,39 @@ function LoginPage() {
             />
           </div>
           {error && <p className={styles.error}>{error}</p>}
+          {resendSuccess && <p className={styles.success}>{resendSuccess}</p>}
+          {showResend && !resendSuccess && (
+            <div style={{ marginTop: "0.25rem" }}>
+              <p style={{ margin: "0 0 0.5rem", color: "var(--color-text-muted)", fontSize: "0.8125rem" }}>
+                Didn't receive the email?
+              </p>
+              <button
+                type="button"
+                className={styles.button}
+                style={{ background: "var(--color-surface)", color: "var(--color-brand)", border: "1px solid var(--color-brand-border)", marginTop: 0 }}
+                disabled={resendLoading}
+                onClick={async () => {
+                  if (!form.email) {
+                    setError("Please enter your email address first.");
+                    return;
+                  }
+                  setResendLoading(true);
+                  setError("");
+                  try {
+                    await resendVerification({ email: form.email });
+                    setResendSuccess("Verification email sent! Please check your inbox.");
+                    setShowResend(false);
+                  } catch (err) {
+                    setError(err.message || "Failed to resend. Please try again.");
+                  } finally {
+                    setResendLoading(false);
+                  }
+                }}
+              >
+                {resendLoading ? "Sending..." : "Resend Verification Email"}
+              </button>
+            </div>
+          )}
           <button type="submit" className={styles.button} disabled={loading || googleLoading}>
             {loading ? "Signing in..." : "Sign In"}
           </button>

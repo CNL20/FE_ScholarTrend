@@ -44,12 +44,15 @@ function RegisterPage() {
     setError("");
 
     try {
-      const result = await register(form);
-      navigate(result?.token ? "/dashboard" : "/login", {
+      // Gọi API đăng ký
+      await register(form);
+      // Sau khi đăng ký thành công, luôn redirect về login
+      // Yêu cầu người dùng xác nhận email trước khi đăng nhập
+      navigate("/login", {
         replace: true,
-        state: result?.token
-          ? undefined
-          : { message: "Account created successfully. Please sign in." },
+        state: {
+          message: "Account created! Please check your email to verify your account before signing in.",
+        },
       });
     } catch (err) {
       const data = err.response?.data;

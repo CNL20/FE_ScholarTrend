@@ -29,6 +29,9 @@ import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdminUserManagementPage from "./pages/admin/AdminUserManagementPage";
 import AdminApiConfigPage from "./pages/admin/AdminApiConfigPage";
 
+// Verify Email
+import VerifyEmailPage from "./pages/auth/verifyEmailPage";
+
 // Error Pages
 import NotFoundPage from "./pages/notFoundPage";
 
@@ -65,6 +68,7 @@ function App() {
     // ─── Public ───
     { path: "/login", element: <LoginPage /> },
     { path: "/register", element: <RegisterPage /> },
+    { path: "/verify-email", element: <VerifyEmailPage /> },
 
     // ─── Admin (chỉ Admin) ───
     {

@@ -100,6 +100,32 @@ export async function changePassword(data) {
   return res.data
 }
 
+export async function verifyEmail({ email, token }) {
+  const { data: response } = await api.post('/auth/verify-email', {
+    email,
+    token,
+  })
+
+  if (!response.success) {
+    throw new Error(response.message || 'Email verification failed.')
+  }
+
+  return response
+}
+
+// Gửi lại email xác nhận
+export async function resendVerification({ email }) {
+  const { data: response } = await api.post('/auth/resend-verification', {
+    email: email.trim(),
+  })
+
+  if (!response.success) {
+    throw new Error(response.message || 'Failed to resend verification email.')
+  }
+
+  return response
+}
+
 export function logout() {
   localStorage.removeItem('token')
   localStorage.removeItem('refreshToken')
