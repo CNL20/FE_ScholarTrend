@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { aggregatePaperByDoi, getPaperById } from '../../services/paperService'
+import { aggregatePaperById, getPaperById } from '../../services/paperService'
 import { addBookmark, removeBookmark } from '../../services/bookmarkService'
 import {
   followPaper,
@@ -48,7 +48,6 @@ function PaperDetailPage() {
   const [isFollowing, setIsFollowing] = useState(false)
   const [followLoading, setFollowLoading] = useState(false)
   const [followError, setFollowError] = useState('')
-  const [aggregateDoi, setAggregateDoi] = useState('')
   const [aggregateData, setAggregateData] = useState(null)
   const [aggregateLoading, setAggregateLoading] = useState(false)
   const [aggregateError, setAggregateError] = useState('')
@@ -66,7 +65,6 @@ function PaperDetailPage() {
         const result = await getPaperById(paperId)
         setPaper(result)
         setBookmarked(result.isBookmarked)
-        setAggregateDoi(result.doi || '')
 
         if (hasToken) {
           try {
@@ -133,16 +131,15 @@ function PaperDetailPage() {
   const handleAggregateSubmit = async (event) => {
     event.preventDefault()
 
-    const normalizedDoi = aggregateDoi.trim()
-    if (!normalizedDoi) {
-      setAggregateError('Please enter a DOI to aggregate metadata.')
+    if (!paper?.id) {
+      setAggregateError('Paper id is required to aggregate metadata.')
       return
     }
 
     setAggregateLoading(true)
     setAggregateError('')
     try {
-      const result = await aggregatePaperByDoi(normalizedDoi)
+      const result = await aggregatePaperById(paper.id)
       setAggregateData(result)
     } catch (err) {
       setAggregateData(null)
@@ -288,23 +285,15 @@ function PaperDetailPage() {
         <div className={styles.aggregateHeader}>
           <div className={styles.sectionHeading}>
             <span>External metadata</span>
-            <h2>Aggregate paper metadata by DOI</h2>
+            <h2>Aggregate paper metadata</h2>
           </div>
           <form className={styles.aggregateForm} onSubmit={handleAggregateSubmit}>
-            <input
-              className={styles.aggregateInput}
-              type="text"
-              value={aggregateDoi}
-              onChange={(event) => setAggregateDoi(event.target.value)}
-              placeholder="10.1000/example-doi"
-              aria-label="DOI for metadata aggregation"
-            />
             <button
               type="submit"
               className={styles.aggregateButton}
               disabled={aggregateLoading}
             >
-              {aggregateLoading ? 'Aggregating...' : 'Aggregate metadata'}
+              {aggregateLoading ? 'Aggregating...' : `Aggregate paper #${paper.id}`}
             </button>
           </form>
         </div>

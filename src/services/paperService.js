@@ -192,15 +192,13 @@ export async function getPaperById(id) {
   return normalizePaperDetail(unwrapResponse(response, 'Failed to load paper details.'))
 }
 
-export async function aggregatePaperByDoi(doi) {
-  const normalizedDoi = String(doi ?? '').trim()
-  if (!normalizedDoi) {
-    throw new Error('DOI is required.')
+export async function aggregatePaperById(id) {
+  const normalizedId = Number(id)
+  if (!Number.isInteger(normalizedId) || normalizedId <= 0) {
+    throw new Error('Invalid paper id.')
   }
 
-  const { data: response } = await api.get('/papers/aggregate', {
-    params: { doi: normalizedDoi },
-  })
+  const { data: response } = await api.get(`/papers/${normalizedId}/aggregate`)
   const result = unwrapResponse(response, 'Failed to aggregate paper metadata.')
 
   return normalizeAggregateResult(result)
