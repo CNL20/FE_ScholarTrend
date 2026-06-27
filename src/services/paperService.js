@@ -50,6 +50,55 @@ function normalizePaperDetail(paper) {
   }
 }
 
+function normalizeExternalMetadata(metadata = {}) {
+  return {
+    ...metadata,
+    source: metadata.source ?? '',
+    found: Boolean(metadata.found),
+    errorMessage: metadata.errorMessage ?? '',
+    externalId: metadata.externalId ?? '',
+    doi: metadata.doi ?? '',
+    title: metadata.title ?? '',
+    year: metadata.year ?? null,
+    journal: metadata.journal ?? '',
+    authors: metadata.authors ?? [],
+    abstract: metadata.abstract ?? '',
+    citationCount: metadata.citationCount ?? 0,
+    keywords: metadata.keywords ?? [],
+    pdfUrl: metadata.pdfUrl ?? '',
+    arxivId: metadata.arxivId ?? '',
+  }
+}
+
+function normalizeAggregateMap(map = {}, mapper = (item) => item) {
+  return Object.entries(map ?? {}).map(([key, value]) => ({
+    key,
+    ...mapper(value ?? {}),
+  }))
+}
+
+function normalizeAggregateResult(result) {
+  return {
+    ...result,
+    doi: result.doi ?? '',
+    matchMethod: result.matchMethod ?? 'Unknown',
+    internalPaperId: result.internalPaperId ?? null,
+    sourcesAttempted: result.sourcesAttempted ?? [],
+    sourcesMatched: result.sourcesMatched ?? [],
+    sources: normalizeAggregateMap(result.sources, normalizeExternalMetadata),
+    unifiedMetadata: normalizeExternalMetadata(result.unifiedMetadata),
+    fieldAuthority: normalizeAggregateMap(result.fieldAuthority),
+    coverage: normalizeAggregateMap(result.coverage),
+    dataGaps: result.dataGaps ?? [],
+    conflicts: result.conflicts ?? [],
+    completenessScore: result.completenessScore ?? 0,
+    trustScore: result.trustScore ?? 0,
+    confidenceLevel: result.confidenceLevel ?? 'Unknown',
+    recommendations: result.recommendations ?? [],
+    aggregatedAt: result.aggregatedAt ?? null,
+  }
+}
+
 function normalizePaginatedPapers(result, fallbackPage, fallbackPageSize) {
   return {
     ...result,
@@ -141,6 +190,20 @@ export async function getSearchHistory(limit = 20) {
 export async function getPaperById(id) {
   const { data: response } = await api.get(`/papers/${id}`)
   return normalizePaperDetail(unwrapResponse(response, 'Failed to load paper details.'))
+}
+
+export async function aggregatePaperByDoi(doi) {
+  const normalizedDoi = String(doi ?? '').trim()
+  if (!normalizedDoi) {
+    throw new Error('DOI is required.')
+  }
+
+  const { data: response } = await api.get('/papers/aggregate', {
+    params: { doi: normalizedDoi },
+  })
+  const result = unwrapResponse(response, 'Failed to aggregate paper metadata.')
+
+  return normalizeAggregateResult(result)
 }
 
 /**

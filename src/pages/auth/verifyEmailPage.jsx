@@ -25,19 +25,21 @@ function VerifyEmailPage() {
 
   useEffect(() => {
     // Ngăn gọi API 2 lần do React StrictMode
-    if (hasCalled.current) return;
+    if (hasCalled.current) return undefined;
     hasCalled.current = true;
 
     const email = searchParams.get("email");
     const token = searchParams.get("token");
 
     if (!email || !token) {
-      setStatus(STATUS.ERROR);
-      setMessage("Invalid verification link. Please check your email again.");
-      return;
+      window.setTimeout(() => {
+        setStatus(STATUS.ERROR);
+        setMessage("Invalid verification link. Please check your email again.");
+      }, 0);
+      return undefined;
     }
     // Pre-fill email vào ô resend
-    setResendEmail(email);
+    window.setTimeout(() => setResendEmail(email), 0);
 
     async function doVerify() {
       try {
