@@ -656,6 +656,204 @@
   opacity: 0.65;
 }
 
+.statusSummary {
+  display: grid;
+  grid-template-columns: 2fr repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.statusHero,
+.statusMetric {
+  min-width: 0;
+  padding: 13px;
+  background: #fbfcfa;
+  border: 1px solid #eceeeb;
+  border-radius: 11px;
+}
+
+.statusHero p {
+  margin: 9px 0 0;
+  color: #7d8782;
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 9px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.statusBadge i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.statusRunning {
+  color: #8d6633;
+  background: #fff4df;
+}
+
+.statusRunning i {
+  background: #c4832e;
+  animation: pulse 1s infinite;
+}
+
+.statusIdle {
+  color: #337061;
+  background: #eaf4f0;
+}
+
+.statusIdle i {
+  background: #3c8976;
+}
+
+.statusMetric strong,
+.statusMetric span {
+  display: block;
+}
+
+.statusMetric strong {
+  color: #26322e;
+  font-size: 22px;
+  letter-spacing: -0.04em;
+}
+
+.statusMetric span {
+  margin-top: 2px;
+  color: #8f9692;
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.statusSectionGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.statusSection {
+  min-width: 0;
+  padding: 13px;
+  background: #fbfcfa;
+  border: 1px solid #eceeeb;
+  border-radius: 11px;
+}
+
+.statusSection h4 {
+  margin: 0 0 10px;
+  color: #26322e;
+  font-size: 12px;
+}
+
+.statusList {
+  display: grid;
+  gap: 8px;
+}
+
+.lockCard,
+.recentStatusCard {
+  min-width: 0;
+  padding: 11px;
+  background: #fff;
+  border: 1px solid #eef0ed;
+  border-radius: 10px;
+}
+
+.lockTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 9px;
+}
+
+.lockTop strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #26322e;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lockTop em {
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  color: #5f6d68;
+  background: #f0f3f1;
+  border-radius: 999px;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 750;
+  text-transform: capitalize;
+}
+
+.lockTop .lockedBadge {
+  color: #8d6633;
+  background: #fff4df;
+}
+
+.lockTop .unlockedBadge {
+  color: #337061;
+  background: #eaf4f0;
+}
+
+.lockMeta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.lockMeta span {
+  min-width: 0;
+  overflow: hidden;
+  padding: 8px;
+  color: #8b938f;
+  background: #fbfcfa;
+  border: 1px solid #eef0ed;
+  border-radius: 8px;
+  font-size: 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lockMeta strong {
+  display: block;
+  margin-bottom: 2px;
+  overflow: hidden;
+  color: #2d433d;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recentStatusCard small {
+  display: block;
+  margin-top: 8px;
+  color: #8f9692;
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.statusEmpty {
+  padding: 18px 12px;
+  color: #8d9692;
+  background: #fff;
+  border: 1px dashed #dfe5e1;
+  border-radius: 10px;
+  font-size: 10px;
+  text-align: center;
+}
+
 .dataSourceGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1314,6 +1512,8 @@
   .dataSourceGrid,
   .scheduleFormGrid,
   .scheduleGrid,
+  .statusSectionGrid,
+  .statusSummary,
   .routeGrid {
     grid-template-columns: 1fr;
   }
@@ -1362,9 +1562,14 @@
 
   .syncJobTop,
   .dataSourceTop,
+  .lockTop,
   .syncDetailHeader,
   .paperCardHeader {
     flex-direction: column;
+  }
+
+  .lockMeta {
+    grid-template-columns: 1fr;
   }
 
   .syncDetailStats {

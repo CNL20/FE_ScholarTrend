@@ -7,6 +7,7 @@ import {
   getSyncDataSources,
   getSyncLogs,
   getSyncSchedule,
+  getSyncStatus,
   rejectPendingSyncJob,
   updateSyncDataSourceStatus,
   updateSyncSchedule,
@@ -81,6 +82,14 @@ function normalizeDataSources(result) {
   return Array.isArray(sources) ? sources : [];
 }
 
+function normalizeSyncStatus(result) {
+  return {
+    isAnySyncRunning: Boolean(result?.isAnySyncRunning),
+    sources: Array.isArray(result?.sources) ? result.sources : [],
+    recentSyncs: Array.isArray(result?.recentSyncs) ? result.recentSyncs : [],
+  };
+}
+
 function formatDate(value) {
   if (!value) return "Not available";
   const date = new Date(value);
@@ -139,6 +148,9 @@ function AdminApiConfigPage() {
   const [dataSourcesLoading, setDataSourcesLoading] = useState(true);
   const [dataSourcesError, setDataSourcesError] = useState("");
   const [pendingSourceId, setPendingSourceId] = useState(null);
+  const [syncStatus, setSyncStatus] = useState(null);
+  const [syncStatusLoading, setSyncStatusLoading] = useState(true);
+  const [syncStatusError, setSyncStatusError] = useState("");
   const [syncSchedule, setSyncSchedule] = useState(null);
   const [scheduleDraft, setScheduleDraft] = useState(() => buildScheduleDraft());
   const [syncScheduleLoading, setSyncScheduleLoading] = useState(true);
@@ -238,6 +250,24 @@ function AdminApiConfigPage() {
         if (active) setSyncScheduleLoading(false);
       });
 
+    getSyncStatus()
+      .then((result) => {
+        if (!active) return;
+        setSyncStatus(normalizeSyncStatus(result));
+      })
+      .catch((error) => {
+        if (!active) return;
+        setSyncStatus(null);
+        setSyncStatusError(
+          error.response?.data?.message ||
+            error.message ||
+            "Could not load sync status.",
+        );
+      })
+      .finally(() => {
+        if (active) setSyncStatusLoading(false);
+      });
+
     getPendingSyncJobs(50)
       .then((result) => {
         if (!active) return;
@@ -303,6 +333,25 @@ function AdminApiConfigPage() {
       );
     } finally {
       setPendingLoading(false);
+    }
+  };
+
+  const refreshSyncStatus = async () => {
+    setSyncStatusLoading(true);
+    setSyncStatusError("");
+
+    try {
+      const result = await getSyncStatus();
+      setSyncStatus(normalizeSyncStatus(result));
+    } catch (error) {
+      setSyncStatus(null);
+      setSyncStatusError(
+        error.response?.data?.message ||
+          error.message ||
+          "Could not load sync status.",
+      );
+    } finally {
+      setSyncStatusLoading(false);
     }
   };
 
@@ -590,6 +639,11 @@ function AdminApiConfigPage() {
   const scheduleQueries = Array.isArray(syncSchedule?.searchQueries)
     ? syncSchedule.searchQueries
     : [];
+  const lockedSources = Array.isArray(syncStatus?.sources) ? syncStatus.sources : [];
+  const recentStatusSyncs = Array.isArray(syncStatus?.recentSyncs)
+    ? syncStatus.recentSyncs
+    : [];
+  const lockedSourceCount = lockedSources.filter((source) => source?.isLocked).length;
 
   return (
     <section className={styles.configPage}>
@@ -784,6 +838,139 @@ function AdminApiConfigPage() {
         <div className={styles.syncPanelHeader}>
           <div>
             <span className={styles.kicker}>Synchronization</span>
+            <h3>Live sync status</h3>
+          </div>
+          <button
+            type="button"
+            className={styles.syncRefreshButton}
+            onClick={refreshSyncStatus}
+            disabled={syncStatusLoading}
+          >
+            <Icon name="refresh" size={15} />
+            {syncStatusLoading ? "Loading..." : "Refresh"}
+          </button>
+        </div>
+
+        {syncStatusError && (
+          <div className={styles.syncError} role="alert">
+            {syncStatusError}
+          </div>
+        )}
+
+        {syncStatusLoading ? (
+          <div className={styles.statusSummary}>
+            {Array.from({ length: 3 }, (_, index) => (
+              <div className={styles.syncSkeleton} key={index}>
+                <span />
+                <span />
+              </div>
+            ))}
+          </div>
+        ) : syncStatus ? (
+          <>
+            <div className={styles.statusSummary}>
+              <div className={styles.statusHero}>
+                <span
+                  className={`${styles.statusBadge} ${
+                    syncStatus.isAnySyncRunning ? styles.statusRunning : styles.statusIdle
+                  }`}
+                >
+                  <i />
+                  {syncStatus.isAnySyncRunning ? "Sync running" : "No sync running"}
+                </span>
+                <p>
+                  {syncStatus.isAnySyncRunning
+                    ? "A sync job is currently running or locked by the backend."
+                    : "No active sync lock was reported by the backend."}
+                </p>
+              </div>
+              <div className={styles.statusMetric}>
+                <strong>{formatNumber(lockedSourceCount)}</strong>
+                <span>Locked sources</span>
+              </div>
+              <div className={styles.statusMetric}>
+                <strong>{formatNumber(recentStatusSyncs.length)}</strong>
+                <span>Recent syncs</span>
+              </div>
+            </div>
+
+            <div className={styles.statusSectionGrid}>
+              <div className={styles.statusSection}>
+                <h4>Source locks</h4>
+                <div className={styles.statusList}>
+                  {lockedSources.length > 0 ? (
+                    lockedSources.map((source) => (
+                      <article
+                        className={styles.lockCard}
+                        key={`${source.sourceName || "source"}-${source.lockedAt || source.syncType}`}
+                      >
+                        <div className={styles.lockTop}>
+                          <strong>{source.sourceName || "Unknown source"}</strong>
+                          <em className={source.isLocked ? styles.lockedBadge : styles.unlockedBadge}>
+                            {source.isLocked ? "Locked" : "Unlocked"}
+                          </em>
+                        </div>
+                        <div className={styles.lockMeta}>
+                          <span><strong>{source.syncType || "Unknown"}</strong>Sync type</span>
+                          <span><strong>{source.triggeredBy || "System"}</strong>Triggered by</span>
+                          <span><strong>{formatDate(source.lockedAt)}</strong>Locked at</span>
+                          <span><strong>{formatDate(source.expiresAt)}</strong>Expires at</span>
+                        </div>
+                      </article>
+                    ))
+                  ) : (
+                    <div className={styles.statusEmpty}>No source locks reported.</div>
+                  )}
+                </div>
+              </div>
+
+              <div className={styles.statusSection}>
+                <h4>Recent syncs</h4>
+                <div className={styles.statusList}>
+                  {recentStatusSyncs.length > 0 ? (
+                    recentStatusSyncs.map((sync) => (
+                      <article
+                        className={styles.recentStatusCard}
+                        key={sync.id || `${sync.source}-${sync.startedAt}`}
+                      >
+                        <div className={styles.lockTop}>
+                          <strong>{sync.source || "Unknown source"}</strong>
+                          <em>{sync.status || "Unknown"}</em>
+                        </div>
+                        <div className={styles.syncJobStats}>
+                          <span><strong>{formatNumber(sync.papersFetched)}</strong>Fetched</span>
+                          <span><strong>{formatNumber(sync.papersAdded)}</strong>Added</span>
+                          <span><strong>{formatNumber(sync.papersUpdated)}</strong>Updated</span>
+                        </div>
+                        <small>
+                          {formatDate(sync.startedAt)} - {formatDate(sync.completedAt)}
+                        </small>
+                        {sync.errorMessage && (
+                          <div className={styles.syncLogMessage}>
+                            {sync.errorMessage}
+                          </div>
+                        )}
+                      </article>
+                    ))
+                  ) : (
+                    <div className={styles.statusEmpty}>No recent syncs reported.</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className={styles.syncEmpty}>
+            <Icon name="clock" size={20} />
+            <p>No sync status available.</p>
+          </div>
+        )}
+      </article>
+
+      <article className={styles.routesPanel}>
+        <div className={styles.syncPanelHeader}>
+          <div>
+            <span className={styles.kicker}>Synchronization</span>
             <h3>Data sources</h3>
           </div>
           <button
@@ -932,6 +1119,7 @@ function AdminApiConfigPage() {
           <div><span className={styles.methodPatch}>PATCH</span><code>/admin/sync/data-sources/:id</code><small>Update source status</small></div>
           <div><span className={styles.methodGet}>GET</span><code>/admin/sync/schedule</code><small>Sync schedule</small></div>
           <div><span className={styles.methodPut}>PUT</span><code>/admin/sync/schedule</code><small>Update sync schedule</small></div>
+          <div><span className={styles.methodGet}>GET</span><code>/admin/sync/status</code><small>Live sync status</small></div>
           <div><span className={styles.methodGet}>GET</span><code>/admin/sync/logs</code><small>Sync history</small></div>
           <div><span className={styles.methodGet}>GET</span><code>/admin/sync/pending</code><small>Pending sync jobs</small></div>
           <div><span className={styles.methodGet}>GET</span><code>/admin/sync/pending/:id</code><small>Sync job detail</small></div>
