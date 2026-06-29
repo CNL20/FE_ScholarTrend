@@ -582,6 +582,17 @@
   letter-spacing: -0.03em;
 }
 
+.syncLogMessage {
+  margin-top: 10px;
+  padding: 9px 10px;
+  color: #8d493f;
+  background: #fff6f3;
+  border: 1px solid #efd8d2;
+  border-radius: 8px;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
 .syncEmpty {
   display: grid;
   justify-items: center;

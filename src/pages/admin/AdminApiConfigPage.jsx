@@ -4,6 +4,7 @@ import {
   getAdminStats,
   getPendingSyncJobById,
   getPendingSyncJobs,
+  getSyncLogs,
   rejectPendingSyncJob,
 } from "../../services/adminService";
 import styles from "./AdminApiConfigPage.module.css";
@@ -66,6 +67,11 @@ function normalizePendingSyncJobs(result) {
   return Array.isArray(jobs) ? jobs : [];
 }
 
+function normalizeSyncLogs(result) {
+  const logs = result?.items || result?.logs || result?.data || result;
+  return Array.isArray(logs) ? logs : [];
+}
+
 function formatDate(value) {
   if (!value) return "Not available";
   const date = new Date(value);
@@ -106,6 +112,10 @@ function AdminApiConfigPage() {
   const [pendingLimit, setPendingLimit] = useState(50);
   const [pendingLoading, setPendingLoading] = useState(true);
   const [pendingError, setPendingError] = useState("");
+  const [syncLogs, setSyncLogs] = useState([]);
+  const [syncLogLimit, setSyncLogLimit] = useState(50);
+  const [syncLogsLoading, setSyncLogsLoading] = useState(true);
+  const [syncLogsError, setSyncLogsError] = useState("");
   const [selectedSyncJob, setSelectedSyncJob] = useState(null);
   const [syncDetailLoading, setSyncDetailLoading] = useState(false);
   const [syncDetailError, setSyncDetailError] = useState("");
@@ -172,6 +182,24 @@ function AdminApiConfigPage() {
         if (active) setPendingLoading(false);
       });
 
+    getSyncLogs(50)
+      .then((result) => {
+        if (!active) return;
+        setSyncLogs(normalizeSyncLogs(result));
+      })
+      .catch((error) => {
+        if (!active) return;
+        setSyncLogs([]);
+        setSyncLogsError(
+          error.response?.data?.message ||
+            error.message ||
+            "Could not load sync logs.",
+        );
+      })
+      .finally(() => {
+        if (active) setSyncLogsLoading(false);
+      });
+
     return () => {
       active = false;
     };
@@ -201,6 +229,26 @@ function AdminApiConfigPage() {
       );
     } finally {
       setPendingLoading(false);
+    }
+  };
+
+  const refreshSyncLogs = async () => {
+    const limit = Math.max(1, Number(syncLogLimit) || 50);
+    setSyncLogsLoading(true);
+    setSyncLogsError("");
+
+    try {
+      const result = await getSyncLogs(limit);
+      setSyncLogs(normalizeSyncLogs(result));
+    } catch (error) {
+      setSyncLogs([]);
+      setSyncLogsError(
+        error.response?.data?.message ||
+          error.message ||
+          "Could not load sync logs.",
+      );
+    } finally {
+      setSyncLogsLoading(false);
     }
   };
 
@@ -467,10 +515,87 @@ function AdminApiConfigPage() {
           <div><span className={styles.methodGet}>GET</span><code>/admin/users/:id</code><small>User detail</small></div>
           <div><span className={styles.methodPatch}>PATCH</span><code>/admin/users/:id/role</code><small>Role update</small></div>
           <div><span className={styles.methodPatch}>PATCH</span><code>/admin/users/:id/status</code><small>Activate or deactivate</small></div>
+          <div><span className={styles.methodGet}>GET</span><code>/admin/sync/logs</code><small>Sync history</small></div>
           <div><span className={styles.methodGet}>GET</span><code>/admin/sync/pending</code><small>Pending sync jobs</small></div>
           <div><span className={styles.methodGet}>GET</span><code>/admin/sync/pending/:id</code><small>Sync job detail</small></div>
           <div><span className={styles.methodPost}>POST</span><code>/admin/sync/pending/:id/approve</code><small>Approve pending papers</small></div>
           <div><span className={styles.methodPost}>POST</span><code>/admin/sync/pending/:id/reject</code><small>Reject pending sync</small></div>
+        </div>
+      </article>
+
+      <article className={styles.routesPanel}>
+        <div className={styles.syncPanelHeader}>
+          <div>
+            <span className={styles.kicker}>Synchronization</span>
+            <h3>Sync logs</h3>
+          </div>
+          <div className={styles.pendingControls}>
+            <label>
+              Limit
+              <input
+                type="number"
+                min="1"
+                max="200"
+                value={syncLogLimit}
+                onChange={(event) => setSyncLogLimit(event.target.value)}
+              />
+            </label>
+            <button
+              type="button"
+              className={styles.syncRefreshButton}
+              onClick={refreshSyncLogs}
+              disabled={syncLogsLoading}
+            >
+              <Icon name="refresh" size={15} />
+              {syncLogsLoading ? "Loading..." : "Refresh"}
+            </button>
+          </div>
+        </div>
+
+        {syncLogsError && (
+          <div className={styles.syncError} role="alert">
+            {syncLogsError}
+          </div>
+        )}
+
+        <div className={styles.syncJobsList}>
+          {syncLogsLoading ? (
+            Array.from({ length: 3 }, (_, index) => (
+              <div className={styles.syncSkeleton} key={index}>
+                <span />
+                <span />
+              </div>
+            ))
+          ) : syncLogs.length > 0 ? (
+            syncLogs.map((log) => (
+              <div className={styles.syncJobCard} key={log.id || `${log.source}-${log.startedAt}`}>
+                <div className={styles.syncJobTop}>
+                  <div>
+                    <strong>{log.source || "Unknown source"}</strong>
+                    <span>
+                      {formatDate(log.startedAt)} - {formatDate(log.completedAt)}
+                    </span>
+                  </div>
+                  <em>{log.status || "Unknown"}</em>
+                </div>
+                <div className={styles.syncJobStats}>
+                  <span><strong>{formatNumber(log.papersFetched)}</strong>Fetched</span>
+                  <span><strong>{formatNumber(log.papersAdded)}</strong>Added</span>
+                  <span><strong>{formatNumber(log.papersUpdated)}</strong>Updated</span>
+                </div>
+                {log.errorMessage && (
+                  <div className={styles.syncLogMessage}>
+                    {log.errorMessage}
+                  </div>
+                )}
+              </div>
+            ))
+          ) : (
+            <div className={styles.syncEmpty}>
+              <Icon name="clock" size={20} />
+              <p>No sync logs yet.</p>
+            </div>
+          )}
         </div>
       </article>
 

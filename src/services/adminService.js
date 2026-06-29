@@ -95,9 +95,16 @@ export async function getAdminStats() {
   return data
 }
 
-export async function getSyncLogs() {
-  const { data } = await api.get('/admin/sync-logs')
-  return data
+export async function getSyncLogs(limit = 50) {
+  const { data: response } = await api.get('/admin/sync/logs', {
+    params: { limit },
+  })
+
+  if (response && typeof response === 'object' && 'success' in response) {
+    return unwrapResponse(response, 'Failed to load sync logs.')
+  }
+
+  return response
 }
 
 export async function getPendingSyncJobs(limit = 50) {
