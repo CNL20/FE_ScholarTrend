@@ -1,11 +1,24 @@
 import api from './api'
 
 function unwrapResponse(response, fallbackMessage) {
-  if (!response.success || response.data == null) {
-    throw new Error(response.message || response.errors?.[0] || fallbackMessage)
+  if (!response || response.success === false || response.data == null) {
+    throw new Error(response?.message || response?.errors?.[0] || fallbackMessage)
   }
 
   return response.data
+}
+
+function buildUserParams(filters = {}) {
+  const params = {}
+  const search = filters.search?.trim()
+
+  if (search) params.Search = search
+  if (filters.role && filters.role !== 'All') params.Role = filters.role
+  if (filters.isActive && filters.isActive !== 'All') {
+    params.IsActive = filters.isActive === 'true'
+  }
+
+  return params
 }
 
 export async function getAdminDashboard() {
@@ -31,9 +44,16 @@ export async function getAdminDashboard() {
   }
 }
 
-export async function getUsers() {
-  const { data } = await api.get('/admin/users')
-  return data
+export async function getUsers(filters = {}) {
+  const { data: response } = await api.get('/admin/users', {
+    params: buildUserParams(filters),
+  })
+
+  if (response && typeof response === 'object' && 'success' in response) {
+    return unwrapResponse(response, 'Failed to load admin users.')
+  }
+
+  return response
 }
 
 export async function updateUserRole(userId, role) {

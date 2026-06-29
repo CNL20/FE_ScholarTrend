@@ -239,7 +239,7 @@
 
 .table {
   width: 100%;
-  min-width: 790px;
+  min-width: 1040px;
   border-collapse: collapse;
 }
 
@@ -315,6 +315,30 @@
 .userCell > span > span {
   max-width: 250px;
   margin-top: 2px;
+  overflow: hidden;
+  color: #959b98;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.institutionCell strong,
+.institutionCell span {
+  display: block;
+}
+
+.institutionCell strong {
+  max-width: 180px;
+  overflow: hidden;
+  color: #38443f;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.institutionCell span {
+  max-width: 180px;
+  margin-top: 3px;
   overflow: hidden;
   color: #959b98;
   font-size: 9px;

@@ -61,7 +61,21 @@ function normalizeRole(role) {
   if (value === "lecturerstudent" || value === "lecturer_student") {
     return ROLES.LECTURER_STUDENT;
   }
-  return ROLES.LECTURER_STUDENT;
+  return "";
+}
+
+function getUserRoles(user) {
+  const rawRoles = user.roles ?? user.role ?? user.userRoles ?? [];
+  const roles = Array.isArray(rawRoles) ? rawRoles : [rawRoles];
+  return roles.map(normalizeRole).filter(Boolean);
+}
+
+function getPrimaryRole(user) {
+  return getUserRoles(user)[0] || ROLES.LECTURER_STUDENT;
+}
+
+function userHasRole(user, role) {
+  return getUserRoles(user).includes(role);
 }
 
 function getDisplayName(user) {
@@ -77,8 +91,12 @@ function getInitials(user) {
     .join("");
 }
 
+function isUserActive(user) {
+  return user.isActive !== false && user.active !== false;
+}
+
 function getStatus(user) {
-  if (user.isActive === false || user.active === false) return "Inactive";
+  if (!isUserActive(user)) return "Inactive";
   return user.status || "Active";
 }
 
@@ -96,6 +114,7 @@ function AdminUserManagementPage() {
   const [notice, setNotice] = useState("");
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("All");
+  const [activeFilter, setActiveFilter] = useState("All");
   const [pendingId, setPendingId] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const currentUserId = localStorage.getItem("userId");
@@ -108,7 +127,11 @@ function AdminUserManagementPage() {
       setError("");
 
       try {
-        const result = await getUsers();
+        const result = await getUsers({
+          search,
+          role: roleFilter,
+          isActive: activeFilter,
+        });
         if (active) setUsers(normalizeUsers(result));
       } catch (requestError) {
         if (active) {
@@ -123,31 +146,36 @@ function AdminUserManagementPage() {
       }
     }
 
-    fetchUsers();
+    const timerId = window.setTimeout(fetchUsers, search.trim() ? 250 : 0);
     return () => {
       active = false;
+      window.clearTimeout(timerId);
     };
-  }, [refreshKey]);
+  }, [activeFilter, refreshKey, roleFilter, search]);
 
   const filteredUsers = useMemo(() => {
     const keyword = search.trim().toLowerCase();
     return users.filter((user) => {
-      const role = normalizeRole(user.role);
-      const matchesRole = roleFilter === "All" || role === roleFilter;
+      const matchesRole = roleFilter === "All" || userHasRole(user, roleFilter);
+      const matchesStatus =
+        activeFilter === "All" ||
+        (activeFilter === "true" ? isUserActive(user) : !isUserActive(user));
       const matchesKeyword =
         !keyword ||
         getDisplayName(user).toLowerCase().includes(keyword) ||
-        String(user.email || "").toLowerCase().includes(keyword);
-      return matchesRole && matchesKeyword;
+        String(user.email || "").toLowerCase().includes(keyword) ||
+        String(user.institution || "").toLowerCase().includes(keyword) ||
+        String(user.researchField || "").toLowerCase().includes(keyword);
+      return matchesRole && matchesStatus && matchesKeyword;
     });
-  }, [roleFilter, search, users]);
+  }, [activeFilter, roleFilter, search, users]);
 
-  const activeCount = users.filter((user) => getStatus(user).toLowerCase() === "active").length;
-  const adminCount = users.filter((user) => normalizeRole(user.role) === ROLES.ADMIN).length;
+  const activeCount = users.filter(isUserActive).length;
+  const adminCount = users.filter((user) => userHasRole(user, ROLES.ADMIN)).length;
 
   const handleUpdateRole = async (user, role) => {
     const id = user.id ?? user.userId;
-    if (!id || role === normalizeRole(user.role)) return;
+    if (!id || role === getPrimaryRole(user)) return;
 
     setPendingId(id);
     setNotice("");
@@ -155,7 +183,7 @@ function AdminUserManagementPage() {
       await updateUserRole(id, role);
       setUsers((current) =>
         current.map((item) =>
-          (item.id ?? item.userId) === id ? { ...item, role } : item,
+          (item.id ?? item.userId) === id ? { ...item, role, roles: [role] } : item,
         ),
       );
       setNotice(`Role updated for ${getDisplayName(user)}.`);
@@ -283,6 +311,16 @@ function AdminUserManagementPage() {
               </option>
             ))}
           </select>
+          <select
+            className={styles.filterSelect}
+            aria-label="Filter by active status"
+            value={activeFilter}
+            onChange={(event) => setActiveFilter(event.target.value)}
+          >
+            <option value="All">All status</option>
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
+          </select>
           <span className={styles.resultCount}>
             {filteredUsers.length} {filteredUsers.length === 1 ? "result" : "results"}
           </span>
@@ -293,9 +331,11 @@ function AdminUserManagementPage() {
             <thead>
               <tr>
                 <th>User</th>
+                <th>Institution</th>
                 <th>Status</th>
                 <th>Role</th>
                 <th>Joined</th>
+                <th>Last login</th>
                 <th><span className={styles.srOnly}>Actions</span></th>
               </tr>
             </thead>
@@ -303,6 +343,8 @@ function AdminUserManagementPage() {
               {loading ? (
                 Array.from({ length: 5 }, (_, index) => (
                   <tr key={index} className={styles.skeletonRow}>
+                    <td><span /></td>
+                    <td><span /></td>
                     <td><span /></td>
                     <td><span /></td>
                     <td><span /></td>
@@ -316,6 +358,7 @@ function AdminUserManagementPage() {
                   const isCurrentUser = String(id) === String(currentUserId);
                   const status = getStatus(user);
                   const joinedAt = user.createdAt || user.joinedAt || user.registeredAt;
+                  const lastLoginAt = user.lastLoginAt || user.lastSeenAt;
                   return (
                     <tr key={id || user.email}>
                       <td>
@@ -331,6 +374,12 @@ function AdminUserManagementPage() {
                         </div>
                       </td>
                       <td>
+                        <div className={styles.institutionCell}>
+                          <strong>{user.institution || "No institution"}</strong>
+                          <span>{user.researchField || "No research field"}</span>
+                        </div>
+                      </td>
+                      <td>
                         <span
                           className={`${styles.status} ${
                             status.toLowerCase() === "active" ? styles.active : styles.inactive
@@ -343,7 +392,7 @@ function AdminUserManagementPage() {
                       <td>
                         <select
                           className={styles.roleSelect}
-                          value={normalizeRole(user.role)}
+                          value={getPrimaryRole(user)}
                           disabled={pendingId === id || isCurrentUser}
                           onChange={(event) => handleUpdateRole(user, event.target.value)}
                           aria-label={`Role for ${getDisplayName(user)}`}
@@ -357,6 +406,9 @@ function AdminUserManagementPage() {
                       </td>
                       <td className={styles.joinedCell}>
                         {formatDate(joinedAt)}
+                      </td>
+                      <td className={styles.joinedCell}>
+                        {formatDate(lastLoginAt)}
                       </td>
                       <td className={styles.actionCell}>
                         <button
