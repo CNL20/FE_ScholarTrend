@@ -770,6 +770,18 @@
   border-color: #245549;
 }
 
+.approveActions .rejectButton {
+  color: #9b594f;
+  background: #fff5f2;
+  border-color: #efd9d3;
+}
+
+.approveActions .rejectButton:hover:not(:disabled) {
+  color: #8b493f;
+  background: #faece8;
+  border-color: #e7c6bd;
+}
+
 .approveNotice {
   margin-bottom: 12px;
   padding: 10px 12px;

@@ -133,3 +133,13 @@ export async function approvePendingSyncPapers(syncId, pendingPaperIds) {
 
   return response
 }
+
+export async function rejectPendingSyncJob(syncId) {
+  const { data: response } = await api.post(`/admin/sync/pending/${syncId}/reject`)
+
+  if (response && typeof response === 'object' && 'success' in response) {
+    return unwrapResponse(response, 'Failed to reject pending sync.')
+  }
+
+  return response
+}

@@ -4,6 +4,7 @@ import {
   getAdminStats,
   getPendingSyncJobById,
   getPendingSyncJobs,
+  rejectPendingSyncJob,
 } from "../../services/adminService";
 import styles from "./AdminApiConfigPage.module.css";
 
@@ -110,6 +111,7 @@ function AdminApiConfigPage() {
   const [syncDetailError, setSyncDetailError] = useState("");
   const [selectedPaperIds, setSelectedPaperIds] = useState([]);
   const [approveLoading, setApproveLoading] = useState(false);
+  const [rejectLoading, setRejectLoading] = useState(false);
   const [approveError, setApproveError] = useState("");
   const [approveNotice, setApproveNotice] = useState("");
 
@@ -295,6 +297,57 @@ function AdminApiConfigPage() {
     }
   };
 
+  const handleRejectSyncJob = async () => {
+    if (!selectedSyncJob?.id) return;
+
+    const confirmed = window.confirm(
+      `Reject sync #${selectedSyncJob.id}? All pending papers in this sync will be rejected.`,
+    );
+    if (!confirmed) return;
+
+    setRejectLoading(true);
+    setApproveError("");
+    setApproveNotice("");
+
+    try {
+      const result = await rejectPendingSyncJob(selectedSyncJob.id);
+      const approved = formatNumber(result?.papersApproved);
+      const rejected = formatNumber(result?.papersRejected);
+
+      setApproveNotice(
+        result?.message ||
+          `Reject completed. Approved ${approved} paper(s), rejected ${rejected}.`,
+      );
+
+      try {
+        const jobsResult = await getPendingSyncJobs(Math.max(1, Number(pendingLimit) || 50));
+        setPendingJobs(normalizePendingSyncJobs(jobsResult));
+      } catch {
+        setPendingError("Rejected, but could not refresh the pending sync list.");
+      }
+
+      try {
+        const detailResult = await getPendingSyncJobById(selectedSyncJob.id);
+        const nextDetail = detailResult || selectedSyncJob;
+        setSelectedSyncJob(nextDetail);
+        setSelectedPaperIds(getSelectablePaperIds(nextDetail.papers));
+      } catch {
+        setSelectedPaperIds([]);
+        setSyncDetailError("Rejected, but could not refresh this sync detail.");
+      }
+    } catch (error) {
+      setApproveError(
+        error.response?.data?.message ||
+          error.message ||
+          "Could not reject this pending sync.",
+      );
+    } finally {
+      setRejectLoading(false);
+    }
+  };
+
+  const reviewBusy = approveLoading || rejectLoading;
+
   return (
     <section className={styles.configPage}>
       <div className={styles.hero}>
@@ -417,6 +470,7 @@ function AdminApiConfigPage() {
           <div><span className={styles.methodGet}>GET</span><code>/admin/sync/pending</code><small>Pending sync jobs</small></div>
           <div><span className={styles.methodGet}>GET</span><code>/admin/sync/pending/:id</code><small>Sync job detail</small></div>
           <div><span className={styles.methodPost}>POST</span><code>/admin/sync/pending/:id/approve</code><small>Approve pending papers</small></div>
+          <div><span className={styles.methodPost}>POST</span><code>/admin/sync/pending/:id/reject</code><small>Reject pending sync</small></div>
         </div>
       </article>
 
@@ -548,19 +602,27 @@ function AdminApiConfigPage() {
                 <span>Choose papers to import into the library.</span>
               </div>
               <div className={styles.approveActions}>
-                <button type="button" onClick={selectAllPapers} disabled={approveLoading}>
+                <button type="button" onClick={selectAllPapers} disabled={reviewBusy}>
                   Select all
                 </button>
-                <button type="button" onClick={clearPaperSelection} disabled={approveLoading}>
+                <button type="button" onClick={clearPaperSelection} disabled={reviewBusy}>
                   Clear
                 </button>
                 <button
                   type="button"
                   className={styles.approveButton}
                   onClick={handleApproveSelectedPapers}
-                  disabled={approveLoading || selectedPaperIds.length === 0}
+                  disabled={reviewBusy || selectedPaperIds.length === 0}
                 >
                   {approveLoading ? "Approving..." : "Approve selected"}
+                </button>
+                <button
+                  type="button"
+                  className={styles.rejectButton}
+                  onClick={handleRejectSyncJob}
+                  disabled={reviewBusy}
+                >
+                  {rejectLoading ? "Rejecting..." : "Reject sync"}
                 </button>
               </div>
             </div>
@@ -588,7 +650,7 @@ function AdminApiConfigPage() {
                             checked={selectedPaperIds.some(
                               (id) => String(id) === String(getPaperId(paper)),
                             )}
-                            disabled={!canApprovePaper(paper) || approveLoading}
+                            disabled={!canApprovePaper(paper) || reviewBusy}
                             onChange={() => togglePaperSelection(getPaperId(paper))}
                             aria-label={`Select ${paper.title || "paper"}`}
                           />
