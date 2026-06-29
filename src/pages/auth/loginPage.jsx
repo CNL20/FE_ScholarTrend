@@ -32,6 +32,14 @@ function loadGoogleIdentityScript() {
   });
 }
 
+function getPrimaryAuthRole(result) {
+  if (Array.isArray(result?.roles)) {
+    return result.roles.find((role) => String(role).toLowerCase() === "admin") || result.roles[0] || "";
+  }
+
+  return result?.roles || result?.role || "";
+}
+
 function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -48,7 +56,7 @@ function LoginPage() {
   const [resendSuccess, setResendSuccess] = useState("");
 
   const navigateAfterAuth = (result) => {
-    const role = result?.roles?.[0]?.toLowerCase();
+    const role = String(getPrimaryAuthRole(result)).toLowerCase();
     navigate(role === "admin" ? "/admin" : "/dashboard", { replace: true });
   };
 
@@ -93,7 +101,7 @@ function LoginPage() {
               const result = await googleLogin(credential);
               if (!active) return;
 
-              const role = result?.roles?.[0]?.toLowerCase();
+              const role = String(getPrimaryAuthRole(result)).toLowerCase();
               navigate(role === "admin" ? "/admin" : "/dashboard", { replace: true });
             } catch (err) {
               if (!active) return;

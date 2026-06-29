@@ -1,10 +1,18 @@
 import api from './api'
 
+function getPrimaryRole(auth) {
+  if (Array.isArray(auth.roles)) {
+    return auth.roles.find((role) => String(role).toLowerCase() === 'admin') || auth.roles[0] || ''
+  }
+
+  return auth.roles || auth.role || ''
+}
+
 function persistAuthSession(auth) {
   localStorage.setItem('token', auth.token)
   localStorage.setItem('refreshToken', auth.refreshToken || '')
   localStorage.setItem('userName', auth.fullName || '')
-  localStorage.setItem('userRole', auth.roles?.[0] || '')
+  localStorage.setItem('userRole', getPrimaryRole(auth))
   localStorage.setItem('userId', auth.userId || '')
 }
 
