@@ -149,6 +149,16 @@ export async function getSyncScheduleHistory(limit = 50) {
   return response
 }
 
+export async function triggerAdminSync(payload) {
+  const { data: response } = await api.post('/admin/sync/trigger', payload)
+
+  if (response && typeof response === 'object' && 'success' in response) {
+    return unwrapResponse(response, 'Failed to trigger sync.')
+  }
+
+  return response
+}
+
 export async function getSyncStatus() {
   const { data: response } = await api.get('/admin/sync/status')
 

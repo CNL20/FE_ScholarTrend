@@ -11,6 +11,7 @@ import {
   getSyncStatus,
   getSyncStatusBySource,
   rejectPendingSyncJob,
+  triggerAdminSync,
   updateSyncDataSourceStatus,
   updateSyncSchedule,
 } from "../../services/adminService";
@@ -172,6 +173,14 @@ function AdminApiConfigPage() {
   const [scheduleHistoryLimit, setScheduleHistoryLimit] = useState(50);
   const [scheduleHistoryLoading, setScheduleHistoryLoading] = useState(true);
   const [scheduleHistoryError, setScheduleHistoryError] = useState("");
+  const [triggerDraft, setTriggerDraft] = useState({
+    sourceName: "",
+    paperLimit: 50,
+    searchQuery: "",
+  });
+  const [triggerLoading, setTriggerLoading] = useState(false);
+  const [triggerError, setTriggerError] = useState("");
+  const [triggerResult, setTriggerResult] = useState(null);
   const [pendingJobs, setPendingJobs] = useState([]);
   const [pendingLimit, setPendingLimit] = useState(50);
   const [pendingLoading, setPendingLoading] = useState(true);
@@ -502,6 +511,54 @@ function AdminApiConfigPage() {
     }
   };
 
+  const handleTriggerDraftChange = (event) => {
+    const { name, value } = event.target;
+    setTriggerError("");
+    setTriggerDraft((current) => ({
+      ...current,
+      [name]: value,
+    }));
+  };
+
+  const handleTriggerSync = async (event) => {
+    event.preventDefault();
+
+    const sourceName = triggerDraft.sourceName.trim();
+    const searchQuery = triggerDraft.searchQuery.trim();
+    const paperLimit = Math.max(0, Number(triggerDraft.paperLimit) || 0);
+
+    if (!sourceName) {
+      setTriggerError("Enter a source name before triggering sync.");
+      setTriggerResult(null);
+      return;
+    }
+
+    setTriggerLoading(true);
+    setTriggerError("");
+    setTriggerResult(null);
+
+    try {
+      const result = await triggerAdminSync({
+        sourceName,
+        paperLimit,
+        searchQuery,
+      });
+
+      setTriggerResult(result || null);
+      refreshSyncStatus();
+      refreshPendingSync();
+      refreshScheduleHistory();
+    } catch (error) {
+      setTriggerError(
+        error.response?.data?.message ||
+          error.message ||
+          "Could not trigger sync.",
+      );
+    } finally {
+      setTriggerLoading(false);
+    }
+  };
+
   const refreshDataSources = async () => {
     setDataSourcesLoading(true);
     setDataSourcesError("");
@@ -730,6 +787,9 @@ function AdminApiConfigPage() {
     ? syncStatus.recentSyncs
     : [];
   const lockedSourceCount = lockedSources.filter((source) => source?.isLocked).length;
+  const triggerSourceResults = Array.isArray(triggerResult?.sourceResults)
+    ? triggerResult.sourceResults
+    : [];
   const sourceNameOptions = Array.from(
     new Set(
       [
@@ -1002,6 +1062,111 @@ function AdminApiConfigPage() {
             </div>
           )}
         </div>
+      </article>
+
+      <article className={styles.routesPanel}>
+        <div className={styles.syncPanelHeader}>
+          <div>
+            <span className={styles.kicker}>Synchronization</span>
+            <h3>Manual sync trigger</h3>
+          </div>
+        </div>
+
+        <form className={styles.triggerForm} onSubmit={handleTriggerSync}>
+          <label>
+            Source name
+            <input
+              type="text"
+              list="sync-source-names"
+              name="sourceName"
+              value={triggerDraft.sourceName}
+              onChange={handleTriggerDraftChange}
+              placeholder="SemanticScholar"
+              disabled={triggerLoading}
+            />
+          </label>
+          <label>
+            Paper limit
+            <input
+              type="number"
+              min="0"
+              name="paperLimit"
+              value={triggerDraft.paperLimit}
+              onChange={handleTriggerDraftChange}
+              disabled={triggerLoading}
+            />
+          </label>
+          <label>
+            Search query
+            <input
+              type="text"
+              name="searchQuery"
+              value={triggerDraft.searchQuery}
+              onChange={handleTriggerDraftChange}
+              placeholder="Artificial Intelligence"
+              disabled={triggerLoading}
+            />
+          </label>
+          <button type="submit" disabled={triggerLoading}>
+            {triggerLoading ? "Triggering..." : "Trigger sync"}
+          </button>
+        </form>
+
+        {triggerError && (
+          <div className={styles.syncError} role="alert">
+            {triggerError}
+          </div>
+        )}
+
+        {triggerResult && (
+          <article className={styles.triggerResult}>
+            <div className={styles.triggerResultTop}>
+              <div>
+                <strong>{triggerResult.sourceName || triggerDraft.sourceName || "Manual sync"}</strong>
+                <span>{triggerResult.message || "Sync trigger completed."}</span>
+              </div>
+              <em className={triggerResult.success ? styles.sourceActive : styles.sourceInactive}>
+                {triggerResult.success ? "Success" : "Failed"}
+              </em>
+            </div>
+
+            <div className={styles.triggerStats}>
+              <span><strong>{triggerResult.syncType || "Unknown"}</strong>Sync type</span>
+              <span><strong>{formatDate(triggerResult.triggeredAt)}</strong>Triggered at</span>
+              <span><strong>{triggerResult.triggeredBy || "System"}</strong>Triggered by</span>
+              <span><strong>{formatNumber(triggerResult.papersFetched)}</strong>Fetched</span>
+              <span><strong>{formatNumber(triggerResult.papersQueued)}</strong>Queued</span>
+              <span><strong>{triggerResult.proposalId ?? "N/A"}</strong>Proposal ID</span>
+            </div>
+
+            {triggerSourceResults.length > 0 && (
+              <div className={styles.triggerSourceResults}>
+                <h4>Source results</h4>
+                {triggerSourceResults.map((source) => (
+                  <article
+                    className={styles.triggerSourceCard}
+                    key={`${source.sourceName || "source"}-${source.status || source.message}`}
+                  >
+                    <div className={styles.lockTop}>
+                      <strong>{source.sourceName || "Unknown source"}</strong>
+                      <em>{source.status || "Unknown"}</em>
+                    </div>
+                    <div className={styles.syncJobStats}>
+                      <span><strong>{formatNumber(source.papersFetched)}</strong>Fetched</span>
+                      <span><strong>{formatNumber(source.papersQueued)}</strong>Queued</span>
+                      <span><strong>{source.message || "No message"}</strong>Message</span>
+                    </div>
+                    {source.errorMessage && (
+                      <div className={styles.syncLogMessage}>
+                        {source.errorMessage}
+                      </div>
+                    )}
+                  </article>
+                ))}
+              </div>
+            )}
+          </article>
+        )}
       </article>
 
       <article className={styles.routesPanel}>
@@ -1351,6 +1516,7 @@ function AdminApiConfigPage() {
           <div><span className={styles.methodGet}>GET</span><code>/admin/sync/schedule</code><small>Sync schedule</small></div>
           <div><span className={styles.methodPut}>PUT</span><code>/admin/sync/schedule</code><small>Update sync schedule</small></div>
           <div><span className={styles.methodGet}>GET</span><code>/admin/sync/schedule/history</code><small>Schedule job history</small></div>
+          <div><span className={styles.methodPost}>POST</span><code>/admin/sync/trigger</code><small>Manual sync trigger</small></div>
           <div><span className={styles.methodGet}>GET</span><code>/admin/sync/status</code><small>Live sync status</small></div>
           <div><span className={styles.methodGet}>GET</span><code>/admin/sync/status/:sourceName</code><small>Source sync status</small></div>
           <div><span className={styles.methodGet}>GET</span><code>/admin/sync/logs</code><small>Sync history</small></div>
