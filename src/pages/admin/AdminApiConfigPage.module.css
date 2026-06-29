@@ -473,6 +473,46 @@
   font-size: 9px;
 }
 
+.sourceActivateButton,
+.sourceDeactivateButton {
+  width: 100%;
+  min-height: 32px;
+  margin-top: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 750;
+}
+
+.sourceActivateButton {
+  color: #315f55;
+  background: #edf5f2;
+  border: 1px solid #d3e4df;
+}
+
+.sourceActivateButton:hover:not(:disabled) {
+  background: #e3f0eb;
+  border-color: #bdd8cf;
+}
+
+.sourceDeactivateButton {
+  color: #9b594f;
+  background: #fff5f2;
+  border: 1px solid #efd9d3;
+}
+
+.sourceDeactivateButton:hover:not(:disabled) {
+  color: #8b493f;
+  background: #faece8;
+  border-color: #e7c6bd;
+}
+
+.sourceActivateButton:disabled,
+.sourceDeactivateButton:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
 .syncPanelHeader {
   display: flex;
   align-items: flex-start;

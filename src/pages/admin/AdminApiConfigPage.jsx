@@ -7,6 +7,7 @@ import {
   getSyncDataSources,
   getSyncLogs,
   rejectPendingSyncJob,
+  updateSyncDataSourceStatus,
 } from "../../services/adminService";
 import styles from "./AdminApiConfigPage.module.css";
 
@@ -117,6 +118,7 @@ function AdminApiConfigPage() {
   const [dataSources, setDataSources] = useState([]);
   const [dataSourcesLoading, setDataSourcesLoading] = useState(true);
   const [dataSourcesError, setDataSourcesError] = useState("");
+  const [pendingSourceId, setPendingSourceId] = useState(null);
   const [pendingJobs, setPendingJobs] = useState([]);
   const [pendingLimit, setPendingLimit] = useState(50);
   const [pendingLoading, setPendingLoading] = useState(true);
@@ -275,6 +277,44 @@ function AdminApiConfigPage() {
       );
     } finally {
       setDataSourcesLoading(false);
+    }
+  };
+
+  const handleToggleDataSource = async (source) => {
+    if (!source?.id) return;
+
+    const nextActive = !source.isActive;
+    if (!nextActive) {
+      const confirmed = window.confirm(
+        `Deactivate ${source.name || "this data source"}? New sync jobs may stop using it.`,
+      );
+      if (!confirmed) return;
+    }
+
+    setPendingSourceId(source.id);
+    setDataSourcesError("");
+
+    try {
+      const result = await updateSyncDataSourceStatus(source.id, nextActive);
+      const updatedSource = {
+        ...source,
+        ...(result || {}),
+        isActive: result?.isActive ?? nextActive,
+      };
+
+      setDataSources((current) =>
+        current.map((item) =>
+          String(item.id) === String(source.id) ? { ...item, ...updatedSource } : item,
+        ),
+      );
+    } catch (error) {
+      setDataSourcesError(
+        error.response?.data?.message ||
+          error.message ||
+          "Could not update this data source.",
+      );
+    } finally {
+      setPendingSourceId(null);
     }
   };
 
@@ -526,6 +566,20 @@ function AdminApiConfigPage() {
                   </em>
                 </div>
                 <span>Last sync: {formatDate(source.lastSyncAt)}</span>
+                <button
+                  type="button"
+                  className={
+                    source.isActive ? styles.sourceDeactivateButton : styles.sourceActivateButton
+                  }
+                  onClick={() => handleToggleDataSource(source)}
+                  disabled={pendingSourceId === source.id}
+                >
+                  {pendingSourceId === source.id
+                    ? "Saving..."
+                    : source.isActive
+                      ? "Deactivate"
+                      : "Activate"}
+                </button>
               </article>
             ))
           ) : (
@@ -617,6 +671,7 @@ function AdminApiConfigPage() {
           <div><span className={styles.methodPatch}>PATCH</span><code>/admin/users/:id/role</code><small>Role update</small></div>
           <div><span className={styles.methodPatch}>PATCH</span><code>/admin/users/:id/status</code><small>Activate or deactivate</small></div>
           <div><span className={styles.methodGet}>GET</span><code>/admin/sync/data-sources</code><small>Sync data sources</small></div>
+          <div><span className={styles.methodPatch}>PATCH</span><code>/admin/sync/data-sources/:id</code><small>Update source status</small></div>
           <div><span className={styles.methodGet}>GET</span><code>/admin/sync/logs</code><small>Sync history</small></div>
           <div><span className={styles.methodGet}>GET</span><code>/admin/sync/pending</code><small>Pending sync jobs</small></div>
           <div><span className={styles.methodGet}>GET</span><code>/admin/sync/pending/:id</code><small>Sync job detail</small></div>

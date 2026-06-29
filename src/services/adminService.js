@@ -117,6 +117,18 @@ export async function getSyncDataSources() {
   return response
 }
 
+export async function updateSyncDataSourceStatus(sourceId, isActive) {
+  const { data: response } = await api.patch(`/admin/sync/data-sources/${sourceId}`, {
+    isActive,
+  })
+
+  if (response && typeof response === 'object' && 'success' in response) {
+    return unwrapResponse(response, 'Failed to update sync data source.')
+  }
+
+  return response
+}
+
 export async function getPendingSyncJobs(limit = 50) {
   const { data: response } = await api.get('/admin/sync/pending', {
     params: { limit },
