@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { deleteUser, getUsers, updateUserRole } from "../../services/adminService";
+import { deleteUser, getUserById, getUsers, updateUserRole } from "../../services/adminService";
 import { ROLES } from "../../utils/roles";
 import styles from "./AdminUserManagementPage.module.css";
 
@@ -64,6 +64,10 @@ function normalizeRole(role) {
   return "";
 }
 
+function formatRoleLabel(role) {
+  return role === ROLES.LECTURER_STUDENT ? "Lecturer / Student" : role;
+}
+
 function getUserRoles(user) {
   const rawRoles = user.roles ?? user.role ?? user.userRoles ?? [];
   const roles = Array.isArray(rawRoles) ? rawRoles : [rawRoles];
@@ -100,6 +104,10 @@ function getStatus(user) {
   return user.status || "Active";
 }
 
+function getUserId(user) {
+  return user?.id ?? user?.userId;
+}
+
 function formatDate(value) {
   if (!value) return "Not available";
   const date = new Date(value);
@@ -116,6 +124,9 @@ function AdminUserManagementPage() {
   const [roleFilter, setRoleFilter] = useState("All");
   const [activeFilter, setActiveFilter] = useState("All");
   const [pendingId, setPendingId] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
   const currentUserId = localStorage.getItem("userId");
 
@@ -174,7 +185,7 @@ function AdminUserManagementPage() {
   const adminCount = users.filter((user) => userHasRole(user, ROLES.ADMIN)).length;
 
   const handleUpdateRole = async (user, role) => {
-    const id = user.id ?? user.userId;
+    const id = getUserId(user);
     if (!id || role === getPrimaryRole(user)) return;
 
     setPendingId(id);
@@ -183,7 +194,7 @@ function AdminUserManagementPage() {
       await updateUserRole(id, role);
       setUsers((current) =>
         current.map((item) =>
-          (item.id ?? item.userId) === id ? { ...item, role, roles: [role] } : item,
+          getUserId(item) === id ? { ...item, role, roles: [role] } : item,
         ),
       );
       setNotice(`Role updated for ${getDisplayName(user)}.`);
@@ -194,8 +205,35 @@ function AdminUserManagementPage() {
     }
   };
 
+  const handleViewDetails = async (user) => {
+    const id = getUserId(user);
+    if (!id) return;
+
+    setSelectedUser(user);
+    setDetailLoading(true);
+    setDetailError("");
+
+    try {
+      const result = await getUserById(id);
+      setSelectedUser(result || user);
+    } catch (requestError) {
+      setDetailError(
+        requestError.response?.data?.message ||
+          requestError.message ||
+          "Could not load this user detail.",
+      );
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
+  const closeDetails = () => {
+    setSelectedUser(null);
+    setDetailError("");
+  };
+
   const handleDeactivate = async (user) => {
-    const id = user.id ?? user.userId;
+    const id = getUserId(user);
     if (!id || String(id) === String(currentUserId)) return;
 
     const confirmed = window.confirm(
@@ -207,8 +245,11 @@ function AdminUserManagementPage() {
     setNotice("");
     try {
       await deleteUser(id);
-      setUsers((current) => current.filter((item) => (item.id ?? item.userId) !== id));
+      setUsers((current) => current.filter((item) => getUserId(item) !== id));
       setNotice(`${getDisplayName(user)} was deactivated.`);
+      if (String(getUserId(selectedUser)) === String(id)) {
+        closeDetails();
+      }
     } catch (requestError) {
       setError(requestError.response?.data?.message || "Could not deactivate this user.");
     } finally {
@@ -307,7 +348,7 @@ function AdminUserManagementPage() {
             <option value="All">All roles</option>
             {roleOptions.map((role) => (
               <option value={role} key={role}>
-                {role === ROLES.LECTURER_STUDENT ? "Lecturer / Student" : role}
+                {formatRoleLabel(role)}
               </option>
             ))}
           </select>
@@ -354,7 +395,7 @@ function AdminUserManagementPage() {
                 ))
               ) : (
                 filteredUsers.map((user) => {
-                  const id = user.id ?? user.userId;
+                  const id = getUserId(user);
                   const isCurrentUser = String(id) === String(currentUserId);
                   const status = getStatus(user);
                   const joinedAt = user.createdAt || user.joinedAt || user.registeredAt;
@@ -399,7 +440,7 @@ function AdminUserManagementPage() {
                         >
                           {roleOptions.map((role) => (
                             <option value={role} key={role}>
-                              {role === ROLES.LECTURER_STUDENT ? "Lecturer / Student" : role}
+                              {formatRoleLabel(role)}
                             </option>
                           ))}
                         </select>
@@ -411,14 +452,26 @@ function AdminUserManagementPage() {
                         {formatDate(lastLoginAt)}
                       </td>
                       <td className={styles.actionCell}>
-                        <button
-                          type="button"
-                          className={styles.deactivateButton}
-                          disabled={pendingId === id || isCurrentUser}
-                          onClick={() => handleDeactivate(user)}
-                        >
-                          {pendingId === id ? "Working..." : "Deactivate"}
-                        </button>
+                        <div className={styles.actionStack}>
+                          <button
+                            type="button"
+                            className={styles.detailButton}
+                            disabled={detailLoading && String(getUserId(selectedUser)) === String(id)}
+                            onClick={() => handleViewDetails(user)}
+                          >
+                            {detailLoading && String(getUserId(selectedUser)) === String(id)
+                              ? "Loading..."
+                              : "Details"}
+                          </button>
+                          <button
+                            type="button"
+                            className={styles.deactivateButton}
+                            disabled={pendingId === id || isCurrentUser}
+                            onClick={() => handleDeactivate(user)}
+                          >
+                            {pendingId === id ? "Working..." : "Deactivate"}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -436,6 +489,95 @@ function AdminUserManagementPage() {
           </div>
         )}
       </article>
+
+      {selectedUser && (
+        <div className={styles.modalBackdrop} role="presentation" onClick={closeDetails}>
+          <aside
+            className={styles.detailPanel}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="admin-user-detail-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className={styles.detailHeader}>
+              <div className={styles.detailIdentity}>
+                <span className={styles.userAvatar}>{getInitials(selectedUser) || "U"}</span>
+                <div>
+                  <span className={styles.kicker}>User detail</span>
+                  <h3 id="admin-user-detail-title">{getDisplayName(selectedUser)}</h3>
+                  <p>{selectedUser.email || "No email provided"}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className={styles.closeButton}
+                aria-label="Close user detail"
+                onClick={closeDetails}
+              >
+                Close
+              </button>
+            </div>
+
+            {detailLoading && <p className={styles.detailLoading}>Loading latest user data...</p>}
+            {detailError && (
+              <div className={styles.detailError} role="alert">
+                {detailError}
+              </div>
+            )}
+
+            <div className={styles.detailStatusRow}>
+              <span
+                className={`${styles.status} ${
+                  getStatus(selectedUser).toLowerCase() === "active"
+                    ? styles.active
+                    : styles.inactive
+                }`}
+              >
+                <i />
+                {getStatus(selectedUser)}
+              </span>
+              <div className={styles.rolePills}>
+                {getUserRoles(selectedUser).length > 0 ? (
+                  getUserRoles(selectedUser).map((role) => (
+                    <span className={styles.rolePill} key={role}>
+                      {formatRoleLabel(role)}
+                    </span>
+                  ))
+                ) : (
+                  <span className={styles.rolePill}>No role</span>
+                )}
+              </div>
+            </div>
+
+            <div className={styles.detailGrid}>
+              <div className={styles.detailItem}>
+                <span>User ID</span>
+                <strong>{getUserId(selectedUser) || "Not available"}</strong>
+              </div>
+              <div className={styles.detailItem}>
+                <span>Email</span>
+                <strong>{selectedUser.email || "Not available"}</strong>
+              </div>
+              <div className={styles.detailItem}>
+                <span>Institution</span>
+                <strong>{selectedUser.institution || "Not available"}</strong>
+              </div>
+              <div className={styles.detailItem}>
+                <span>Research field</span>
+                <strong>{selectedUser.researchField || "Not available"}</strong>
+              </div>
+              <div className={styles.detailItem}>
+                <span>Created at</span>
+                <strong>{formatDate(selectedUser.createdAt)}</strong>
+              </div>
+              <div className={styles.detailItem}>
+                <span>Last login</span>
+                <strong>{formatDate(selectedUser.lastLoginAt)}</strong>
+              </div>
+            </div>
+          </aside>
+        </div>
+      )}
     </section>
   );
 }

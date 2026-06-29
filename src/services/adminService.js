@@ -56,6 +56,16 @@ export async function getUsers(filters = {}) {
   return response
 }
 
+export async function getUserById(userId) {
+  const { data: response } = await api.get(`/admin/users/${userId}`)
+
+  if (response && typeof response === 'object' && 'success' in response) {
+    return unwrapResponse(response, 'Failed to load admin user detail.')
+  }
+
+  return response
+}
+
 export async function updateUserRole(userId, role) {
   const { data } = await api.put(`/admin/users/${userId}/role`, { role })
   return data
