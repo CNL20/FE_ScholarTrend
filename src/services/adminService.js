@@ -99,3 +99,15 @@ export async function getSyncLogs() {
   const { data } = await api.get('/admin/sync-logs')
   return data
 }
+
+export async function getPendingSyncJobs(limit = 50) {
+  const { data: response } = await api.get('/admin/sync/pending', {
+    params: { limit },
+  })
+
+  if (response && typeof response === 'object' && 'success' in response) {
+    return unwrapResponse(response, 'Failed to load pending sync jobs.')
+  }
+
+  return response
+}
