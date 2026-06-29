@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
-import { getAdminStats, getPendingSyncJobs } from "../../services/adminService";
+import {
+  getAdminStats,
+  getPendingSyncJobById,
+  getPendingSyncJobs,
+} from "../../services/adminService";
 import styles from "./AdminApiConfigPage.module.css";
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:5141/api";
@@ -74,6 +78,11 @@ function formatNumber(value) {
   return Number(value || 0).toLocaleString();
 }
 
+function formatAuthors(authors) {
+  if (!Array.isArray(authors) || authors.length === 0) return "Unknown authors";
+  return authors.filter(Boolean).join(", ");
+}
+
 function AdminApiConfigPage() {
   const [connection, setConnection] = useState("checking");
   const [message, setMessage] = useState("Checking the admin API...");
@@ -81,6 +90,9 @@ function AdminApiConfigPage() {
   const [pendingLimit, setPendingLimit] = useState(50);
   const [pendingLoading, setPendingLoading] = useState(true);
   const [pendingError, setPendingError] = useState("");
+  const [selectedSyncJob, setSelectedSyncJob] = useState(null);
+  const [syncDetailLoading, setSyncDetailLoading] = useState(false);
+  const [syncDetailError, setSyncDetailError] = useState("");
 
   const testConnection = async () => {
     setConnection("checking");
@@ -148,10 +160,15 @@ function AdminApiConfigPage() {
     const limit = Math.max(1, Number(pendingLimit) || 50);
     setPendingLoading(true);
     setPendingError("");
+    setSyncDetailError("");
 
     try {
       const result = await getPendingSyncJobs(limit);
-      setPendingJobs(normalizePendingSyncJobs(result));
+      const jobs = normalizePendingSyncJobs(result);
+      setPendingJobs(jobs);
+      if (selectedSyncJob && !jobs.some((job) => String(job.id) === String(selectedSyncJob.id))) {
+        setSelectedSyncJob(null);
+      }
     } catch (error) {
       setPendingJobs([]);
       setPendingError(
@@ -161,6 +178,27 @@ function AdminApiConfigPage() {
       );
     } finally {
       setPendingLoading(false);
+    }
+  };
+
+  const viewPendingSyncDetail = async (job) => {
+    if (!job?.id) return;
+
+    setSelectedSyncJob(job);
+    setSyncDetailLoading(true);
+    setSyncDetailError("");
+
+    try {
+      const result = await getPendingSyncJobById(job.id);
+      setSelectedSyncJob(result || job);
+    } catch (error) {
+      setSyncDetailError(
+        error.response?.data?.message ||
+          error.message ||
+          "Could not load pending sync detail.",
+      );
+    } finally {
+      setSyncDetailLoading(false);
     }
   };
 
@@ -284,6 +322,7 @@ function AdminApiConfigPage() {
           <div><span className={styles.methodPatch}>PATCH</span><code>/admin/users/:id/role</code><small>Role update</small></div>
           <div><span className={styles.methodPatch}>PATCH</span><code>/admin/users/:id/status</code><small>Activate or deactivate</small></div>
           <div><span className={styles.methodGet}>GET</span><code>/admin/sync/pending</code><small>Pending sync jobs</small></div>
+          <div><span className={styles.methodGet}>GET</span><code>/admin/sync/pending/:id</code><small>Sync job detail</small></div>
         </div>
       </article>
 
@@ -338,7 +377,18 @@ function AdminApiConfigPage() {
                     <strong>Sync #{job.id ?? "unknown"}</strong>
                     <span>{formatDate(job.createdAt)}</span>
                   </div>
-                  <em>{job.status || "Pending"}</em>
+                  <div className={styles.syncJobActions}>
+                    <em>{job.status || "Pending"}</em>
+                    <button
+                      type="button"
+                      onClick={() => viewPendingSyncDetail(job)}
+                      disabled={syncDetailLoading && String(selectedSyncJob?.id) === String(job.id)}
+                    >
+                      {syncDetailLoading && String(selectedSyncJob?.id) === String(job.id)
+                        ? "Loading..."
+                        : "Details"}
+                    </button>
+                  </div>
                 </div>
                 <div className={styles.syncJobStats}>
                   <span><strong>{formatNumber(job.totalFetched)}</strong>Total fetched</span>
@@ -354,6 +404,71 @@ function AdminApiConfigPage() {
             </div>
           )}
         </div>
+
+        {selectedSyncJob && (
+          <div className={styles.syncDetailPanel}>
+            <div className={styles.syncDetailHeader}>
+              <div>
+                <span className={styles.kicker}>Sync detail</span>
+                <h3>Sync #{selectedSyncJob.id ?? "unknown"}</h3>
+                <p>{formatDate(selectedSyncJob.createdAt)}</p>
+              </div>
+              <button type="button" onClick={() => setSelectedSyncJob(null)}>
+                Close
+              </button>
+            </div>
+
+            {syncDetailLoading && (
+              <p className={styles.syncDetailNotice}>Loading papers for this sync job...</p>
+            )}
+            {syncDetailError && (
+              <div className={styles.syncError} role="alert">
+                {syncDetailError}
+              </div>
+            )}
+
+            <div className={styles.syncDetailStats}>
+              <span><strong>{selectedSyncJob.status || "Pending"}</strong>Status</span>
+              <span><strong>{formatNumber(selectedSyncJob.totalFetched)}</strong>Total fetched</span>
+              <span><strong>{formatNumber(selectedSyncJob.totalApproved)}</strong>Approved</span>
+              <span><strong>{formatDate(selectedSyncJob.reviewedAt)}</strong>Reviewed at</span>
+            </div>
+
+            {selectedSyncJob.reviewedByUserId && (
+              <div className={styles.reviewMeta}>
+                Reviewed by: <strong>{selectedSyncJob.reviewedByUserId}</strong>
+              </div>
+            )}
+
+            <div className={styles.paperList}>
+              {(selectedSyncJob.papers || []).length > 0 ? (
+                selectedSyncJob.papers.map((paper) => (
+                  <article className={styles.paperCard} key={paper.id || paper.externalId}>
+                    <div className={styles.paperCardHeader}>
+                      <div>
+                        <strong>{paper.title || "Untitled paper"}</strong>
+                        <span>{formatAuthors(paper.authors)}</span>
+                      </div>
+                      <em>{paper.status || "Pending"}</em>
+                    </div>
+                    <p>{paper.abstract || "No abstract available."}</p>
+                    <div className={styles.paperMeta}>
+                      <span>{paper.externalSource || "Unknown source"}</span>
+                      <span>{paper.year || "No year"}</span>
+                      <span>{formatNumber(paper.citationCount)} citations</span>
+                      <span>{paper.doi || "No DOI"}</span>
+                    </div>
+                  </article>
+                ))
+              ) : (
+                <div className={styles.syncEmpty}>
+                  <Icon name="clock" size={20} />
+                  <p>No papers found for this sync job.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </article>
     </section>
   );

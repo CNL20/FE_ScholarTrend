@@ -111,3 +111,13 @@ export async function getPendingSyncJobs(limit = 50) {
 
   return response
 }
+
+export async function getPendingSyncJobById(syncId) {
+  const { data: response } = await api.get(`/admin/sync/pending/${syncId}`)
+
+  if (response && typeof response === 'object' && 'success' in response) {
+    return unwrapResponse(response, 'Failed to load pending sync detail.')
+  }
+
+  return response
+}
