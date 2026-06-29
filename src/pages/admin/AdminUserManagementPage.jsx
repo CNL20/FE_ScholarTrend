@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { deleteUser, getUserById, getUsers, updateUserRole } from "../../services/adminService";
+import { getUserById, getUsers, updateUserRole, updateUserStatus } from "../../services/adminService";
 import { ROLES } from "../../utils/roles";
 import styles from "./AdminUserManagementPage.module.css";
 
@@ -232,26 +232,43 @@ function AdminUserManagementPage() {
     setDetailError("");
   };
 
-  const handleDeactivate = async (user) => {
+  const handleToggleStatus = async (user) => {
     const id = getUserId(user);
     if (!id || String(id) === String(currentUserId)) return;
 
-    const confirmed = window.confirm(
-      `Deactivate ${getDisplayName(user)}? They will no longer be able to sign in.`,
-    );
-    if (!confirmed) return;
+    const nextActive = !isUserActive(user);
+    if (!nextActive) {
+      const confirmed = window.confirm(
+        `Deactivate ${getDisplayName(user)}? They will no longer be able to sign in.`,
+      );
+      if (!confirmed) return;
+    }
 
     setPendingId(id);
     setNotice("");
     try {
-      await deleteUser(id);
-      setUsers((current) => current.filter((item) => getUserId(item) !== id));
-      setNotice(`${getDisplayName(user)} was deactivated.`);
+      const result = await updateUserStatus(id, nextActive);
+      const updatedUser = {
+        ...user,
+        ...(result || {}),
+        isActive: result?.isActive ?? nextActive,
+      };
+
+      setUsers((current) =>
+        current.map((item) =>
+          String(getUserId(item)) === String(id) ? { ...item, ...updatedUser } : item,
+        ),
+      );
+
       if (String(getUserId(selectedUser)) === String(id)) {
-        closeDetails();
+        setSelectedUser((current) => ({ ...current, ...updatedUser }));
       }
+
+      setNotice(
+        `${getDisplayName(updatedUser)} was ${nextActive ? "activated" : "deactivated"}.`,
+      );
     } catch (requestError) {
-      setError(requestError.response?.data?.message || "Could not deactivate this user.");
+      setError(requestError.response?.data?.message || "Could not update this user status.");
     } finally {
       setPendingId(null);
     }
@@ -465,11 +482,17 @@ function AdminUserManagementPage() {
                           </button>
                           <button
                             type="button"
-                            className={styles.deactivateButton}
+                            className={
+                              isUserActive(user) ? styles.deactivateButton : styles.activateButton
+                            }
                             disabled={pendingId === id || isCurrentUser}
-                            onClick={() => handleDeactivate(user)}
+                            onClick={() => handleToggleStatus(user)}
                           >
-                            {pendingId === id ? "Working..." : "Deactivate"}
+                            {pendingId === id
+                              ? "Working..."
+                              : isUserActive(user)
+                                ? "Deactivate"
+                                : "Activate"}
                           </button>
                         </div>
                       </td>
@@ -547,6 +570,26 @@ function AdminUserManagementPage() {
                   <span className={styles.rolePill}>No role</span>
                 )}
               </div>
+            </div>
+
+            <div className={styles.detailActions}>
+              <button
+                type="button"
+                className={
+                  isUserActive(selectedUser) ? styles.deactivateButton : styles.activateButton
+                }
+                disabled={
+                  pendingId === getUserId(selectedUser) ||
+                  String(getUserId(selectedUser)) === String(currentUserId)
+                }
+                onClick={() => handleToggleStatus(selectedUser)}
+              >
+                {pendingId === getUserId(selectedUser)
+                  ? "Working..."
+                  : isUserActive(selectedUser)
+                    ? "Deactivate account"
+                    : "Activate account"}
+              </button>
             </div>
 
             <div className={styles.detailGrid}>

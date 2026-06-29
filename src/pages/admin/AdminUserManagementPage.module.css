@@ -396,6 +396,7 @@
 }
 
 .detailButton,
+.activateButton,
 .deactivateButton {
   padding: 7px 9px;
   background: transparent;
@@ -415,6 +416,15 @@
   border-color: #d3e4df;
 }
 
+.activateButton {
+  color: #357060;
+}
+
+.activateButton:hover:not(:disabled) {
+  background: #ebf5f1;
+  border-color: #cfe4db;
+}
+
 .deactivateButton {
   color: #9b594f;
 }
@@ -425,6 +435,7 @@
 }
 
 .detailButton:disabled,
+.activateButton:disabled,
 .deactivateButton:disabled {
   cursor: not-allowed;
   opacity: 0.4;
@@ -527,6 +538,12 @@
   justify-content: space-between;
   gap: 12px;
   margin-top: 18px;
+}
+
+.detailActions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 14px;
 }
 
 .rolePills {

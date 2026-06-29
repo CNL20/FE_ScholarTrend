@@ -71,6 +71,16 @@ export async function updateUserRole(userId, role) {
   return data
 }
 
+export async function updateUserStatus(userId, isActive) {
+  const { data: response } = await api.patch(`/admin/users/${userId}/status`, { isActive })
+
+  if (response && typeof response === 'object' && 'success' in response) {
+    return unwrapResponse(response, 'Failed to update admin user status.')
+  }
+
+  return response
+}
+
 export async function deleteUser(userId) {
   await api.delete(`/admin/users/${userId}`)
 }
