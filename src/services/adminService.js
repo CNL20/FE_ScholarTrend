@@ -137,6 +137,18 @@ export async function updateSyncSchedule(payload) {
   return response
 }
 
+export async function getSyncScheduleHistory(limit = 50) {
+  const { data: response } = await api.get('/admin/sync/schedule/history', {
+    params: { limit },
+  })
+
+  if (response && typeof response === 'object' && 'success' in response) {
+    return unwrapResponse(response, 'Failed to load sync schedule history.')
+  }
+
+  return response
+}
+
 export async function getSyncStatus() {
   const { data: response } = await api.get('/admin/sync/status')
 

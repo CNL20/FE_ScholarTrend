@@ -7,6 +7,7 @@ import {
   getSyncDataSources,
   getSyncLogs,
   getSyncSchedule,
+  getSyncScheduleHistory,
   getSyncStatus,
   getSyncStatusBySource,
   rejectPendingSyncJob,
@@ -81,6 +82,11 @@ function normalizeSyncLogs(result) {
 function normalizeDataSources(result) {
   const sources = result?.items || result?.sources || result?.data || result;
   return Array.isArray(sources) ? sources : [];
+}
+
+function normalizeScheduleHistory(result) {
+  const history = result?.items || result?.history || result?.data || result;
+  return Array.isArray(history) ? history : [];
 }
 
 function normalizeSyncStatus(result) {
@@ -162,6 +168,10 @@ function AdminApiConfigPage() {
   const [syncScheduleSaving, setSyncScheduleSaving] = useState(false);
   const [syncScheduleError, setSyncScheduleError] = useState("");
   const [syncScheduleNotice, setSyncScheduleNotice] = useState("");
+  const [scheduleHistory, setScheduleHistory] = useState([]);
+  const [scheduleHistoryLimit, setScheduleHistoryLimit] = useState(50);
+  const [scheduleHistoryLoading, setScheduleHistoryLoading] = useState(true);
+  const [scheduleHistoryError, setScheduleHistoryError] = useState("");
   const [pendingJobs, setPendingJobs] = useState([]);
   const [pendingLimit, setPendingLimit] = useState(50);
   const [pendingLoading, setPendingLoading] = useState(true);
@@ -271,6 +281,24 @@ function AdminApiConfigPage() {
       })
       .finally(() => {
         if (active) setSyncStatusLoading(false);
+      });
+
+    getSyncScheduleHistory(50)
+      .then((result) => {
+        if (!active) return;
+        setScheduleHistory(normalizeScheduleHistory(result));
+      })
+      .catch((error) => {
+        if (!active) return;
+        setScheduleHistory([]);
+        setScheduleHistoryError(
+          error.response?.data?.message ||
+            error.message ||
+            "Could not load sync schedule history.",
+        );
+      })
+      .finally(() => {
+        if (active) setScheduleHistoryLoading(false);
       });
 
     getPendingSyncJobs(50)
@@ -451,6 +479,26 @@ function AdminApiConfigPage() {
       );
     } finally {
       setSyncScheduleSaving(false);
+    }
+  };
+
+  const refreshScheduleHistory = async () => {
+    const limit = Math.max(1, Number(scheduleHistoryLimit) || 50);
+    setScheduleHistoryLoading(true);
+    setScheduleHistoryError("");
+
+    try {
+      const result = await getSyncScheduleHistory(limit);
+      setScheduleHistory(normalizeScheduleHistory(result));
+    } catch (error) {
+      setScheduleHistory([]);
+      setScheduleHistoryError(
+        error.response?.data?.message ||
+          error.message ||
+          "Could not load sync schedule history.",
+      );
+    } finally {
+      setScheduleHistoryLoading(false);
     }
   };
 
@@ -884,6 +932,82 @@ function AdminApiConfigPage() {
         <div className={styles.syncPanelHeader}>
           <div>
             <span className={styles.kicker}>Synchronization</span>
+            <h3>Schedule history</h3>
+          </div>
+          <div className={styles.pendingControls}>
+            <label>
+              Limit
+              <input
+                type="number"
+                min="1"
+                max="200"
+                value={scheduleHistoryLimit}
+                onChange={(event) => setScheduleHistoryLimit(event.target.value)}
+              />
+            </label>
+            <button
+              type="button"
+              className={styles.syncRefreshButton}
+              onClick={refreshScheduleHistory}
+              disabled={scheduleHistoryLoading}
+            >
+              <Icon name="refresh" size={15} />
+              {scheduleHistoryLoading ? "Loading..." : "Refresh"}
+            </button>
+          </div>
+        </div>
+
+        {scheduleHistoryError && (
+          <div className={styles.syncError} role="alert">
+            {scheduleHistoryError}
+          </div>
+        )}
+
+        <div className={styles.syncJobsList}>
+          {scheduleHistoryLoading ? (
+            Array.from({ length: 3 }, (_, index) => (
+              <div className={styles.syncSkeleton} key={index}>
+                <span />
+                <span />
+              </div>
+            ))
+          ) : scheduleHistory.length > 0 ? (
+            scheduleHistory.map((job) => (
+              <article className={styles.syncJobCard} key={job.id || `${job.jobId}-${job.startedAt}`}>
+                <div className={styles.syncJobTop}>
+                  <div>
+                    <strong>{job.jobName || "Scheduled sync job"}</strong>
+                    <span>
+                      {formatDate(job.startedAt)} - {formatDate(job.completedAt)}
+                    </span>
+                  </div>
+                  <em>{job.status || "Unknown"}</em>
+                </div>
+                <div className={styles.historyMeta}>
+                  <span><strong>{job.id ?? "N/A"}</strong>History ID</span>
+                  <span><strong>{job.jobId ?? "N/A"}</strong>Job ID</span>
+                  <span><strong>{job.jobName || "Unknown"}</strong>Job name</span>
+                </div>
+                {job.errorMessage && (
+                  <div className={styles.syncLogMessage}>
+                    {job.errorMessage}
+                  </div>
+                )}
+              </article>
+            ))
+          ) : (
+            <div className={styles.syncEmpty}>
+              <Icon name="clock" size={20} />
+              <p>No schedule history yet.</p>
+            </div>
+          )}
+        </div>
+      </article>
+
+      <article className={styles.routesPanel}>
+        <div className={styles.syncPanelHeader}>
+          <div>
+            <span className={styles.kicker}>Synchronization</span>
             <h3>Live sync status</h3>
           </div>
           <button
@@ -1226,6 +1350,7 @@ function AdminApiConfigPage() {
           <div><span className={styles.methodPatch}>PATCH</span><code>/admin/sync/data-sources/:id</code><small>Update source status</small></div>
           <div><span className={styles.methodGet}>GET</span><code>/admin/sync/schedule</code><small>Sync schedule</small></div>
           <div><span className={styles.methodPut}>PUT</span><code>/admin/sync/schedule</code><small>Update sync schedule</small></div>
+          <div><span className={styles.methodGet}>GET</span><code>/admin/sync/schedule/history</code><small>Schedule job history</small></div>
           <div><span className={styles.methodGet}>GET</span><code>/admin/sync/status</code><small>Live sync status</small></div>
           <div><span className={styles.methodGet}>GET</span><code>/admin/sync/status/:sourceName</code><small>Source sync status</small></div>
           <div><span className={styles.methodGet}>GET</span><code>/admin/sync/logs</code><small>Sync history</small></div>

@@ -1229,6 +1229,35 @@
   letter-spacing: -0.03em;
 }
 
+.historyMeta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.historyMeta span {
+  min-width: 0;
+  overflow: hidden;
+  padding: 9px;
+  color: #8b938f;
+  background: #fff;
+  border: 1px solid #eef0ed;
+  border-radius: 9px;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.historyMeta strong {
+  display: block;
+  margin-bottom: 2px;
+  overflow: hidden;
+  color: #2d433d;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .syncLogMessage {
   margin-top: 10px;
   padding: 9px 10px;
@@ -1650,6 +1679,7 @@
     width: 100%;
   }
 
+  .historyMeta,
   .syncJobStats {
     grid-template-columns: 1fr;
   }
