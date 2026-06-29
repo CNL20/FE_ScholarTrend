@@ -127,6 +127,16 @@ export async function getSyncSchedule() {
   return response
 }
 
+export async function updateSyncSchedule(payload) {
+  const { data: response } = await api.put('/admin/sync/schedule', payload)
+
+  if (response && typeof response === 'object' && 'success' in response) {
+    return unwrapResponse(response, 'Failed to update sync schedule.')
+  }
+
+  return response
+}
+
 export async function updateSyncDataSourceStatus(sourceId, isActive) {
   const { data: response } = await api.patch(`/admin/sync/data-sources/${sourceId}`, {
     isActive,

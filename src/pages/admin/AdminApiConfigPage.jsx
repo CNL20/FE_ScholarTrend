@@ -9,6 +9,7 @@ import {
   getSyncSchedule,
   rejectPendingSyncJob,
   updateSyncDataSourceStatus,
+  updateSyncSchedule,
 } from "../../services/adminService";
 import styles from "./AdminApiConfigPage.module.css";
 
@@ -113,6 +114,24 @@ function getSelectablePaperIds(papers) {
   return papers.filter(canApprovePaper).map(getPaperId);
 }
 
+function buildScheduleDraft(schedule = {}) {
+  return {
+    enabled: Boolean(schedule.enabled),
+    cronExpression: schedule.cronExpression || "",
+    timeZone: schedule.timeZone || "",
+    searchQueries: Array.isArray(schedule.searchQueries)
+      ? schedule.searchQueries.filter(Boolean).join("\n")
+      : "",
+  };
+}
+
+function parseScheduleQueries(value) {
+  return String(value || "")
+    .split(/\r?\n|,/)
+    .map((query) => query.trim())
+    .filter(Boolean);
+}
+
 function AdminApiConfigPage() {
   const [connection, setConnection] = useState("checking");
   const [message, setMessage] = useState("Checking the admin API...");
@@ -121,8 +140,11 @@ function AdminApiConfigPage() {
   const [dataSourcesError, setDataSourcesError] = useState("");
   const [pendingSourceId, setPendingSourceId] = useState(null);
   const [syncSchedule, setSyncSchedule] = useState(null);
+  const [scheduleDraft, setScheduleDraft] = useState(() => buildScheduleDraft());
   const [syncScheduleLoading, setSyncScheduleLoading] = useState(true);
+  const [syncScheduleSaving, setSyncScheduleSaving] = useState(false);
   const [syncScheduleError, setSyncScheduleError] = useState("");
+  const [syncScheduleNotice, setSyncScheduleNotice] = useState("");
   const [pendingJobs, setPendingJobs] = useState([]);
   const [pendingLimit, setPendingLimit] = useState(50);
   const [pendingLoading, setPendingLoading] = useState(true);
@@ -201,6 +223,7 @@ function AdminApiConfigPage() {
       .then((result) => {
         if (!active) return;
         setSyncSchedule(result || null);
+        setScheduleDraft(buildScheduleDraft(result || {}));
       })
       .catch((error) => {
         if (!active) return;
@@ -286,10 +309,12 @@ function AdminApiConfigPage() {
   const refreshSyncSchedule = async () => {
     setSyncScheduleLoading(true);
     setSyncScheduleError("");
+    setSyncScheduleNotice("");
 
     try {
       const result = await getSyncSchedule();
       setSyncSchedule(result || null);
+      setScheduleDraft(buildScheduleDraft(result || {}));
     } catch (error) {
       setSyncSchedule(null);
       setSyncScheduleError(
@@ -299,6 +324,46 @@ function AdminApiConfigPage() {
       );
     } finally {
       setSyncScheduleLoading(false);
+    }
+  };
+
+  const handleScheduleDraftChange = (event) => {
+    const { checked, name, type, value } = event.target;
+    setSyncScheduleNotice("");
+    setScheduleDraft((current) => ({
+      ...current,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleSaveSyncSchedule = async (event) => {
+    event.preventDefault();
+
+    const payload = {
+      enabled: Boolean(scheduleDraft.enabled),
+      cronExpression: scheduleDraft.cronExpression.trim(),
+      timeZone: scheduleDraft.timeZone.trim(),
+      searchQueries: parseScheduleQueries(scheduleDraft.searchQueries),
+    };
+
+    setSyncScheduleSaving(true);
+    setSyncScheduleError("");
+    setSyncScheduleNotice("");
+
+    try {
+      const result = await updateSyncSchedule(payload);
+      const nextSchedule = result || payload;
+      setSyncSchedule(nextSchedule);
+      setScheduleDraft(buildScheduleDraft(nextSchedule));
+      setSyncScheduleNotice("Sync schedule updated successfully.");
+    } catch (error) {
+      setSyncScheduleError(
+        error.response?.data?.message ||
+          error.message ||
+          "Could not update sync schedule.",
+      );
+    } finally {
+      setSyncScheduleSaving(false);
     }
   };
 
@@ -639,6 +704,73 @@ function AdminApiConfigPage() {
                 )}
               </div>
             </div>
+
+            {syncScheduleNotice && (
+              <div className={styles.scheduleNotice} role="status">
+                {syncScheduleNotice}
+              </div>
+            )}
+
+            <form className={styles.scheduleForm} onSubmit={handleSaveSyncSchedule}>
+              <label className={styles.scheduleToggle}>
+                <input
+                  type="checkbox"
+                  name="enabled"
+                  checked={scheduleDraft.enabled}
+                  onChange={handleScheduleDraftChange}
+                  disabled={syncScheduleSaving}
+                />
+                <span />
+                <div>
+                  <strong>Enable scheduled sync</strong>
+                  <small>Allow the backend scheduler to run automatic paper sync jobs.</small>
+                </div>
+              </label>
+
+              <div className={styles.scheduleFormGrid}>
+                <label>
+                  Cron expression
+                  <input
+                    type="text"
+                    name="cronExpression"
+                    value={scheduleDraft.cronExpression}
+                    onChange={handleScheduleDraftChange}
+                    placeholder="0 0 * * *"
+                    disabled={syncScheduleSaving}
+                  />
+                </label>
+                <label>
+                  Time zone
+                  <input
+                    type="text"
+                    name="timeZone"
+                    value={scheduleDraft.timeZone}
+                    onChange={handleScheduleDraftChange}
+                    placeholder="Asia/Bangkok"
+                    disabled={syncScheduleSaving}
+                  />
+                </label>
+              </div>
+
+              <label className={styles.scheduleTextarea}>
+                Search queries
+                <textarea
+                  name="searchQueries"
+                  value={scheduleDraft.searchQueries}
+                  onChange={handleScheduleDraftChange}
+                  placeholder="Artificial Intelligence&#10;Machine Learning&#10;Cloud Computing"
+                  disabled={syncScheduleSaving}
+                  rows={4}
+                />
+                <small>Use one query per line, or separate queries with commas.</small>
+              </label>
+
+              <div className={styles.scheduleFormActions}>
+                <button type="submit" disabled={syncScheduleSaving}>
+                  {syncScheduleSaving ? "Saving..." : "Save schedule"}
+                </button>
+              </div>
+            </form>
           </>
         ) : (
           <div className={styles.syncEmpty}>
@@ -799,6 +931,7 @@ function AdminApiConfigPage() {
           <div><span className={styles.methodGet}>GET</span><code>/admin/sync/data-sources</code><small>Sync data sources</small></div>
           <div><span className={styles.methodPatch}>PATCH</span><code>/admin/sync/data-sources/:id</code><small>Update source status</small></div>
           <div><span className={styles.methodGet}>GET</span><code>/admin/sync/schedule</code><small>Sync schedule</small></div>
+          <div><span className={styles.methodPut}>PUT</span><code>/admin/sync/schedule</code><small>Update sync schedule</small></div>
           <div><span className={styles.methodGet}>GET</span><code>/admin/sync/logs</code><small>Sync history</small></div>
           <div><span className={styles.methodGet}>GET</span><code>/admin/sync/pending</code><small>Pending sync jobs</small></div>
           <div><span className={styles.methodGet}>GET</span><code>/admin/sync/pending/:id</code><small>Sync job detail</small></div>
