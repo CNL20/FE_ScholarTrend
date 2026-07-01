@@ -31,3 +31,27 @@ export async function getPublicationReport(filters = {}) {
     generatedAt: result.generatedAt ?? null,
   }
 }
+
+export async function exportReportAsJson(filters = {}) {
+  const { data } = await api.get('/reports/export/json', {
+    params: {
+      YearFrom: filters.yearFrom || undefined,
+      YearTo: filters.yearTo || undefined,
+      GroupBy: filters.groupBy?.trim() || undefined,
+    },
+    responseType: 'blob',
+  })
+  return data
+}
+
+export async function exportReportAsCsv(filters = {}) {
+  const { data } = await api.get('/reports/export/csv', {
+    params: {
+      YearFrom: filters.yearFrom || undefined,
+      YearTo: filters.yearTo || undefined,
+      GroupBy: filters.groupBy?.trim() || undefined,
+    },
+    responseType: 'blob',
+  })
+  return data
+}

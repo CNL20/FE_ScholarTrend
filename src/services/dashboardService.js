@@ -9,3 +9,12 @@ export async function getPersonalDashboard() {
 
   return response.data
 }
+export async function getDashboardOverview() {
+  const { data: response } = await api.get('/dashboard/overview')
+
+  if (!response.success || !response.data) {
+    throw new Error(response.message || 'Failed to load dashboard overview data.')
+  }
+
+  return response.data
+}

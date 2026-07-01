@@ -232,3 +232,13 @@ export async function recordView(paperId) {
   const { data } = await api.post(`/papers/${paperId}/view`)
   return data
 }
+
+/**
+ * Thống kê tổng quan tất cả bài báo
+ */
+export async function getGlobalPaperAggregate() {
+  const { data: response } = await api.get('/papers/aggregate')
+  const result = unwrapResponse(response, 'Failed to aggregate global paper metadata.')
+
+  return normalizeAggregateResult(result)
+}

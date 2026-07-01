@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getAdminDashboard } from "../../services/adminService";
+import { getGlobalPaperAggregate } from "../../services/paperService";
 import styles from "./AdminDashboardPage.module.css";
 
 const metricDefinitions = [
@@ -163,6 +164,7 @@ function formatDate(value) {
 function AdminDashboardPage() {
   const [stats, setStats] = useState({});
   const [logs, setLogs] = useState([]);
+  const [aggregateData, setAggregateData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
@@ -175,11 +177,15 @@ function AdminDashboardPage() {
       setError("");
 
       try {
-        const result = await getAdminDashboard();
+        const [result, agg] = await Promise.all([
+          getAdminDashboard(),
+          getGlobalPaperAggregate().catch(() => null)
+        ]);
         if (!active) return;
 
         setStats(result || {});
         setLogs(normalizeLogs(result?.recentSyncLogs || []));
+        setAggregateData(agg);
       } catch (err) {
         if (!active) return;
 
@@ -390,6 +396,31 @@ function AdminDashboardPage() {
                 ))
               ) : (
                 <p className={styles.compactEmpty}>No data sources configured.</p>
+              )}
+            </div>
+          </article>
+
+          <article className={`${styles.panel} ${styles.compactPanel}`}>
+            <span className={styles.panelKicker}>Quality</span>
+            <h3>Global Paper Stats</h3>
+            <div className={styles.compactList}>
+              {aggregateData ? (
+                <>
+                  <div className={styles.compactRow}>
+                    <span>Trust Score</span>
+                    <strong>{Number(aggregateData.trustScore || 0).toFixed(1)}</strong>
+                  </div>
+                  <div className={styles.compactRow}>
+                    <span>Completeness</span>
+                    <strong>{Number(aggregateData.completenessScore || 0).toFixed(1)}</strong>
+                  </div>
+                  <div className={styles.compactRow}>
+                    <span>Confidence Level</span>
+                    <strong>{aggregateData.confidenceLevel || 'Unknown'}</strong>
+                  </div>
+                </>
+              ) : (
+                <p className={styles.compactEmpty}>No global stats available.</p>
               )}
             </div>
           </article>

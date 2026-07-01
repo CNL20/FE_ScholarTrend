@@ -11,7 +11,7 @@ import {
 } from 'recharts'
 import StatsCard from '../components/StatsCard'
 import Skeleton from '../components/Skeleton'
-import { getPersonalDashboard } from '../services/dashboardService'
+import { getPersonalDashboard, getDashboardOverview } from '../services/dashboardService'
 import styles from './dashboardPage.module.css'
 
 const quickActions = [
@@ -28,11 +28,17 @@ function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
+  const [overviewData, setOverviewData] = useState(null)
+
   useEffect(() => {
     async function fetchDashboardData() {
       try {
-        const result = await getPersonalDashboard()
-        setDashboardData(result)
+        const [personal, overview] = await Promise.all([
+          getPersonalDashboard(),
+          getDashboardOverview().catch(() => null)
+        ])
+        setDashboardData(personal)
+        if (overview) setOverviewData(overview)
       } catch (err) {
         setError(err.response?.data?.message || err.message || 'Failed to load dashboard data')
       } finally {
@@ -96,6 +102,18 @@ function DashboardPage() {
           <StatsCard key={item.label} label={item.label} value={String(item.value)} />
         ))}
       </div>
+
+      {overviewData && (
+        <article className={styles.panel} style={{ marginTop: '1.25rem' }}>
+          <h2 className={styles.panelTitle}>Platform Overview</h2>
+          <div className={styles.statsGrid} style={{ marginBottom: 0, marginTop: '1rem' }}>
+            <StatsCard label="Total Authors" value={overviewData.totalAuthors ?? 0} />
+            <StatsCard label="Total Papers" value={overviewData.totalPapers ?? 0} />
+            <StatsCard label="Tracked Topics" value={overviewData.totalTopics ?? 0} />
+            <StatsCard label="Tracked Journals" value={overviewData.totalJournals ?? 0} />
+          </div>
+        </article>
+      )}
 
       {/* Quick Actions */}
       <article className={styles.panel}>
