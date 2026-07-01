@@ -135,17 +135,14 @@ function PublicationReportPage() {
         </label>
         <label>
           <span>Group by</span>
-          <input
-            type="text"
-            list="report-group-options"
+          <select
             value={filters.groupBy}
             onChange={handleChange('groupBy')}
             required
-          />
-          <datalist id="report-group-options">
-            <option value="Year" />
-            <option value="Month" />
-          </datalist>
+          >
+            <option value="Year">Year</option>
+            <option value="Month">Month</option>
+          </select>
         </label>
         <button type="submit" disabled={loading}>
           {loading ? 'Generating...' : 'Generate report'}

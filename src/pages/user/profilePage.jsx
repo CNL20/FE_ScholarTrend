@@ -101,6 +101,7 @@ function ProfilePage() {
   const [processingAvatar, setProcessingAvatar] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [fieldErrors, setFieldErrors] = useState({})
 
   useEffect(() => {
     async function fetchProfile() {
@@ -195,6 +196,14 @@ function ProfilePage() {
 
   const handleProfileSubmit = async (event) => {
     event.preventDefault()
+
+    const errors = {}
+    if (!profile.fullName.trim()) {
+      errors.fullName = 'Full name is required.'
+    }
+    setFieldErrors(errors)
+    if (Object.keys(errors).length > 0) return
+
     setSavingProfile(true)
     setError('')
     setSuccess('')
@@ -215,8 +224,10 @@ function ProfilePage() {
         roles: result.roles || current.roles,
       }))
       setSuccess('Profile updated successfully.')
+      setFieldErrors({})
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Failed to update profile')
+      setFieldErrors({})
     } finally {
       setSavingProfile(false)
     }
@@ -224,14 +235,24 @@ function ProfilePage() {
 
   const handlePasswordSubmit = async (event) => {
     event.preventDefault()
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setError('Passwords do not match.')
-      return
+
+    const errors = {}
+    if (!passwordData.currentPassword) {
+      errors.currentPassword = 'Current password is required.'
     }
-    if (passwordData.newPassword.length < 6) {
-      setError('New password must be at least 6 characters.')
-      return
+    if (!passwordData.newPassword) {
+      errors.newPassword = 'New password is required.'
+    } else if (passwordData.newPassword.length < 6) {
+      errors.newPassword = 'New password must be at least 6 characters.'
     }
+    if (!passwordData.confirmPassword) {
+      errors.confirmPassword = 'Please confirm your new password.'
+    } else if (passwordData.newPassword !== passwordData.confirmPassword) {
+      errors.confirmPassword = 'Passwords do not match.'
+    }
+
+    setFieldErrors(errors)
+    if (Object.keys(errors).length > 0) return
 
     setChangingPassword(true)
     setError('')
@@ -242,9 +263,11 @@ function ProfilePage() {
         newPassword: passwordData.newPassword,
       })
       setSuccess('Password changed successfully.')
+      setFieldErrors({})
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' })
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Failed to change password')
+      setFieldErrors({})
     } finally {
       setChangingPassword(false)
     }
@@ -362,12 +385,14 @@ function ProfilePage() {
                 <label className={styles.label} htmlFor="fullName">Full name</label>
                 <input
                   id="fullName"
-                  className={styles.input}
+                  className={`${styles.input}${fieldErrors.fullName ? ` ${styles.inputError}` : ''}`}
                   value={profile.fullName}
                   onChange={handleProfileChange('fullName')}
                   placeholder="Your full name"
                   required
+                  maxLength={100}
                 />
+                {fieldErrors.fullName && <span className={styles.fieldError}>{fieldErrors.fullName}</span>}
               </div>
               <div className={styles.field}>
                 <label className={styles.label} htmlFor="email">Email address</label>
@@ -382,6 +407,7 @@ function ProfilePage() {
                   value={profile.institution}
                   onChange={handleProfileChange('institution')}
                   placeholder="e.g. FPT University"
+                  maxLength={200}
                 />
               </div>
               <div className={styles.field}>
@@ -392,6 +418,7 @@ function ProfilePage() {
                   value={profile.researchField}
                   onChange={handleProfileChange('researchField')}
                   placeholder="e.g. Artificial Intelligence"
+                  maxLength={200}
                 />
               </div>
             </div>
@@ -423,39 +450,45 @@ function ProfilePage() {
                 <input
                   id="currentPassword"
                   type="password"
-                  className={styles.input}
+                  className={`${styles.input}${fieldErrors.currentPassword ? ` ${styles.inputError}` : ''}`}
                   value={passwordData.currentPassword}
                   onChange={handlePasswordChange('currentPassword')}
                   autoComplete="current-password"
                   placeholder="Enter current password"
                   required
+                  maxLength={128}
                 />
+                {fieldErrors.currentPassword && <span className={styles.fieldError}>{fieldErrors.currentPassword}</span>}
               </div>
               <div className={styles.field}>
                 <label className={styles.label} htmlFor="newPassword">New password</label>
                 <input
                   id="newPassword"
                   type="password"
-                  className={styles.input}
+                  className={`${styles.input}${fieldErrors.newPassword ? ` ${styles.inputError}` : ''}`}
                   value={passwordData.newPassword}
                   onChange={handlePasswordChange('newPassword')}
                   autoComplete="new-password"
                   placeholder="At least 6 characters"
                   required
+                  maxLength={128}
                 />
+                {fieldErrors.newPassword && <span className={styles.fieldError}>{fieldErrors.newPassword}</span>}
               </div>
               <div className={styles.field}>
                 <label className={styles.label} htmlFor="confirmPassword">Confirm new password</label>
                 <input
                   id="confirmPassword"
                   type="password"
-                  className={styles.input}
+                  className={`${styles.input}${fieldErrors.confirmPassword ? ` ${styles.inputError}` : ''}`}
                   value={passwordData.confirmPassword}
                   onChange={handlePasswordChange('confirmPassword')}
                   autoComplete="new-password"
                   placeholder="Repeat new password"
                   required
+                  maxLength={128}
                 />
+                {fieldErrors.confirmPassword && <span className={styles.fieldError}>{fieldErrors.confirmPassword}</span>}
               </div>
             </div>
             <div className={styles.formActions}>

@@ -266,6 +266,7 @@ function AdminUserManagementPage() {
               type="search"
               aria-label="Search users"
               placeholder="Search by name or email"
+              maxLength={200}
               value={search}
               onChange={(event) => setSearch(event.target.value)}
             />

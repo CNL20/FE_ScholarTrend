@@ -39,6 +39,7 @@ function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [googleToken, setGoogleToken] = useState("");
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [googleReady, setGoogleReady] = useState(false);
@@ -132,15 +133,20 @@ function LoginPage() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!validateEmail(form.email)) {
-      setError("Please enter a valid email address.");
-      return;
+    const errors = {};
+    if (!form.email.trim()) {
+      errors.email = "Email is required.";
+    } else if (!validateEmail(form.email)) {
+      errors.email = "Please enter a valid email address.";
+    }
+    if (!form.password) {
+      errors.password = "Password is required.";
+    } else if (!validatePassword(form.password)) {
+      errors.password = "Password must be at least 6 characters.";
     }
 
-    if (!validatePassword(form.password)) {
-      setError("Password must be at least 6 characters.");
-      return;
-    }
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) return;
 
     setLoading(true);
     setError("");
@@ -185,32 +191,36 @@ function LoginPage() {
         {location.state?.message && (
           <p className={styles.success}>{location.state.message}</p>
         )}
-        <form className={styles.form} onSubmit={handleSubmit} noValidate>
+        <form className={styles.form} onSubmit={handleSubmit}>
           <div className={styles.fieldGroup}>
             <label htmlFor="login-email" className={styles.label}>Email Address</label>
             <input
               id="login-email"
-              className={styles.input}
+              className={`${styles.input}${fieldErrors.email ? ` ${styles.inputError}` : ''}`}
               type="email"
               placeholder="you@university.edu"
               autoComplete="email"
               required
+              maxLength={254}
               value={form.email}
               onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
             />
+            {fieldErrors.email && <span className={styles.fieldError}>{fieldErrors.email}</span>}
           </div>
           <div className={styles.fieldGroup}>
             <label htmlFor="login-password" className={styles.label}>Password</label>
             <input
               id="login-password"
-              className={styles.input}
+              className={`${styles.input}${fieldErrors.password ? ` ${styles.inputError}` : ''}`}
               type="password"
               autoComplete="current-password"
               required
+              maxLength={128}
               placeholder="........"
               value={form.password}
               onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
             />
+            {fieldErrors.password && <span className={styles.fieldError}>{fieldErrors.password}</span>}
           </div>
           {error && <p className={styles.error}>{error}</p>}
           <button type="submit" className={styles.button} disabled={loading || googleLoading}>
@@ -241,6 +251,8 @@ function LoginPage() {
                 className={styles.input}
                 type="text"
                 placeholder="Paste Google idToken"
+                required
+                maxLength={4096}
                 value={googleToken}
                 onChange={(e) => setGoogleToken(e.target.value)}
               />
