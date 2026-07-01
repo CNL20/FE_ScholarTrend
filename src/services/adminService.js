@@ -86,14 +86,6 @@ export async function updateUserStatus(userId, isActive) {
   return response
 }
 
-export async function deleteUser(userId) {
-  await api.delete(`/admin/users/${userId}`)
-}
-
-export async function getAdminStats() {
-  const { data } = await api.get('/admin/stats')
-  return data
-}
 
 export async function getSyncLogs(limit = 50) {
   const { data: response } = await api.get('/admin/sync/logs', {

@@ -23,6 +23,7 @@ function normalizePaperListItem(paper) {
       .filter(Boolean),
     keywords: paper.keywords ?? [],
     citationCount: paper.citationCount ?? 0,
+    viewCount: paper.viewCount ?? 0,
   }
 }
 
@@ -46,6 +47,7 @@ function normalizePaperDetail(paper) {
     keywords: paper.keywords ?? [],
     topics: paper.topics ?? [],
     citationCount: paper.citationCount ?? 0,
+    viewCount: paper.viewCount ?? 0,
     isBookmarked: Boolean(paper.isBookmarked),
   }
 }
@@ -210,8 +212,8 @@ export async function aggregatePaperById(id) {
  * @returns {Paper[]}
  */
 export async function getRecentPapers(count = 10) {
-  const { data } = await api.get('/papers/recent', { params: { count } })
-  return data
+  const result = await searchPapers({ pageSize: count })
+  return result.items || []
 }
 
 /**
