@@ -28,7 +28,7 @@
   width: 44px;
   height: 44px;
   background: var(--color-brand);
-  color: #fff;
+  color: var(--color-on-brand);
   border-radius: var(--radius-md);
   font-size: 1.25rem;
   flex-shrink: 0;
@@ -80,7 +80,7 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background:
-    radial-gradient(circle at top right, rgba(59, 130, 246, 0.08), transparent 35%),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--color-brand-light) 8%, transparent), transparent 35%),
     var(--color-surface);
   box-shadow: var(--shadow-sm);
 }
@@ -142,7 +142,7 @@
   min-width: 22px;
   padding: 0.08rem 0.35rem;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.82);
+  background: color-mix(in srgb, var(--color-surface) 82%, transparent);
   color: inherit;
   text-align: center;
   font-size: 0.68rem;
@@ -208,7 +208,7 @@
   padding: 0.25rem 0.5rem;
   border: 1px solid var(--color-border);
   border-radius: 999px;
-  background: #f8fafc;
+  background: var(--color-bg);
   color: var(--color-text-muted);
   font-size: 0.68rem;
   font-weight: 800;
@@ -246,7 +246,7 @@
   padding: 2rem 1rem;
   border: 1px dashed var(--color-border);
   border-radius: var(--radius-md);
-  background: #f8fafc;
+  background: var(--color-bg);
   color: var(--color-text-muted);
   text-align: center;
 }
@@ -330,7 +330,7 @@
 }
 
 .unfollowBtn:hover {
-  background: #fef2f2;
+  background: var(--color-danger-bg);
 }
 
 .unfollowBtn:disabled {
@@ -408,7 +408,7 @@
   padding: 1rem;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  background: linear-gradient(145deg, #f8fbff, #ffffff);
+  background: var(--color-surface);
 }
 
 .settingsHeader {
@@ -467,7 +467,7 @@
 }
 
 .settingsGrid .settingOn {
-  color: #15803d;
+  color: var(--color-success);
 }
 
 .settingsGrid .settingOff {
@@ -529,7 +529,7 @@
   border: 1px solid var(--color-brand);
   border-radius: 8px;
   background: var(--color-brand);
-  color: #ffffff;
+  color: var(--color-on-brand);
   font-size: 0.72rem;
   font-weight: 750;
   cursor: pointer;
@@ -541,7 +541,7 @@
 }
 
 .settingsSuccess {
-  color: #15803d;
+  color: var(--color-success);
   font-size: 0.72rem;
 }
 

@@ -11,7 +11,7 @@
   padding: 1.6rem;
   border: 1px solid var(--color-border);
   border-radius: 16px;
-  background: linear-gradient(135deg, #eff6ff, #ffffff 58%, #f0fdfa);
+  background: linear-gradient(135deg, var(--color-brand-bg), var(--color-surface) 58%, #f0fdfa);
   box-shadow: var(--shadow-sm);
 }
 
@@ -64,8 +64,8 @@
 }
 
 .followButton {
-  background: #ffffff;
-  border-color: #bfdbfe;
+  background: var(--color-surface);
+  border-color: var(--color-brand-border);
   color: var(--color-brand);
   cursor: pointer;
   box-shadow: 0 6px 16px rgba(30, 64, 175, 0.08);
@@ -77,14 +77,14 @@
 }
 
 .followingButton {
-  border-color: #bbf7d0;
-  background: #f0fdf4;
-  color: #15803d;
+  border-color: var(--color-success-border);
+  background: var(--color-success-bg);
+  color: var(--color-success);
 }
 
 .primaryLink {
   background: var(--color-brand);
-  color: #ffffff;
+  color: var(--color-on-brand);
   box-shadow: 0 6px 16px rgba(30, 64, 175, 0.18);
 }
 
@@ -148,9 +148,9 @@
 
 .errorState {
   padding: 2rem;
-  border: 1px solid #fecaca;
+  border: 1px solid var(--color-danger-border);
   border-radius: 14px;
-  background: #fff7f7;
+  background: var(--color-danger-bg);
   color: var(--color-text-secondary);
   text-align: center;
 }

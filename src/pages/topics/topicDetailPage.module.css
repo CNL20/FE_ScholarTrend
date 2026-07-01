@@ -15,7 +15,7 @@
   padding: 1.6rem;
   border: 1px solid var(--color-border);
   border-radius: 16px;
-  background: linear-gradient(135deg, #eff6ff, #ffffff 58%, #ecfeff);
+  background: linear-gradient(135deg, var(--color-brand-bg), var(--color-surface) 58%, #ecfeff);
   box-shadow: var(--shadow-sm);
 }
 
@@ -46,7 +46,7 @@
   padding: 0.68rem 0.9rem;
   border-radius: 9px;
   background: var(--color-brand);
-  color: #ffffff;
+  color: var(--color-on-brand);
   font-size: 0.75rem;
   font-weight: 750;
   box-shadow: 0 6px 16px rgba(30, 64, 175, 0.18);
@@ -62,7 +62,7 @@
   padding: 0.68rem 0.9rem;
   border: 1px solid var(--color-brand-border);
   border-radius: 9px;
-  background: #ffffff;
+  background: var(--color-surface);
   color: var(--color-brand);
   font: inherit;
   font-size: 0.75rem;
@@ -72,9 +72,9 @@
 }
 
 .followingButton {
-  border-color: #bbf7d0;
-  background: #f0fdf4;
-  color: #15803d;
+  border-color: var(--color-success-border);
+  background: var(--color-success-bg);
+  color: var(--color-success);
 }
 
 .followButton:disabled {
@@ -147,7 +147,7 @@
   padding: 1rem 0.5rem 0.5rem 0;
   border: 1px solid var(--color-border);
   border-radius: 11px;
-  background: #fbfcfe;
+  background: var(--color-surface);
 }
 
 .empty {
@@ -169,9 +169,9 @@
 
 .errorState {
   padding: 2rem;
-  border: 1px solid #fecaca;
+  border: 1px solid var(--color-danger-border);
   border-radius: 14px;
-  background: #fff7f7;
+  background: var(--color-danger-bg);
   color: var(--color-text-secondary);
   text-align: center;
 }

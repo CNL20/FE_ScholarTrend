@@ -96,7 +96,7 @@
   border-radius: var(--radius-md);
   background: var(--color-brand);
   box-shadow: var(--shadow-sm);
-  color: #ffffff;
+  color: var(--color-on-brand);
   cursor: pointer;
   font-size: 0.9375rem;
   font-weight: 600;
@@ -173,7 +173,7 @@
   padding: 0.68rem 1rem;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  background: #ffffff;
+  background: var(--color-surface);
   color: var(--color-text);
   cursor: pointer;
   font-size: 0.88rem;
@@ -206,9 +206,9 @@
 .error {
   margin: 0;
   padding: 0.5rem 0.75rem;
-  border: 1px solid #fecaca;
+  border: 1px solid var(--color-danger-border);
   border-radius: var(--radius-md);
-  background: #fef2f2;
+  background: var(--color-danger-bg);
   color: var(--color-danger);
   font-size: 0.8125rem;
 }
@@ -216,9 +216,9 @@
 .success {
   margin: 0 0 1rem;
   padding: 0.5rem 0.75rem;
-  border: 1px solid #bbf7d0;
+  border: 1px solid var(--color-success-border);
   border-radius: var(--radius-md);
-  background: #f0fdf4;
+  background: var(--color-success-bg);
   color: var(--color-success);
   font-size: 0.8125rem;
 }
@@ -250,4 +250,22 @@
 .footer a:hover {
   color: var(--color-brand);
   text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+  .wrapper {
+    padding: 1rem;
+  }
+
+  .container {
+    padding: 1.5rem 1rem;
+  }
+
+  .logo {
+    font-size: 1.6rem;
+  }
+
+  .heading {
+    font-size: 1.25rem;
+  }
 }

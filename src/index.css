@@ -8,7 +8,7 @@
   line-height: 1.6;
   font-weight: 400;
 
-  /* ── Color Palette ── */
+  /* ── Light Color Palette ── */
   --color-bg: #f8fafc;
   --color-surface: #ffffff;
   --color-surface-hover: #f1f5f9;
@@ -27,6 +27,12 @@
   --color-success: #16a34a;
   --color-warning: #d97706;
   --color-danger: #dc2626;
+  --color-success-bg: #f0fdf4;
+  --color-success-border: #bbf7d0;
+  --color-danger-bg: #fef2f2;
+  --color-danger-border: #fecaca;
+  --color-on-brand: #ffffff;
+  --color-on-danger: #ffffff;
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
@@ -41,6 +47,38 @@
   /* ── Apply base colours ── */
   color: var(--color-text);
   background: var(--color-bg);
+}
+
+/* ── Dark Color Palette ── */
+.dark {
+  --color-bg: #0b1121;
+  --color-surface: #1a2332;
+  --color-surface-hover: #233044;
+  --color-border: #2d3a4e;
+  --color-border-hover: #3d4d66;
+
+  --color-text: #e8edf5;
+  --color-text-secondary: #b0c0d4;
+  --color-text-muted: #6b7d9a;
+
+  --color-brand: #60a5fa;
+  --color-brand-light: #93c5fd;
+  --color-brand-bg: #1e3a5f;
+  --color-brand-border: #1e40af;
+
+  --color-success: #4ade80;
+  --color-warning: #fbbf24;
+  --color-danger: #f87171;
+  --color-success-bg: #052e16;
+  --color-success-border: #166534;
+  --color-danger-bg: #3b1a1a;
+  --color-danger-border: #7f1d1d;
+  --color-on-brand: #ffffff;
+  --color-on-danger: #ffffff;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.5);
 }
 
 /* ── Reset ── */
