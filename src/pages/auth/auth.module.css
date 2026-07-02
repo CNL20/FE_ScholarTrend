@@ -211,9 +211,9 @@
 .error {
   margin: 0;
   padding: 0.5rem 0.75rem;
-  border: 1px solid #fecaca;
+  border: 1px solid var(--color-danger-border);
   border-radius: var(--radius-md);
-  background: #fef2f2;
+  background: var(--color-danger-bg);
   color: var(--color-danger);
   font-size: 0.8125rem;
 }
@@ -221,9 +221,9 @@
 .success {
   margin: 0 0 1rem;
   padding: 0.5rem 0.75rem;
-  border: 1px solid #bbf7d0;
+  border: 1px solid var(--color-success-border);
   border-radius: var(--radius-md);
-  background: #f0fdf4;
+  background: var(--color-success-bg);
   color: var(--color-success);
   font-size: 0.8125rem;
 }
@@ -262,9 +262,9 @@
   gap: 0.75rem;
   margin: 0.5rem 0 1.5rem;
   padding: 1.5rem;
-  border: 1px solid #bbf7d0;
+  border: 1px solid var(--color-success-border);
   border-radius: var(--radius-md);
-  background: #f0fdf4;
+  background: var(--color-success-bg);
 }
 
 .successIcon {
@@ -274,8 +274,8 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: #dcfce7;
-  color: #16a34a;
+  background: var(--color-success-bg);
+  color: var(--color-success);
 }
 
 .successIcon svg {
@@ -285,7 +285,7 @@
 
 .successText {
   margin: 0;
-  color: #15803d;
+  color: var(--color-success);
   font-size: 0.875rem;
   line-height: 1.5;
   text-align: center;
@@ -294,9 +294,9 @@
 .errorBox {
   margin: 0.5rem 0 1.5rem;
   padding: 1.25rem;
-  border: 1px solid #fecaca;
+  border: 1px solid var(--color-danger-border);
   border-radius: var(--radius-md);
-  background: #fef2f2;
+  background: var(--color-danger-bg);
 }
 
 /* ── Password show/hide toggle ── */
