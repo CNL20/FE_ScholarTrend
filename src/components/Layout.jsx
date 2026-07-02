@@ -98,14 +98,6 @@ function Layout() {
                 }
               >
                 <span className={styles.navLabel}>{item.label}</span>
-                {item.to === "/notifications" && unreadNotifications > 0 && (
-                  <span
-                    className={styles.notificationBadge}
-                    aria-label={`${unreadNotifications} unread notifications`}
-                  >
-                    {unreadNotifications > 99 ? "99+" : unreadNotifications}
-                  </span>
-                )}
               </NavLink>
             ))}
           </nav>

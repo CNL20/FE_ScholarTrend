@@ -61,7 +61,6 @@ export function getNavItems(role) {
       { to: '/', label: 'Home' },
       ...authenticated,
       { to: '/following', label: 'Following' },
-      { to: '/notifications', label: 'Notifications' },
     ]
   }
 
@@ -70,7 +69,6 @@ export function getNavItems(role) {
       { to: '/', label: 'Home' },
       ...authenticated,
       { to: '/following', label: 'Following' },
-      { to: '/notifications', label: 'Notifications' },
       { to: '/admin', label: 'Admin Panel' },
     ]
   }
