@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getAdminStats, getSyncLogs } from "../../services/adminService";
+import { getAdminDashboard } from "../../services/adminService";
 import styles from "./AdminDashboardPage.module.css";
 
 const metricDefinitions = [
@@ -33,6 +33,38 @@ const metricDefinitions = [
     label: "Active accounts",
     helper: "Available to sign in",
     aliases: ["activeUsers", "activeUserCount", "activeAccounts"],
+    icon: "activity",
+    tone: "violet",
+  },
+  {
+    key: "journals",
+    label: "Journals",
+    helper: "Tracked publication sources",
+    aliases: ["totalJournals", "journalCount", "journals"],
+    icon: "database",
+    tone: "green",
+  },
+  {
+    key: "keywords",
+    label: "Keywords",
+    helper: "Indexed research terms",
+    aliases: ["totalKeywords", "keywordCount", "keywords"],
+    icon: "topics",
+    tone: "blue",
+  },
+  {
+    key: "bookmarks",
+    label: "Bookmarks",
+    helper: "Saved papers",
+    aliases: ["totalBookmarks", "bookmarkCount", "bookmarks"],
+    icon: "papers",
+    tone: "amber",
+  },
+  {
+    key: "follows",
+    label: "Follows",
+    helper: "Followed entities",
+    aliases: ["totalFollows", "followCount", "follows"],
     icon: "activity",
     tone: "violet",
   },
@@ -142,30 +174,27 @@ function AdminDashboardPage() {
       setLoading(true);
       setError("");
 
-      const [statsResult, logsResult] = await Promise.allSettled([
-        getAdminStats(),
-        getSyncLogs(),
-      ]);
+      try {
+        const result = await getAdminDashboard();
+        if (!active) return;
 
-      if (!active) return;
+        setStats(result || {});
+        setLogs(normalizeLogs(result?.recentSyncLogs || []));
+      } catch (err) {
+        if (!active) return;
 
-      if (statsResult.status === "fulfilled") {
-        setStats(statsResult.value || {});
-      } else {
         setStats({});
+        setLogs([]);
         setError(
-          statsResult.reason?.response?.data?.message ||
+          err.response?.data?.message ||
+            err.message ||
             "The admin API is not responding. Start the backend to load live metrics.",
         );
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
       }
-
-      if (logsResult.status === "fulfilled") {
-        setLogs(normalizeLogs(logsResult.value));
-      } else {
-        setLogs([]);
-      }
-
-      setLoading(false);
     }
 
     fetchDashboard();
@@ -174,9 +203,14 @@ function AdminDashboardPage() {
     };
   }, [refreshKey]);
 
-  const lastSync = stats.lastSync || stats.lastSuccessfulSync || logs[0]?.createdAt;
-  const health = stats.systemHealth || stats.health || (error ? "Disconnected" : "Operational");
-  const isHealthy = !error && String(health).toLowerCase() !== "unhealthy";
+  const lastSync = stats.lastSync || {};
+  const lastSyncDate =
+    lastSync.completedAt ||
+    lastSync.startedAt ||
+    logs[0]?.completedAt ||
+    logs[0]?.startedAt;
+  const health = lastSync.status || stats.systemHealth || stats.health || (error ? "Disconnected" : "Operational");
+  const isHealthy = !error && !["failed", "error", "unhealthy"].includes(String(health).toLowerCase());
 
   return (
     <section className={styles.dashboardPage}>
@@ -245,7 +279,7 @@ function AdminDashboardPage() {
             </div>
             <div>
               <span>Last successful sync</span>
-              <strong>{loading ? "Checking status..." : formatDate(lastSync)}</strong>
+              <strong>{loading ? "Checking status..." : formatDate(lastSyncDate)}</strong>
             </div>
           </div>
 
@@ -273,6 +307,29 @@ function AdminDashboardPage() {
               </div>
             )}
           </div>
+
+          <div className={styles.trendBlock}>
+            <div className={styles.trendHeader}>
+              <span className={styles.panelKicker}>Publications</span>
+              <h3>Recent publication trend</h3>
+            </div>
+            <div className={styles.trendList}>
+              {(stats.publicationTrend || []).length > 0 ? (
+                stats.publicationTrend.slice(0, 6).map((item) => {
+                  const label = [item.month, item.year].filter(Boolean).join("/") || "Unknown period";
+                  return (
+                    <div className={styles.trendRow} key={`${item.year}-${item.month}`}>
+                      <span>{label}</span>
+                      <strong>{Number(item.paperCount || 0).toLocaleString()} papers</strong>
+                      <em>{Number(item.citationCount || 0).toLocaleString()} citations</em>
+                    </div>
+                  );
+                })
+              ) : (
+                <p className={styles.compactEmpty}>No publication trend data yet.</p>
+              )}
+            </div>
+          </div>
         </article>
 
         <aside className={styles.sideColumn}>
@@ -295,6 +352,62 @@ function AdminDashboardPage() {
                     : "Metrics will appear when the API is online."}
                 </p>
               </div>
+            </div>
+          </article>
+
+          <article className={`${styles.panel} ${styles.compactPanel}`}>
+            <span className={styles.panelKicker}>Accounts</span>
+            <h3>Users by role</h3>
+            <div className={styles.compactList}>
+              {Object.entries(stats.usersByRole || {}).length > 0 ? (
+                Object.entries(stats.usersByRole).map(([role, count]) => (
+                  <div className={styles.compactRow} key={role}>
+                    <span>{role}</span>
+                    <strong>{Number(count || 0).toLocaleString()}</strong>
+                  </div>
+                ))
+              ) : (
+                <p className={styles.compactEmpty}>No role breakdown yet.</p>
+              )}
+            </div>
+          </article>
+
+          <article className={`${styles.panel} ${styles.compactPanel}`}>
+            <span className={styles.panelKicker}>Sources</span>
+            <h3>Data sources</h3>
+            <div className={styles.compactList}>
+              {(stats.dataSources || []).length > 0 ? (
+                stats.dataSources.slice(0, 5).map((source) => (
+                  <div className={styles.sourceRow} key={source.id || source.name}>
+                    <div>
+                      <strong>{source.name || "Unknown source"}</strong>
+                      <span>{source.baseUrl || "No base URL"}</span>
+                    </div>
+                    <em className={source.isActive ? styles.sourceActive : styles.sourceInactive}>
+                      {source.isActive ? "Active" : "Inactive"}
+                    </em>
+                  </div>
+                ))
+              ) : (
+                <p className={styles.compactEmpty}>No data sources configured.</p>
+              )}
+            </div>
+          </article>
+
+          <article className={`${styles.panel} ${styles.compactPanel}`}>
+            <span className={styles.panelKicker}>Discovery</span>
+            <h3>Top keywords</h3>
+            <div className={styles.compactList}>
+              {(stats.topKeywords || []).length > 0 ? (
+                stats.topKeywords.slice(0, 5).map((keyword) => (
+                  <div className={styles.keywordRow} key={keyword.id || keyword.name}>
+                    <span>{keyword.name}</span>
+                    <strong>{Number(keyword.paperCount || 0).toLocaleString()} papers</strong>
+                  </div>
+                ))
+              ) : (
+                <p className={styles.compactEmpty}>No keyword data yet.</p>
+              )}
             </div>
           </article>
 

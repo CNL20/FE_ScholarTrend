@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { deleteUser, getUsers, updateUserRole } from "../../services/adminService";
+import { getUserById, getUsers, updateUserRole, updateUserStatus } from "../../services/adminService";
 import { ROLES } from "../../utils/roles";
 import styles from "./AdminUserManagementPage.module.css";
 
@@ -61,7 +61,25 @@ function normalizeRole(role) {
   if (value === "lecturerstudent" || value === "lecturer_student") {
     return ROLES.LECTURER_STUDENT;
   }
-  return ROLES.LECTURER_STUDENT;
+  return "";
+}
+
+function formatRoleLabel(role) {
+  return role === ROLES.LECTURER_STUDENT ? "Lecturer / Student" : role;
+}
+
+function getUserRoles(user) {
+  const rawRoles = user.roles ?? user.role ?? user.userRoles ?? [];
+  const roles = Array.isArray(rawRoles) ? rawRoles : [rawRoles];
+  return roles.map(normalizeRole).filter(Boolean);
+}
+
+function getPrimaryRole(user) {
+  return getUserRoles(user)[0] || ROLES.LECTURER_STUDENT;
+}
+
+function userHasRole(user, role) {
+  return getUserRoles(user).includes(role);
 }
 
 function getDisplayName(user) {
@@ -77,9 +95,17 @@ function getInitials(user) {
     .join("");
 }
 
+function isUserActive(user) {
+  return user.isActive !== false && user.active !== false;
+}
+
 function getStatus(user) {
-  if (user.isActive === false || user.active === false) return "Inactive";
+  if (!isUserActive(user)) return "Inactive";
   return user.status || "Active";
+}
+
+function getUserId(user) {
+  return user?.id ?? user?.userId;
 }
 
 function formatDate(value) {
@@ -96,7 +122,11 @@ function AdminUserManagementPage() {
   const [notice, setNotice] = useState("");
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("All");
+  const [activeFilter, setActiveFilter] = useState("All");
   const [pendingId, setPendingId] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
   const currentUserId = localStorage.getItem("userId");
 
@@ -108,7 +138,11 @@ function AdminUserManagementPage() {
       setError("");
 
       try {
-        const result = await getUsers();
+        const result = await getUsers({
+          search,
+          role: roleFilter,
+          isActive: activeFilter,
+        });
         if (active) setUsers(normalizeUsers(result));
       } catch (requestError) {
         if (active) {
@@ -123,42 +157,59 @@ function AdminUserManagementPage() {
       }
     }
 
-    fetchUsers();
+    const timerId = window.setTimeout(fetchUsers, search.trim() ? 250 : 0);
     return () => {
       active = false;
+      window.clearTimeout(timerId);
     };
-  }, [refreshKey]);
+  }, [activeFilter, refreshKey, roleFilter, search]);
 
   const filteredUsers = useMemo(() => {
     const keyword = search.trim().toLowerCase();
     return users.filter((user) => {
-      const role = normalizeRole(user.role);
-      const matchesRole = roleFilter === "All" || role === roleFilter;
+      const matchesRole = roleFilter === "All" || userHasRole(user, roleFilter);
+      const matchesStatus =
+        activeFilter === "All" ||
+        (activeFilter === "true" ? isUserActive(user) : !isUserActive(user));
       const matchesKeyword =
         !keyword ||
         getDisplayName(user).toLowerCase().includes(keyword) ||
-        String(user.email || "").toLowerCase().includes(keyword);
-      return matchesRole && matchesKeyword;
+        String(user.email || "").toLowerCase().includes(keyword) ||
+        String(user.institution || "").toLowerCase().includes(keyword) ||
+        String(user.researchField || "").toLowerCase().includes(keyword);
+      return matchesRole && matchesStatus && matchesKeyword;
     });
-  }, [roleFilter, search, users]);
+  }, [activeFilter, roleFilter, search, users]);
 
-  const activeCount = users.filter((user) => getStatus(user).toLowerCase() === "active").length;
-  const adminCount = users.filter((user) => normalizeRole(user.role) === ROLES.ADMIN).length;
+  const activeCount = users.filter(isUserActive).length;
+  const adminCount = users.filter((user) => userHasRole(user, ROLES.ADMIN)).length;
 
   const handleUpdateRole = async (user, role) => {
-    const id = user.id ?? user.userId;
-    if (!id || role === normalizeRole(user.role)) return;
+    const id = getUserId(user);
+    if (!id || role === getPrimaryRole(user)) return;
 
     setPendingId(id);
     setNotice("");
     try {
-      await updateUserRole(id, role);
+      const result = await updateUserRole(id, role);
+      const updatedUser = {
+        ...user,
+        ...(result || {}),
+        role: result?.role ?? role,
+        roles: result?.roles ?? [role],
+      };
+
       setUsers((current) =>
         current.map((item) =>
-          (item.id ?? item.userId) === id ? { ...item, role } : item,
+          String(getUserId(item)) === String(id) ? { ...item, ...updatedUser } : item,
         ),
       );
-      setNotice(`Role updated for ${getDisplayName(user)}.`);
+
+      if (String(getUserId(selectedUser)) === String(id)) {
+        setSelectedUser((current) => ({ ...current, ...updatedUser }));
+      }
+
+      setNotice(`Role updated for ${getDisplayName(updatedUser)}.`);
     } catch (requestError) {
       setError(requestError.response?.data?.message || "Could not update this user role.");
     } finally {
@@ -166,23 +217,70 @@ function AdminUserManagementPage() {
     }
   };
 
-  const handleDeactivate = async (user) => {
-    const id = user.id ?? user.userId;
+  const handleViewDetails = async (user) => {
+    const id = getUserId(user);
+    if (!id) return;
+
+    setSelectedUser(user);
+    setDetailLoading(true);
+    setDetailError("");
+
+    try {
+      const result = await getUserById(id);
+      setSelectedUser(result || user);
+    } catch (requestError) {
+      setDetailError(
+        requestError.response?.data?.message ||
+          requestError.message ||
+          "Could not load this user detail.",
+      );
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
+  const closeDetails = () => {
+    setSelectedUser(null);
+    setDetailError("");
+  };
+
+  const handleToggleStatus = async (user) => {
+    const id = getUserId(user);
     if (!id || String(id) === String(currentUserId)) return;
 
-    const confirmed = window.confirm(
-      `Deactivate ${getDisplayName(user)}? They will no longer be able to sign in.`,
-    );
-    if (!confirmed) return;
+    const nextActive = !isUserActive(user);
+    if (!nextActive) {
+      const confirmed = window.confirm(
+        `Deactivate ${getDisplayName(user)}? They will no longer be able to sign in.`,
+      );
+      if (!confirmed) return;
+    }
 
     setPendingId(id);
     setNotice("");
     try {
-      await deleteUser(id);
-      setUsers((current) => current.filter((item) => (item.id ?? item.userId) !== id));
-      setNotice(`${getDisplayName(user)} was deactivated.`);
+      const result = await updateUserStatus(id, nextActive);
+      const updatedUser = {
+        ...user,
+        ...(result || {}),
+        isActive: result?.isActive ?? nextActive,
+      };
+
+      setUsers((current) =>
+        current.map((item) =>
+          String(getUserId(item)) === String(id) ? { ...item, ...updatedUser } : item,
+        ),
+      );
+
+      if (String(getUserId(selectedUser)) === String(id)) {
+        setSelectedUser((current) => ({ ...current, ...updatedUser }));
+      }
+
+      setNotice(
+        `${getDisplayName(updatedUser)} was ${nextActive ? "activated" : "deactivated"}.`,
+      );
     } catch (requestError) {
-      setError(requestError.response?.data?.message || "Could not deactivate this user.");
+      setError(requestError.response?.data?.message || "Could not update this user status.");
     } finally {
       setPendingId(null);
     }
@@ -279,9 +377,19 @@ function AdminUserManagementPage() {
             <option value="All">All roles</option>
             {roleOptions.map((role) => (
               <option value={role} key={role}>
-                {role === ROLES.LECTURER_STUDENT ? "Lecturer / Student" : role}
+                {formatRoleLabel(role)}
               </option>
             ))}
+          </select>
+          <select
+            className={styles.filterSelect}
+            aria-label="Filter by active status"
+            value={activeFilter}
+            onChange={(event) => setActiveFilter(event.target.value)}
+          >
+            <option value="All">All status</option>
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
           </select>
           <span className={styles.resultCount}>
             {filteredUsers.length} {filteredUsers.length === 1 ? "result" : "results"}
@@ -293,9 +401,11 @@ function AdminUserManagementPage() {
             <thead>
               <tr>
                 <th>User</th>
+                <th>Institution</th>
                 <th>Status</th>
                 <th>Role</th>
                 <th>Joined</th>
+                <th>Last login</th>
                 <th><span className={styles.srOnly}>Actions</span></th>
               </tr>
             </thead>
@@ -308,14 +418,17 @@ function AdminUserManagementPage() {
                     <td><span /></td>
                     <td><span /></td>
                     <td><span /></td>
+                    <td><span /></td>
+                    <td><span /></td>
                   </tr>
                 ))
               ) : (
                 filteredUsers.map((user) => {
-                  const id = user.id ?? user.userId;
+                  const id = getUserId(user);
                   const isCurrentUser = String(id) === String(currentUserId);
                   const status = getStatus(user);
                   const joinedAt = user.createdAt || user.joinedAt || user.registeredAt;
+                  const lastLoginAt = user.lastLoginAt || user.lastSeenAt;
                   return (
                     <tr key={id || user.email}>
                       <td>
@@ -331,6 +444,12 @@ function AdminUserManagementPage() {
                         </div>
                       </td>
                       <td>
+                        <div className={styles.institutionCell}>
+                          <strong>{user.institution || "No institution"}</strong>
+                          <span>{user.researchField || "No research field"}</span>
+                        </div>
+                      </td>
+                      <td>
                         <span
                           className={`${styles.status} ${
                             status.toLowerCase() === "active" ? styles.active : styles.inactive
@@ -343,14 +462,14 @@ function AdminUserManagementPage() {
                       <td>
                         <select
                           className={styles.roleSelect}
-                          value={normalizeRole(user.role)}
+                          value={getPrimaryRole(user)}
                           disabled={pendingId === id || isCurrentUser}
                           onChange={(event) => handleUpdateRole(user, event.target.value)}
                           aria-label={`Role for ${getDisplayName(user)}`}
                         >
                           {roleOptions.map((role) => (
                             <option value={role} key={role}>
-                              {role === ROLES.LECTURER_STUDENT ? "Lecturer / Student" : role}
+                              {formatRoleLabel(role)}
                             </option>
                           ))}
                         </select>
@@ -358,15 +477,36 @@ function AdminUserManagementPage() {
                       <td className={styles.joinedCell}>
                         {formatDate(joinedAt)}
                       </td>
+                      <td className={styles.joinedCell}>
+                        {formatDate(lastLoginAt)}
+                      </td>
                       <td className={styles.actionCell}>
-                        <button
-                          type="button"
-                          className={styles.deactivateButton}
-                          disabled={pendingId === id || isCurrentUser}
-                          onClick={() => handleDeactivate(user)}
-                        >
-                          {pendingId === id ? "Working..." : "Deactivate"}
-                        </button>
+                        <div className={styles.actionStack}>
+                          <button
+                            type="button"
+                            className={styles.detailButton}
+                            disabled={detailLoading && String(getUserId(selectedUser)) === String(id)}
+                            onClick={() => handleViewDetails(user)}
+                          >
+                            {detailLoading && String(getUserId(selectedUser)) === String(id)
+                              ? "Loading..."
+                              : "Details"}
+                          </button>
+                          <button
+                            type="button"
+                            className={
+                              isUserActive(user) ? styles.deactivateButton : styles.activateButton
+                            }
+                            disabled={pendingId === id || isCurrentUser}
+                            onClick={() => handleToggleStatus(user)}
+                          >
+                            {pendingId === id
+                              ? "Working..."
+                              : isUserActive(user)
+                                ? "Deactivate"
+                                : "Activate"}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -384,6 +524,115 @@ function AdminUserManagementPage() {
           </div>
         )}
       </article>
+
+      {selectedUser && (
+        <div className={styles.modalBackdrop} role="presentation" onClick={closeDetails}>
+          <aside
+            className={styles.detailPanel}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="admin-user-detail-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className={styles.detailHeader}>
+              <div className={styles.detailIdentity}>
+                <span className={styles.userAvatar}>{getInitials(selectedUser) || "U"}</span>
+                <div>
+                  <span className={styles.kicker}>User detail</span>
+                  <h3 id="admin-user-detail-title">{getDisplayName(selectedUser)}</h3>
+                  <p>{selectedUser.email || "No email provided"}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className={styles.closeButton}
+                aria-label="Close user detail"
+                onClick={closeDetails}
+              >
+                Close
+              </button>
+            </div>
+
+            {detailLoading && <p className={styles.detailLoading}>Loading latest user data...</p>}
+            {detailError && (
+              <div className={styles.detailError} role="alert">
+                {detailError}
+              </div>
+            )}
+
+            <div className={styles.detailStatusRow}>
+              <span
+                className={`${styles.status} ${
+                  getStatus(selectedUser).toLowerCase() === "active"
+                    ? styles.active
+                    : styles.inactive
+                }`}
+              >
+                <i />
+                {getStatus(selectedUser)}
+              </span>
+              <div className={styles.rolePills}>
+                {getUserRoles(selectedUser).length > 0 ? (
+                  getUserRoles(selectedUser).map((role) => (
+                    <span className={styles.rolePill} key={role}>
+                      {formatRoleLabel(role)}
+                    </span>
+                  ))
+                ) : (
+                  <span className={styles.rolePill}>No role</span>
+                )}
+              </div>
+            </div>
+
+            <div className={styles.detailActions}>
+              <button
+                type="button"
+                className={
+                  isUserActive(selectedUser) ? styles.deactivateButton : styles.activateButton
+                }
+                disabled={
+                  pendingId === getUserId(selectedUser) ||
+                  String(getUserId(selectedUser)) === String(currentUserId)
+                }
+                onClick={() => handleToggleStatus(selectedUser)}
+              >
+                {pendingId === getUserId(selectedUser)
+                  ? "Working..."
+                  : isUserActive(selectedUser)
+                    ? "Deactivate account"
+                    : "Activate account"}
+              </button>
+            </div>
+
+            <div className={styles.detailGrid}>
+              <div className={styles.detailItem}>
+                <span>User ID</span>
+                <strong>{getUserId(selectedUser) || "Not available"}</strong>
+              </div>
+              <div className={styles.detailItem}>
+                <span>Email</span>
+                <strong>{selectedUser.email || "Not available"}</strong>
+              </div>
+              <div className={styles.detailItem}>
+                <span>Institution</span>
+                <strong>{selectedUser.institution || "Not available"}</strong>
+              </div>
+              <div className={styles.detailItem}>
+                <span>Research field</span>
+                <strong>{selectedUser.researchField || "Not available"}</strong>
+              </div>
+              <div className={styles.detailItem}>
+                <span>Created at</span>
+                <strong>{formatDate(selectedUser.createdAt)}</strong>
+              </div>
+              <div className={styles.detailItem}>
+                <span>Last login</span>
+                <strong>{formatDate(selectedUser.lastLoginAt)}</strong>
+              </div>
+            </div>
+          </aside>
+        </div>
+      )}
     </section>
   );
 }

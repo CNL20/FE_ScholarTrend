@@ -34,162 +34,6 @@
   font-size: 13px;
 }
 
-.testButton {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 40px;
-  padding: 0 15px;
-  color: #fff;
-  background: #2d6558;
-  border: 1px solid #2d6558;
-  border-radius: 10px;
-  box-shadow: 0 3px 10px rgba(30, 79, 66, 0.12);
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 650;
-}
-
-.testButton:hover:not(:disabled) {
-  background: #245549;
-  border-color: #245549;
-}
-
-.testButton:disabled {
-  cursor: wait;
-  opacity: 0.7;
-}
-
-.connectionCard {
-  margin-bottom: 16px;
-  padding: 22px;
-  background: #fff;
-  border: 1px solid #e5e7e4;
-  border-radius: 14px;
-  box-shadow: 0 2px 8px rgba(31, 45, 40, 0.025);
-}
-
-.connectionHeader {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.serverIcon {
-  width: 42px;
-  height: 42px;
-  display: grid;
-  place-items: center;
-  color: #426f63;
-  background: #e7f0ed;
-  border-radius: 11px;
-}
-
-.connectionHeader > div:nth-child(2) {
-  flex: 1;
-}
-
-.connectionHeader span {
-  color: #939a96;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.connectionHeader h3 {
-  margin: 2px 0 0;
-  color: #26312d;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.connectionBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 9px;
-  border-radius: 999px;
-  font-size: 9px;
-  font-weight: 700;
-  text-transform: capitalize;
-}
-
-.connectionBadge i {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-}
-
-.checking {
-  color: #856b3e;
-  background: #f7f0e2;
-}
-
-.checking i {
-  background: #a58448;
-  animation: pulse 1s infinite;
-}
-
-.connected {
-  color: #337061;
-  background: #eaf4f0;
-}
-
-.connected i {
-  background: #3c8976;
-}
-
-.disconnected {
-  color: #9c554a;
-  background: #faece8;
-}
-
-.disconnected i {
-  background: #c96a5a;
-}
-
-.endpointBlock {
-  display: grid;
-  grid-template-columns: 90px minmax(0, 1fr);
-  align-items: center;
-  gap: 12px;
-  margin-top: 18px;
-  padding: 12px 14px;
-  background: #f8f9f7;
-  border: 1px solid #ebeeeb;
-  border-radius: 10px;
-}
-
-.endpointBlock span {
-  color: #8d9490;
-  font-size: 10px;
-  font-weight: 650;
-}
-
-.endpointBlock code {
-  overflow: hidden;
-  color: #31594f;
-  font-family: "SFMono-Regular", Consolas, monospace;
-  font-size: 11px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.connectionMessage {
-  margin: 10px 2px 0;
-  color: #7f8783;
-  font-size: 10px;
-}
-
-.contentGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.panel,
 .routesPanel {
   padding: 22px;
   background: #fff;
@@ -198,33 +42,6 @@
   box-shadow: 0 2px 8px rgba(31, 45, 40, 0.025);
 }
 
-.panelTitle {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  margin-bottom: 18px;
-}
-
-.smallIcon {
-  width: 36px;
-  height: 36px;
-  display: grid;
-  place-items: center;
-  color: #5f756e;
-  background: #f0f3f1;
-  border-radius: 10px;
-}
-
-.panelTitle span {
-  display: block;
-  color: #969c99;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-}
-
-.panelTitle h3,
 .routesPanel h3 {
   margin: 2px 0 0;
   color: #29332f;
@@ -232,173 +49,1274 @@
   font-weight: 700;
 }
 
-.detailList {
-  margin: 0;
-}
-
-.detailList > div {
+.scheduleGrid {
   display: grid;
-  grid-template-columns: minmax(120px, 1fr) minmax(140px, 1fr);
-  gap: 12px;
-  padding: 11px 0;
-  border-bottom: 1px solid #f0f1ef;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 14px;
 }
 
-.detailList > div:last-child {
-  border-bottom: 0;
+.scheduleItem {
+  min-width: 0;
+  padding: 12px;
+  background: #fbfcfa;
+  border: 1px solid #eceeeb;
+  border-radius: 11px;
 }
 
-.detailList dt,
-.detailList dd {
-  margin: 0;
-  font-size: 10px;
-}
-
-.detailList dt {
-  color: #8d9490;
-}
-
-.detailList dd {
-  color: #3f4b46;
-  font-weight: 600;
-  text-align: right;
-}
-
-.detailList code,
-.routeGrid code {
-  color: #31594f;
-  font-family: "SFMono-Regular", Consolas, monospace;
-}
-
-.infoBox {
-  margin-top: 15px;
-  padding: 13px 14px;
-  color: #745f3b;
-  background: #faf6eb;
-  border: 1px solid #eee3c9;
-  border-radius: 9px;
-}
-
-.infoBox strong {
-  font-size: 10px;
-}
-
-.infoBox p {
-  margin: 3px 0 0;
-  color: #8d7954;
-  font-size: 9px;
-  line-height: 1.6;
-}
-
-.checkList {
-  display: grid;
-  gap: 6px;
-}
-
-.checkList > div {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 9px 0;
-  border-bottom: 1px solid #f0f1ef;
-}
-
-.checkList > div:last-child {
-  border-bottom: 0;
-}
-
-.checkIcon {
-  width: 24px;
-  height: 24px;
-  display: grid;
-  place-items: center;
-  flex: 0 0 auto;
-  color: #427266;
-  background: #eaf3ef;
-  border-radius: 7px;
-}
-
-.checkList p {
-  margin: 0;
-}
-
-.checkList strong,
-.checkList small {
+.scheduleItem span,
+.scheduleItem strong {
   display: block;
 }
 
-.checkList strong {
-  color: #3b4742;
+.scheduleItem span {
+  color: #8f9692;
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.scheduleItem strong {
+  margin-top: 5px;
+  overflow: hidden;
+  color: #26322e;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scheduleEnabled {
+  color: #337061 !important;
+}
+
+.scheduleDisabled {
+  color: #9c554a !important;
+}
+
+.queryList {
+  padding: 13px;
+  background: #fbfcfa;
+  border: 1px solid #eceeeb;
+  border-radius: 11px;
+}
+
+.queryPills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.queryPills span {
+  max-width: 100%;
+  overflow: hidden;
+  padding: 5px 8px;
+  color: #315f55;
+  background: #edf5f2;
+  border: 1px solid #d3e4df;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scheduleNotice {
+  margin-top: 12px;
+  padding: 10px 12px;
+  color: #2f6a5b;
+  background: #edf7f3;
+  border: 1px solid #d0e7de;
+  border-radius: 10px;
   font-size: 10px;
 }
 
-.checkList small {
+.scheduleForm {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 14px;
+  background: #fff;
+  border: 1px solid #e8ece8;
+  border-radius: 12px;
+}
+
+.scheduleToggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.scheduleToggle input {
+  position: absolute;
+  opacity: 0;
+}
+
+.scheduleToggle > span {
+  position: relative;
+  width: 38px;
+  height: 22px;
+  flex: 0 0 auto;
+  background: #e4e8e5;
+  border: 1px solid #d6ddd8;
+  border-radius: 999px;
+  transition: 160ms ease;
+}
+
+.scheduleToggle > span::after {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(31, 45, 40, 0.14);
+  content: "";
+  transition: 160ms ease;
+}
+
+.scheduleToggle input:checked + span {
+  background: #2d6558;
+  border-color: #2d6558;
+}
+
+.scheduleToggle input:checked + span::after {
+  transform: translateX(16px);
+}
+
+.scheduleToggle input:disabled + span {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.scheduleToggle strong,
+.scheduleToggle small {
+  display: block;
+}
+
+.scheduleToggle strong {
+  color: #27332f;
+  font-size: 11px;
+}
+
+.scheduleToggle small {
   margin-top: 2px;
-  color: #969c99;
+  color: #8f9692;
   font-size: 9px;
 }
 
-.routesPanel > div:first-child {
-  margin-bottom: 16px;
-}
-
-.routeGrid {
+.scheduleFormGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.scheduleFormGrid label,
+.scheduleTextarea {
+  display: grid;
+  gap: 6px;
+  color: #8d9490;
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.scheduleFormGrid input,
+.scheduleTextarea textarea {
+  width: 100%;
+  color: #35443f;
+  background: #fbfcfa;
+  border: 1px solid #dfe3df;
+  border-radius: 9px;
+  outline: 0;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.scheduleFormGrid input {
+  height: 36px;
+  padding: 0 10px;
+}
+
+.scheduleTextarea textarea {
+  min-height: 92px;
+  padding: 10px;
+  resize: vertical;
+}
+
+.scheduleFormGrid input:focus,
+.scheduleTextarea textarea:focus {
+  border-color: #8ea9a0;
+  box-shadow: 0 0 0 3px rgba(71, 114, 104, 0.08);
+}
+
+.scheduleFormGrid input:disabled,
+.scheduleTextarea textarea:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.scheduleTextarea small {
+  color: #9aa09d;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.5;
+  text-transform: none;
+}
+
+.scheduleFormActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.scheduleFormActions button {
+  min-height: 34px;
+  padding: 0 13px;
+  color: #fff;
+  background: #2d6558;
+  border: 1px solid #2d6558;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.scheduleFormActions button:hover:not(:disabled) {
+  background: #245549;
+  border-color: #245549;
+}
+
+.scheduleFormActions button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.statusSummary {
+  display: grid;
+  grid-template-columns: 2fr repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.statusHero,
+.statusMetric {
+  min-width: 0;
+  padding: 13px;
+  background: #fbfcfa;
+  border: 1px solid #eceeeb;
+  border-radius: 11px;
+}
+
+.statusHero p {
+  margin: 9px 0 0;
+  color: #7d8782;
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 9px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.statusBadge i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.statusRunning {
+  color: #8d6633;
+  background: #fff4df;
+}
+
+.statusRunning i {
+  background: #c4832e;
+  animation: pulse 1s infinite;
+}
+
+.statusIdle {
+  color: #337061;
+  background: #eaf4f0;
+}
+
+.statusIdle i {
+  background: #3c8976;
+}
+
+.statusMetric strong,
+.statusMetric span {
+  display: block;
+}
+
+.statusMetric strong {
+  color: #26322e;
+  font-size: 22px;
+  letter-spacing: -0.04em;
+}
+
+.statusMetric span {
+  margin-top: 2px;
+  color: #8f9692;
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.triggerForm {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(120px, 0.45fr) minmax(0, 1.5fr) auto;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 13px;
+  background: #fbfcfa;
+  border: 1px solid #eceeeb;
+  border-radius: 11px;
+}
+
+.triggerForm label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  color: #8d9490;
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.triggerForm input {
+  width: 100%;
+  height: 36px;
+  padding: 0 10px;
+  color: #35443f;
+  background: #fff;
+  border: 1px solid #dfe3df;
+  border-radius: 9px;
+  outline: 0;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.triggerForm input:focus {
+  border-color: #8ea9a0;
+  box-shadow: 0 0 0 3px rgba(71, 114, 104, 0.08);
+}
+
+.triggerForm button {
+  align-self: end;
+  min-height: 36px;
+  padding: 0 13px;
+  color: #fff;
+  background: #2d6558;
+  border: 1px solid #2d6558;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.triggerForm button:hover:not(:disabled) {
+  background: #245549;
+  border-color: #245549;
+}
+
+.triggerForm button:disabled,
+.triggerForm input:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.triggerResult {
+  padding: 13px;
+  background: #fff;
+  border: 1px solid #d8e7e2;
+  border-radius: 11px;
+  box-shadow: 0 6px 18px rgba(45, 101, 88, 0.05);
+}
+
+.triggerResultTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.triggerResultTop strong,
+.triggerResultTop span {
+  display: block;
+}
+
+.triggerResultTop strong {
+  color: #26322e;
+  font-size: 12px;
+}
+
+.triggerResultTop span {
+  margin-top: 3px;
+  color: #7f8783;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.triggerResultTop em {
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 750;
+}
+
+.triggerStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
 
-.routeGrid > div {
-  display: grid;
-  grid-template-columns: 52px minmax(0, 1fr);
-  align-items: center;
-  gap: 7px;
-  min-height: 54px;
-  padding: 10px 12px;
-  background: #fafbf9;
-  border: 1px solid #eceeeb;
-  border-radius: 9px;
-}
-
-.routeGrid > div > span {
-  padding: 4px 5px;
-  border-radius: 5px;
-  font-size: 8px;
-  font-weight: 800;
-  text-align: center;
-}
-
-.methodGet {
-  color: #376b5e;
-  background: #e8f2ee;
-}
-
-.methodPut {
-  color: #7d663e;
-  background: #f5efdf;
-}
-
-.methodDelete {
-  color: #98574d;
-  background: #f8ebe8;
-}
-
-.routeGrid code {
+.triggerStats span {
+  min-width: 0;
   overflow: hidden;
+  padding: 9px;
+  color: #8b938f;
+  background: #fbfcfa;
+  border: 1px solid #eef0ed;
+  border-radius: 9px;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.triggerStats strong {
+  display: block;
+  margin-bottom: 2px;
+  overflow: hidden;
+  color: #2d433d;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.triggerSourceResults {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.triggerSourceResults h4 {
+  margin: 0;
+  color: #26322e;
+  font-size: 12px;
+}
+
+.triggerSourceCard {
+  min-width: 0;
+  padding: 11px;
+  background: #fbfcfa;
+  border: 1px solid #eef0ed;
+  border-radius: 10px;
+}
+
+.sourceStatusForm {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 13px;
+  background: #fbfcfa;
+  border: 1px solid #eceeeb;
+  border-radius: 11px;
+}
+
+.sourceStatusForm label {
+  display: grid;
+  gap: 6px;
+  color: #8d9490;
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.sourceStatusForm input {
+  width: 100%;
+  height: 36px;
+  padding: 0 10px;
+  color: #35443f;
+  background: #fff;
+  border: 1px solid #dfe3df;
+  border-radius: 9px;
+  outline: 0;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.sourceStatusForm input:focus {
+  border-color: #8ea9a0;
+  box-shadow: 0 0 0 3px rgba(71, 114, 104, 0.08);
+}
+
+.sourceStatusForm button,
+.lockActions button {
+  min-height: 36px;
+  padding: 0 11px;
+  color: #315f55;
+  background: #edf5f2;
+  border: 1px solid #d3e4df;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.sourceStatusForm button {
+  align-self: end;
+}
+
+.sourceStatusForm button:hover:not(:disabled),
+.lockActions button:hover:not(:disabled) {
+  background: #e3f0eb;
+  border-color: #bdd8cf;
+}
+
+.sourceStatusForm button:disabled,
+.lockActions button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.sourceStatusResult {
+  margin-bottom: 12px;
+  padding: 13px;
+  background: #fff;
+  border: 1px solid #d8e7e2;
+  border-radius: 11px;
+  box-shadow: 0 6px 18px rgba(45, 101, 88, 0.05);
+}
+
+.statusSectionGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.statusSection {
+  min-width: 0;
+  padding: 13px;
+  background: #fbfcfa;
+  border: 1px solid #eceeeb;
+  border-radius: 11px;
+}
+
+.statusSection h4 {
+  margin: 0 0 10px;
+  color: #26322e;
+  font-size: 12px;
+}
+
+.statusList {
+  display: grid;
+  gap: 8px;
+}
+
+.lockCard,
+.recentStatusCard {
+  min-width: 0;
+  padding: 11px;
+  background: #fff;
+  border: 1px solid #eef0ed;
+  border-radius: 10px;
+}
+
+.lockTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 9px;
+}
+
+.lockTop strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #26322e;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lockTop em {
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  color: #5f6d68;
+  background: #f0f3f1;
+  border-radius: 999px;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 750;
+  text-transform: capitalize;
+}
+
+.lockActions {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 6px;
+}
+
+.lockActions button {
+  min-height: 28px;
+  padding: 0 8px;
+  font-size: 9px;
+}
+
+.lockTop .lockedBadge {
+  color: #8d6633;
+  background: #fff4df;
+}
+
+.lockTop .unlockedBadge {
+  color: #337061;
+  background: #eaf4f0;
+}
+
+.lockMeta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.lockMeta span {
+  min-width: 0;
+  overflow: hidden;
+  padding: 8px;
+  color: #8b938f;
+  background: #fbfcfa;
+  border: 1px solid #eef0ed;
+  border-radius: 8px;
+  font-size: 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lockMeta strong {
+  display: block;
+  margin-bottom: 2px;
+  overflow: hidden;
+  color: #2d433d;
   font-size: 10px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.routeGrid small {
-  grid-column: 2;
-  color: #9aa09d;
+.recentStatusCard small {
+  display: block;
+  margin-top: 8px;
+  color: #8f9692;
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.statusEmpty {
+  padding: 18px 12px;
+  color: #8d9692;
+  background: #fff;
+  border: 1px dashed #dfe5e1;
+  border-radius: 10px;
+  font-size: 10px;
+  text-align: center;
+}
+
+.sourceActive {
+  color: #337061;
+  background: #eaf4f0;
+}
+
+.sourceInactive {
+  color: #9c554a;
+  background: #faece8;
+}
+
+.syncPanelHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.pendingControls {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.pendingControls label {
+  display: grid;
+  gap: 4px;
+  color: #8d9490;
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.pendingControls input {
+  width: 82px;
+  height: 34px;
+  padding: 0 9px;
+  color: #35443f;
+  background: #fff;
+  border: 1px solid #dfe3df;
+  border-radius: 8px;
+  outline: 0;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.pendingControls input:focus {
+  border-color: #8ea9a0;
+  box-shadow: 0 0 0 3px rgba(71, 114, 104, 0.08);
+}
+
+.syncRefreshButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 11px;
+  color: #315f55;
+  background: #edf5f2;
+  border: 1px solid #d3e4df;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.syncRefreshButton:hover:not(:disabled) {
+  background: #e3f0eb;
+  border-color: #bdd8cf;
+}
+
+.syncRefreshButton:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.syncError {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  color: #8d493f;
+  background: #fff6f3;
+  border: 1px solid #efd8d2;
+  border-radius: 10px;
+  font-size: 10px;
+}
+
+.syncJobsList {
+  display: grid;
+  gap: 10px;
+}
+
+.syncJobCard {
+  padding: 13px;
+  background: #fbfcfa;
+  border: 1px solid #eceeeb;
+  border-radius: 11px;
+}
+
+.syncJobTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.syncJobTop strong,
+.syncJobTop span {
+  display: block;
+}
+
+.syncJobTop strong {
+  color: #27332f;
+  font-size: 12px;
+}
+
+.syncJobTop span {
+  margin-top: 2px;
+  color: #8f9692;
+  font-size: 9px;
+}
+
+.syncJobTop em {
+  padding: 5px 8px;
+  color: #5f6d68;
+  background: #f0f3f1;
+  border-radius: 999px;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 750;
+  text-transform: capitalize;
+}
+
+.syncJobActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.syncJobActions button,
+.syncDetailHeader button {
+  padding: 6px 9px;
+  color: #315f55;
+  background: #edf5f2;
+  border: 1px solid #d3e4df;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 750;
+}
+
+.syncJobActions button:hover:not(:disabled),
+.syncDetailHeader button:hover {
+  background: #e3f0eb;
+  border-color: #bdd8cf;
+}
+
+.syncJobActions button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.syncJobStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.syncJobStats span {
+  padding: 9px;
+  color: #8b938f;
+  background: #fff;
+  border: 1px solid #eef0ed;
+  border-radius: 9px;
+  font-size: 9px;
+}
+
+.syncJobStats strong {
+  display: block;
+  margin-bottom: 2px;
+  color: #2d433d;
+  font-size: 15px;
+  letter-spacing: -0.03em;
+}
+
+.historyMeta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.historyMeta span {
+  min-width: 0;
+  overflow: hidden;
+  padding: 9px;
+  color: #8b938f;
+  background: #fff;
+  border: 1px solid #eef0ed;
+  border-radius: 9px;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.historyMeta strong {
+  display: block;
+  margin-bottom: 2px;
+  overflow: hidden;
+  color: #2d433d;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.syncLogMessage {
+  margin-top: 10px;
+  padding: 9px 10px;
+  color: #8d493f;
+  background: #fff6f3;
+  border: 1px solid #efd8d2;
+  border-radius: 8px;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.syncEmpty {
+  display: grid;
+  justify-items: center;
+  padding: 34px 16px;
+  color: #8d9692;
+  background: #fbfcfa;
+  border: 1px dashed #dfe5e1;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.syncEmpty p {
+  margin: 8px 0 0;
+  font-size: 10px;
+}
+
+.syncSkeleton {
+  display: grid;
+  gap: 10px;
+  padding: 13px;
+  background: #fbfcfa;
+  border: 1px solid #eceeeb;
+  border-radius: 11px;
+}
+
+.syncSkeleton span {
+  display: block;
+  height: 12px;
+  background: linear-gradient(90deg, #f0f1ef 25%, #f8f8f7 50%, #f0f1ef 75%);
+  background-size: 200% 100%;
+  border-radius: 4px;
+  animation: shimmer 1.4s infinite;
+}
+
+.syncSkeleton span:first-child {
+  width: 45%;
+}
+
+.syncSkeleton span:last-child {
+  width: 85%;
+}
+
+.syncDetailPanel {
+  margin-top: 14px;
+  padding: 16px;
+  background: #fbfcfa;
+  border: 1px solid #e5eae6;
+  border-radius: 13px;
+}
+
+.syncDetailHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.syncDetailHeader h3 {
+  margin: 2px 0 3px;
+  color: #26322e;
+  font-size: 16px;
+}
+
+.syncDetailHeader p {
+  margin: 0;
+  color: #8f9692;
+  font-size: 10px;
+}
+
+.syncDetailNotice {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  color: #4d6961;
+  background: #eff6f3;
+  border: 1px solid #d8e7e2;
+  border-radius: 10px;
+  font-size: 10px;
+}
+
+.syncDetailStats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.syncDetailStats span {
+  padding: 10px;
+  color: #8b938f;
+  background: #fff;
+  border: 1px solid #eef0ed;
+  border-radius: 9px;
+  font-size: 9px;
+}
+
+.syncDetailStats strong {
+  display: block;
+  margin-bottom: 3px;
+  overflow: hidden;
+  color: #2d433d;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reviewMeta {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  color: #6f776f;
+  background: #fff;
+  border: 1px solid #eef0ed;
+  border-radius: 9px;
+  font-size: 10px;
+}
+
+.reviewMeta strong {
+  color: #30443e;
+}
+
+.approveBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 12px;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid #e7eee9;
+  border-radius: 11px;
+}
+
+.approveBar strong,
+.approveBar span {
+  display: block;
+}
+
+.approveBar strong {
+  color: #27332f;
+  font-size: 11px;
+}
+
+.approveBar span {
+  margin-top: 2px;
+  color: #8f9692;
+  font-size: 9px;
+}
+
+.approveActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.approveActions button {
+  min-height: 32px;
+  padding: 0 10px;
+  color: #315f55;
+  background: #edf5f2;
+  border: 1px solid #d3e4df;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 750;
+}
+
+.approveActions button:hover:not(:disabled) {
+  background: #e3f0eb;
+  border-color: #bdd8cf;
+}
+
+.approveActions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.approveActions .approveButton {
+  color: #fff;
+  background: #2d6558;
+  border-color: #2d6558;
+}
+
+.approveActions .approveButton:hover:not(:disabled) {
+  background: #245549;
+  border-color: #245549;
+}
+
+.approveActions .rejectButton {
+  color: #9b594f;
+  background: #fff5f2;
+  border-color: #efd9d3;
+}
+
+.approveActions .rejectButton:hover:not(:disabled) {
+  color: #8b493f;
+  background: #faece8;
+  border-color: #e7c6bd;
+}
+
+.approveNotice {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  color: #2f6a5b;
+  background: #edf7f3;
+  border: 1px solid #d0e7de;
+  border-radius: 10px;
+  font-size: 10px;
+}
+
+.paperList {
+  display: grid;
+  gap: 10px;
+}
+
+.paperCard {
+  padding: 13px;
+  background: #fff;
+  border: 1px solid #eceeeb;
+  border-radius: 11px;
+}
+
+.paperCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.paperCardHeader strong,
+.paperCardHeader span {
+  display: block;
+}
+
+.paperCardHeader strong {
+  color: #24302c;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.paperCardHeader span {
+  margin-top: 3px;
+  color: #8c9591;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.paperCardHeader em {
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  color: #5f6d68;
+  background: #f0f3f1;
+  border-radius: 999px;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 750;
+  text-transform: capitalize;
+}
+
+.paperTitleRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+}
+
+.paperCheckbox {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  margin-top: 1px;
+  cursor: pointer;
+}
+
+.paperCheckbox input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.paperCheckbox span {
+  display: block;
+  width: 18px;
+  height: 18px;
+  background: #fff;
+  border: 1px solid #cddbd5;
+  border-radius: 5px;
+}
+
+.paperCheckbox input:checked + span {
+  background: #2d6558;
+  border-color: #2d6558;
+  box-shadow: inset 0 0 0 4px #fff;
+}
+
+.paperCheckbox input:disabled {
+  cursor: not-allowed;
+}
+
+.paperCheckbox input:disabled + span {
+  background: #f0f1ef;
+  border-color: #e2e5e1;
+}
+
+.paperCard p {
+  display: -webkit-box;
+  margin: 0 0 10px;
+  overflow: hidden;
+  color: #727c77;
+  font-size: 10px;
+  line-height: 1.6;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.paperMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.paperMeta span {
+  max-width: 260px;
+  overflow: hidden;
+  padding: 4px 7px;
+  color: #67736f;
+  background: #f5f7f5;
+  border-radius: 999px;
   font-size: 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 @keyframes pulse {
   50% {
     opacity: 0.35;
+  }
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
   }
 }
 
@@ -414,8 +1332,12 @@
 }
 
 @media (max-width: 800px) {
-  .contentGrid,
-  .routeGrid {
+  .scheduleFormGrid,
+  .scheduleGrid,
+  .sourceStatusForm,
+  .statusSectionGrid,
+  .statusSummary,
+  .triggerForm {
     grid-template-columns: 1fr;
   }
 }
@@ -426,23 +1348,53 @@
     flex-direction: column;
   }
 
-  .connectionCard,
-  .panel,
   .routesPanel {
     padding: 18px;
   }
 
-  .connectionHeader {
-    align-items: flex-start;
-    flex-wrap: wrap;
+  .syncPanelHeader,
+  .pendingControls {
+    align-items: stretch;
+    flex-direction: column;
   }
 
-  .connectionBadge {
-    margin-left: 54px;
+  .pendingControls input,
+  .sourceStatusForm button,
+  .triggerForm button,
+  .syncRefreshButton {
+    width: 100%;
   }
 
-  .endpointBlock {
+  .historyMeta,
+  .syncJobStats,
+  .triggerStats {
     grid-template-columns: 1fr;
-    gap: 4px;
+  }
+
+  .syncJobTop,
+  .lockTop,
+  .syncDetailHeader,
+  .triggerResultTop,
+  .paperCardHeader {
+    flex-direction: column;
+  }
+
+  .lockMeta {
+    grid-template-columns: 1fr;
+  }
+
+  .syncDetailStats {
+    grid-template-columns: 1fr;
+  }
+
+  .approveBar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .approveActions,
+  .approveActions button,
+  .scheduleFormActions button {
+    width: 100%;
   }
 }

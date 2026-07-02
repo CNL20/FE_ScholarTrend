@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { getPaperById } from '../../services/paperService'
+import { aggregatePaperById, getPaperById } from '../../services/paperService'
 import { addBookmark, removeBookmark } from '../../services/bookmarkService'
 import {
   followPaper,
@@ -30,6 +30,13 @@ function getExternalUrl(value, prefix = '') {
   return prefix ? `${prefix}${normalizedValue}` : ''
 }
 
+function formatScore(value) {
+  const numericValue = Number(value)
+  if (!Number.isFinite(numericValue)) return 'N/A'
+
+  return `${Math.round(numericValue)}%`
+}
+
 function PaperDetailPage() {
   const { paperId } = useParams()
   const [paper, setPaper] = useState(null)
@@ -41,6 +48,9 @@ function PaperDetailPage() {
   const [isFollowing, setIsFollowing] = useState(false)
   const [followLoading, setFollowLoading] = useState(false)
   const [followError, setFollowError] = useState('')
+  const [aggregateData, setAggregateData] = useState(null)
+  const [aggregateLoading, setAggregateLoading] = useState(false)
+  const [aggregateError, setAggregateError] = useState('')
 
   useEffect(() => {
     async function fetchPaper() {
@@ -48,6 +58,8 @@ function PaperDetailPage() {
       setError('')
       setFollowError('')
       setIsFollowing(false)
+      setAggregateData(null)
+      setAggregateError('')
       try {
         const hasToken = Boolean(localStorage.getItem('token'))
         const result = await getPaperById(paperId)
@@ -113,6 +125,31 @@ function PaperDetailPage() {
       setBookmarkError(err.response?.data?.message || err.message || 'Failed to update bookmark.')
     } finally {
       setBookmarkLoading(false)
+    }
+  }
+
+  const handleAggregateSubmit = async (event) => {
+    event.preventDefault()
+
+    if (!paper?.id) {
+      setAggregateError('Paper id is required to aggregate metadata.')
+      return
+    }
+
+    setAggregateLoading(true)
+    setAggregateError('')
+    try {
+      const result = await aggregatePaperById(paper.id)
+      setAggregateData(result)
+    } catch (err) {
+      setAggregateData(null)
+      setAggregateError(
+        err.response?.data?.message ||
+          err.message ||
+          'Failed to aggregate paper metadata.',
+      )
+    } finally {
+      setAggregateLoading(false)
     }
   }
 
@@ -242,6 +279,134 @@ function PaperDetailPage() {
             <strong>Not available</strong>
           )}
         </div>
+      </section>
+
+      <section className={`${styles.panel} ${styles.aggregatePanel}`}>
+        <div className={styles.aggregateHeader}>
+          <div className={styles.sectionHeading}>
+            <span>External metadata</span>
+            <h2>Aggregate paper metadata</h2>
+          </div>
+          <form className={styles.aggregateForm} onSubmit={handleAggregateSubmit}>
+            <button
+              type="submit"
+              className={styles.aggregateButton}
+              disabled={aggregateLoading}
+            >
+              {aggregateLoading ? 'Aggregating...' : `Aggregate paper #${paper.id}`}
+            </button>
+          </form>
+        </div>
+
+        {aggregateError && <p className={styles.aggregateError}>{aggregateError}</p>}
+
+        {aggregateData && (
+          <div className={styles.aggregateResult}>
+            <div className={styles.aggregateScores}>
+              <div>
+                <span>Completeness</span>
+                <strong>{formatScore(aggregateData.completenessScore)}</strong>
+              </div>
+              <div>
+                <span>Trust score</span>
+                <strong>{formatScore(aggregateData.trustScore)}</strong>
+              </div>
+              <div>
+                <span>Confidence</span>
+                <strong>{aggregateData.confidenceLevel}</strong>
+              </div>
+              <div>
+                <span>Match method</span>
+                <strong>{aggregateData.matchMethod}</strong>
+              </div>
+            </div>
+
+            <div className={styles.aggregateSummary}>
+              <article>
+                <h3>Unified metadata</h3>
+                <strong>{aggregateData.unifiedMetadata.title || 'Title not available'}</strong>
+                <p>{aggregateData.unifiedMetadata.abstract || 'No abstract returned from sources.'}</p>
+                <div className={styles.aggregateMetaList}>
+                  <span>{aggregateData.unifiedMetadata.journal || 'Unknown journal'}</span>
+                  <span>{aggregateData.unifiedMetadata.year || 'Year unavailable'}</span>
+                  <span>
+                    {(aggregateData.unifiedMetadata.citationCount ?? 0).toLocaleString()} citations
+                  </span>
+                </div>
+              </article>
+
+              <article>
+                <h3>Sources matched</h3>
+                <div className={styles.aggregateBadges}>
+                  {aggregateData.sourcesMatched.length > 0 ? (
+                    aggregateData.sourcesMatched.map((source) => (
+                      <span key={source}>{source}</span>
+                    ))
+                  ) : (
+                    <em>No source matched</em>
+                  )}
+                </div>
+                <small>
+                  Attempted: {aggregateData.sourcesAttempted.join(', ') || 'No source listed'}
+                </small>
+              </article>
+            </div>
+
+            <div className={styles.sourceGrid}>
+              {aggregateData.sources.map((source) => (
+                <article key={source.key} className={styles.sourceCard}>
+                  <div className={styles.sourceCardTop}>
+                    <strong>{source.source || source.key}</strong>
+                    <span className={source.found ? styles.sourceFound : styles.sourceMissing}>
+                      {source.found ? 'Found' : 'Missing'}
+                    </span>
+                  </div>
+                  <p>{source.title || source.errorMessage || 'No metadata returned.'}</p>
+                  <small>
+                    {[source.year, source.journal].filter(Boolean).join(' • ') || 'No publication info'}
+                  </small>
+                </article>
+              ))}
+            </div>
+
+            {(aggregateData.dataGaps.length > 0 || aggregateData.conflicts.length > 0) && (
+              <div className={styles.qualityGrid}>
+                {aggregateData.dataGaps.length > 0 && (
+                  <article>
+                    <h3>Data gaps</h3>
+                    {aggregateData.dataGaps.map((gap) => (
+                      <p key={`${gap.field}-${gap.status}`}>
+                        <strong>{gap.field}</strong>: {gap.message || gap.status}
+                      </p>
+                    ))}
+                  </article>
+                )}
+
+                {aggregateData.conflicts.length > 0 && (
+                  <article>
+                    <h3>Conflicts</h3>
+                    {aggregateData.conflicts.map((conflict) => (
+                      <p key={`${conflict.field}-${conflict.status}`}>
+                        <strong>{conflict.field}</strong>: {conflict.note || conflict.status}
+                      </p>
+                    ))}
+                  </article>
+                )}
+              </div>
+            )}
+
+            {aggregateData.recommendations.length > 0 && (
+              <div className={styles.recommendations}>
+                <h3>Recommendations</h3>
+                <ul>
+                  {aggregateData.recommendations.map((recommendation) => (
+                    <li key={recommendation}>{recommendation}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
       </section>
 
       <div className={styles.contentGrid}>

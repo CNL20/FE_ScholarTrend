@@ -450,6 +450,140 @@
   font-size: 9px;
 }
 
+.compactPanel h3 {
+  margin-bottom: 12px;
+}
+
+.compactList {
+  display: grid;
+  gap: 8px;
+}
+
+.compactRow,
+.keywordRow,
+.sourceRow,
+.trendRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 11px;
+  background: #fafbf9;
+  border: 1px solid #eceeeb;
+  border-radius: 10px;
+}
+
+.compactRow span,
+.keywordRow span,
+.trendRow span {
+  min-width: 0;
+  overflow: hidden;
+  color: #4d5d57;
+  font-size: 11px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.compactRow strong,
+.keywordRow strong,
+.trendRow strong {
+  flex-shrink: 0;
+  color: #17211e;
+  font-size: 11px;
+  font-weight: 760;
+}
+
+.compactEmpty {
+  margin: 0;
+  padding: 10px 0;
+  color: #9aa09d;
+  font-size: 11px;
+}
+
+.sourceRow {
+  align-items: flex-start;
+}
+
+.sourceRow div {
+  min-width: 0;
+}
+
+.sourceRow strong,
+.sourceRow span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sourceRow strong {
+  color: #35403c;
+  font-size: 11px;
+}
+
+.sourceRow span {
+  margin-top: 2px;
+  color: #969c99;
+  font-size: 9px;
+}
+
+.sourceRow em {
+  flex-shrink: 0;
+  padding: 4px 7px;
+  border-radius: 999px;
+  font-size: 8px;
+  font-style: normal;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.sourceActive {
+  color: #337061;
+  background: #eaf4f0;
+}
+
+.sourceInactive {
+  color: #9c554a;
+  background: #faece8;
+}
+
+.keywordRow strong {
+  color: #61746e;
+  font-size: 10px;
+}
+
+.trendBlock {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid #f0f1ef;
+}
+
+.trendHeader {
+  margin-bottom: 12px;
+}
+
+.trendHeader h3 {
+  margin: 4px 0 0;
+}
+
+.trendList {
+  display: grid;
+  gap: 8px;
+}
+
+.trendRow {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) auto auto;
+}
+
+.trendRow em {
+  color: #89908c;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 650;
+}
+
 @keyframes shimmer {
   to {
     background-position: -200% 0;
@@ -495,5 +629,10 @@
 
   .panel {
     padding: 18px;
+  }
+
+  .trendRow {
+    grid-template-columns: 1fr;
+    align-items: flex-start;
   }
 }

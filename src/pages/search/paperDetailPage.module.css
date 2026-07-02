@@ -302,6 +302,221 @@
   box-shadow: var(--shadow-sm);
 }
 
+.aggregatePanel {
+  margin-bottom: 1.25rem;
+}
+
+.aggregateHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.8fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.aggregateForm {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+.aggregateButton {
+  flex-shrink: 0;
+  padding: 0.68rem 0.9rem;
+  border: 0;
+  border-radius: 9px;
+  background: var(--color-brand);
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 800;
+  transition: var(--transition);
+}
+
+.aggregateButton:hover:not(:disabled) {
+  filter: brightness(0.92);
+  transform: translateY(-1px);
+}
+
+.aggregateButton:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.aggregateError {
+  margin: 0.25rem 0 0;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid #fecaca;
+  border-radius: 9px;
+  background: #fef2f2;
+  color: var(--color-danger);
+  font-size: 0.78rem;
+}
+
+.aggregateResult {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.aggregateScores {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.aggregateScores div {
+  padding: 0.9rem;
+  border: 1px solid var(--color-brand-border);
+  border-radius: 12px;
+  background: var(--color-brand-bg);
+}
+
+.aggregateScores span {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--color-brand);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.aggregateScores strong {
+  display: block;
+  overflow: hidden;
+  color: var(--color-text);
+  font-size: 1rem;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.aggregateSummary,
+.qualityGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.aggregateSummary article,
+.qualityGrid article,
+.recommendations {
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.aggregateSummary h3,
+.qualityGrid h3,
+.recommendations h3 {
+  margin: 0 0 0.65rem;
+  color: var(--color-text);
+  font-size: 0.9rem;
+  font-weight: 850;
+}
+
+.aggregateSummary strong {
+  display: block;
+  color: var(--color-text);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.aggregateSummary p,
+.sourceCard p,
+.qualityGrid p {
+  margin: 0.45rem 0 0;
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+  line-height: 1.65;
+}
+
+.aggregateMetaList,
+.aggregateBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+}
+
+.aggregateMetaList span,
+.aggregateBadges span {
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  background: var(--color-surface-hover);
+  color: var(--color-text-secondary);
+  font-size: 0.68rem;
+  font-weight: 750;
+}
+
+.aggregateBadges span {
+  border: 1px solid #bbf7d0;
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.aggregateBadges em,
+.aggregateSummary small,
+.sourceCard small {
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+}
+
+.sourceGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.85rem;
+}
+
+.sourceCard {
+  padding: 0.9rem;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.sourceCardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.sourceCardTop strong {
+  color: var(--color-text);
+  font-size: 0.82rem;
+}
+
+.sourceCardTop span {
+  flex-shrink: 0;
+  padding: 0.18rem 0.48rem;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.sourceFound {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.sourceMissing {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.recommendations ul {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
 .sectionHeading {
   margin-bottom: 1rem;
 }
@@ -418,6 +633,16 @@
   .contentGrid {
     grid-template-columns: 1fr;
   }
+
+  .aggregateHeader,
+  .aggregateSummary,
+  .qualityGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .aggregateScores {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 620px) {
@@ -440,6 +665,19 @@
 
   .actions > * {
     width: 100%;
+  }
+
+  .aggregateForm {
+    flex-direction: column;
+  }
+
+  .aggregateButton,
+  .aggregateScores {
+    width: 100%;
+  }
+
+  .aggregateScores {
+    grid-template-columns: 1fr;
   }
 
   .author {
