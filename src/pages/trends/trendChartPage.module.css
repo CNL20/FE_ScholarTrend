@@ -43,10 +43,10 @@
 .updatedBadge {
   flex-shrink: 0;
   padding: 0.42rem 0.7rem;
-  border: 1px solid var(--color-success-border);
+  border: 1px solid #bbf7d0;
   border-radius: 999px;
-  background: var(--color-success-bg);
-  color: var(--color-success);
+  background: #f0fdf4;
+  color: #15803d;
   font-size: 0.68rem;
   font-weight: 750;
 }
@@ -93,7 +93,7 @@
   padding: 0.35rem 0.65rem;
   border: 1px solid var(--color-border);
   border-radius: 8px;
-  background: var(--color-surface);
+  background: #ffffff;
   color: var(--color-text-secondary);
   font-size: 0.7rem;
   font-weight: 700;
@@ -132,7 +132,7 @@
   border: 1px solid var(--color-border);
   border-radius: 9px;
   outline: none;
-  background: var(--color-surface);
+  background: #ffffff;
   color: var(--color-text);
   font-size: 0.78rem;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -152,7 +152,7 @@
   margin: 1.15rem -1.35rem -1.35rem;
   padding: 0.85rem 1.35rem;
   border-top: 1px solid var(--color-border);
-  background: var(--color-surface);
+  background: #fbfcfe;
 }
 
 .error {
@@ -176,7 +176,7 @@
   min-width: 105px;
   border: 1px solid var(--color-brand);
   background: var(--color-brand);
-  color: var(--color-on-brand);
+  color: #ffffff;
   box-shadow: 0 5px 14px rgba(30, 64, 175, 0.15);
 }
 
@@ -203,7 +203,7 @@
   padding: 1.15rem;
   border: 1px solid var(--color-border);
   border-radius: 13px;
-  background: var(--color-surface);
+  background: linear-gradient(145deg, #ffffff, #f8fbff);
   box-shadow: var(--shadow-sm);
 }
 
@@ -273,7 +273,7 @@
 }
 
 .metricSwitch .metricActive {
-  background: var(--color-surface);
+  background: #ffffff;
   color: var(--color-brand);
   box-shadow: var(--shadow-sm);
 }
@@ -287,7 +287,7 @@
   padding: 0.9rem;
   border: 1px solid var(--color-border);
   border-radius: 11px;
-  background: var(--color-surface);
+  background: #fbfcfe;
 }
 
 .compareType,
@@ -311,7 +311,7 @@
   padding: 0.52rem 0.65rem;
   border: 1px solid var(--color-border);
   border-radius: 9px;
-  background: var(--color-surface);
+  background: #ffffff;
   color: var(--color-text-secondary);
   font-size: 0.68rem;
   font-weight: 650;
@@ -362,7 +362,7 @@
   width: 100%;
   border: 1px solid var(--color-border);
   border-radius: 11px;
-  background: var(--color-surface);
+  background: #fbfcfe;
 }
 
 .chartWrap {
@@ -458,7 +458,7 @@
 }
 
 .positive {
-  color: var(--color-success) !important;
+  color: #15803d !important;
 }
 
 .negative {
@@ -482,7 +482,7 @@
   padding: 1rem;
   border: 1px solid var(--color-border);
   border-radius: 11px;
-  background: var(--color-surface);
+  background: linear-gradient(145deg, #ffffff, #f8fafc);
   transition: var(--transition);
 }
 

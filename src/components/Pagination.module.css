@@ -40,7 +40,7 @@
 .active {
   background: var(--color-brand);
   border-color: var(--color-brand);
-  color: var(--color-on-brand);
+  color: #ffffff;
 }
 
 .active:hover {

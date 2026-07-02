@@ -224,8 +224,8 @@
 
 .topicPill:nth-child(3) {
   color: var(--color-success);
-  background: var(--color-success-bg);
-  border-color: var(--color-success-border);
+  background: #f0fdf4;
+  border-color: #bbf7d0;
 }
 
 .topicPill:nth-child(3):hover {

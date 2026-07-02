@@ -117,7 +117,7 @@
   border: 2px solid var(--color-surface);
   border-radius: 999px;
   background: var(--color-danger);
-  color: var(--color-on-danger);
+  color: #ffffff;
   font-size: 0.62rem;
   font-weight: 800;
   line-height: 1;
@@ -148,7 +148,7 @@
   justify-content: center;
   font-weight: 700;
   font-size: 0.8rem;
-  color: var(--color-on-brand);
+  color: #fff;
   flex-shrink: 0;
 }
 
@@ -176,31 +176,11 @@
   font-weight: 400;
 }
 
-.themeToggle {
-  display: grid;
-  width: 36px;
-  height: 36px;
-  place-items: center;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: transparent;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: var(--transition);
-}
-
-.themeToggle:hover {
-  color: var(--color-text);
-  background: var(--color-surface-hover);
-  border-color: var(--color-border-hover);
-}
-
 .logoutBtn {
   padding: 0.35rem 0.9rem;
   border-radius: var(--radius-md);
-  border: 1px solid var(--color-danger-border);
-  background: var(--color-danger-bg);
+  border: 1px solid #fecaca;
+  background: #fef2f2;
   color: var(--color-danger);
   font-size: 0.8rem;
   font-weight: 500;
@@ -209,8 +189,8 @@
 }
 
 .logoutBtn:hover {
-  background: var(--color-danger-bg);
-  border-color: var(--color-danger-border);
+  background: #fee2e2;
+  border-color: #fca5a5;
 }
 
 .loginBtn {
@@ -235,7 +215,7 @@
   border-radius: var(--radius-md);
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--color-on-brand);
+  color: #fff;
   background: var(--color-brand);
   border: none;
   transition: var(--transition);
