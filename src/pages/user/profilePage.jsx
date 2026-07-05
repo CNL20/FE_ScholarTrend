@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { getMe, updateProfile, changePassword } from '../../services/authService'
 import Skeleton from '../../components/Skeleton'
+import FollowingPage from './followingPage'
 import styles from './profilePage.module.css'
 
 const MAX_AVATAR_SIZE = 5 * 1024 * 1024
@@ -102,6 +102,7 @@ function ProfilePage() {
   const [savingProfile, setSavingProfile] = useState(false)
   const [changingPassword, setChangingPassword] = useState(false)
   const [processingAvatar, setProcessingAvatar] = useState(false)
+  const [tab, setTab] = useState('profile')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
@@ -270,248 +271,256 @@ function ProfilePage() {
   return (
     <section className={styles.page}>
       <header className={styles.pageHeader}>
-        <div>
-          <span className={styles.eyebrow}>Account settings</span>
-          <h1 className={styles.title}>My Profile</h1>
-          <p className={styles.subtitle}>
-            Keep your academic identity and account details up to date.
-          </p>
-        </div>
-        <div className={styles.headerActions}>
-          <Link className={styles.followingButton} to="/following">
+        <span className={styles.eyebrow}>Account settings</span>
+        <h1 className={styles.title}>{tab === 'following' ? 'My Following' : 'My Profile'}</h1>
+        <div className={styles.tabBar}>
+          <button
+            type="button"
+            className={tab === 'profile' ? styles.tabActive : styles.tab}
+            onClick={() => setTab('profile')}
+          >
+            Profile
+          </button>
+          <button
+            type="button"
+            className={tab === 'following' ? styles.tabActive : styles.tab}
+            onClick={() => setTab('following')}
+          >
             Following
-          </Link>
-          <span className={styles.statusBadge}>
-            <span className={styles.statusDot} />
-            Active account
-          </span>
+          </button>
         </div>
       </header>
 
-      {error && <div className={styles.alertError}>{error}</div>}
-      {success && <div className={styles.alertSuccess}>{success}</div>}
+      {tab === 'following' ? (
+        <FollowingPage />
+      ) : (
+        <>
+          {error && <div className={styles.alertError}>{error}</div>}
+          {success && <div className={styles.alertSuccess}>{success}</div>}
 
-      <section className={styles.heroCard}>
-        <div className={styles.heroPattern} />
-        <div className={styles.avatarSection}>
-          <div className={styles.avatarRing}>
-            {avatar ? (
-              <img className={styles.avatarImage} src={avatar} alt={profile.fullName} />
-            ) : (
-              <span className={styles.avatarInitials}>{getInitials(profile.fullName)}</span>
-            )}
-          </div>
-          <div className={styles.avatarActions}>
-            <button
-              type="button"
-              className={styles.photoButton}
-              onClick={() => avatarInputRef.current?.click()}
-              disabled={processingAvatar}
-            >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M9 3 7.5 5H5a3 3 0 0 0-3 3v9a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3V8a3 3 0 0 0-3-3h-2.5L15 3H9Zm3 5a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" />
-              </svg>
-              {processingAvatar ? 'Processing...' : avatar ? 'Change photo' : 'Upload photo'}
-            </button>
-            {avatar && (
-              <button type="button" className={styles.removePhotoButton} onClick={handleRemoveAvatar}>
-                Remove
-              </button>
-            )}
-            <input
-              ref={avatarInputRef}
-              className={styles.fileInput}
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              onChange={handleAvatarChange}
-            />
-            <p className={styles.photoHint}>JPG, PNG or WebP, up to 5 MB. Stored on this device.</p>
-          </div>
-        </div>
-
-        <div className={styles.identity}>
-          <h2>{profile.fullName || 'ScholarTrend Member'}</h2>
-          <p>{profile.email}</p>
-          <div className={styles.identityTags}>
-            <span>{getRoleLabel(primaryRole)}</span>
-            {profile.researchField && <span>{profile.researchField}</span>}
-          </div>
-        </div>
-
-        <dl className={styles.accountFacts}>
-          <div>
-            <dt>Member since</dt>
-            <dd>{formatDate(profile.createdAt)}</dd>
-          </div>
-          <div>
-            <dt>Last sign in</dt>
-            <dd>{formatDate(profile.lastLoginAt)}</dd>
-          </div>
-        </dl>
-      </section>
-
-      <div className={styles.contentGrid}>
-        <section className={styles.panel}>
-          <div className={styles.panelHeader}>
-            <span className={`${styles.panelIcon} ${styles.profileIcon}`}>ID</span>
-            <div>
-              <h2>Personal Information</h2>
-              <p>Details shown across your ScholarTrend account.</p>
-            </div>
-          </div>
-
-          <form className={styles.form} onSubmit={handleProfileSubmit}>
-            <div className={styles.formGrid}>
-              <div className={styles.field}>
-                <label className={styles.label} htmlFor="fullName">Full name</label>
-                <input
-                  id="fullName"
-                  className={styles.input}
-                  value={profile.fullName}
-                  onChange={handleProfileChange('fullName')}
-                  placeholder="Your full name"
-                  required
-                />
+          <section className={styles.heroCard}>
+            <div className={styles.heroPattern} />
+            <div className={styles.avatarSection}>
+              <div className={styles.avatarRing}>
+                {avatar ? (
+                  <img className={styles.avatarImage} src={avatar} alt={profile.fullName} />
+                ) : (
+                  <span className={styles.avatarInitials}>{getInitials(profile.fullName)}</span>
+                )}
               </div>
-              <div className={styles.field}>
-                <label className={styles.label} htmlFor="email">Email address</label>
-                <input id="email" className={styles.input} value={profile.email} disabled />
-                <span className={styles.fieldHint}>Your sign-in email cannot be changed here.</span>
-              </div>
-              <div className={styles.field}>
-                <label className={styles.label} htmlFor="institution">Institution</label>
-                <input
-                  id="institution"
-                  className={styles.input}
-                  value={profile.institution}
-                  onChange={handleProfileChange('institution')}
-                  placeholder="e.g. FPT University"
-                />
-              </div>
-              <div className={styles.field}>
-                <label className={styles.label} htmlFor="researchField">Research field</label>
-                <input
-                  id="researchField"
-                  className={styles.input}
-                  value={profile.researchField}
-                  onChange={handleProfileChange('researchField')}
-                  placeholder="e.g. Artificial Intelligence"
-                />
-              </div>
-            </div>
-            <div className={styles.formActions}>
-              <button type="submit" className={styles.primaryButton} disabled={savingProfile}>
-                {savingProfile ? 'Saving changes...' : 'Save changes'}
-              </button>
-            </div>
-          </form>
-        </section>
-
-        <section className={styles.panel}>
-          <div className={styles.panelHeader}>
-            <span className={`${styles.panelIcon} ${styles.securityIcon}`}>
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M12 2a5 5 0 0 0-5 5v3H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-2V7a5 5 0 0 0-5-5Zm3 8H9V7a3 3 0 1 1 6 0v3Zm-3 4a2 2 0 0 1 1 3.73V19h-2v-1.27A2 2 0 0 1 12 14Z" />
-              </svg>
-            </span>
-            <div>
-              <h2>Password & Security</h2>
-              <p>Use a unique password to keep your account secure.</p>
-            </div>
-          </div>
-
-          <form className={styles.form} onSubmit={handlePasswordSubmit}>
-            <div className={styles.securityFields}>
-              <div className={styles.field}>
-                <label className={styles.label} htmlFor="currentPassword">Current password</label>
-                <div className={styles.passwordWrapper}>
-                  <input
-                    id="currentPassword"
-                    type={showCurrentPassword ? "text" : "password"}
-                    className={styles.input}
-                    value={passwordData.currentPassword}
-                    onChange={handlePasswordChange('currentPassword')}
-                    autoComplete="current-password"
-                    placeholder="Enter current password"
-                    required
-                  />
-                  <button 
-                    type="button" 
-                    className={styles.eyeButton}
-                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                    tabIndex="-1"
-                  >
-                    {showCurrentPassword ? (
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
-                    ) : (
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                    )}
+              <div className={styles.avatarActions}>
+                <button
+                  type="button"
+                  className={styles.photoButton}
+                  onClick={() => avatarInputRef.current?.click()}
+                  disabled={processingAvatar}
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M9 3 7.5 5H5a3 3 0 0 0-3 3v9a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3V8a3 3 0 0 0-3-3h-2.5L15 3H9Zm3 5a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" />
+                  </svg>
+                  {processingAvatar ? 'Processing...' : avatar ? 'Change photo' : 'Upload photo'}
+                </button>
+                {avatar && (
+                  <button type="button" className={styles.removePhotoButton} onClick={handleRemoveAvatar}>
+                    Remove
                   </button>
+                )}
+                <input
+                  ref={avatarInputRef}
+                  className={styles.fileInput}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleAvatarChange}
+                />
+                <p className={styles.photoHint}>JPG, PNG or WebP, up to 5 MB. Stored on this device.</p>
+              </div>
+            </div>
+
+            <div className={styles.identity}>
+              <h2>{profile.fullName || 'ScholarTrend Member'}</h2>
+              <p>{profile.email}</p>
+              <div className={styles.identityTags}>
+                <span>{getRoleLabel(primaryRole)}</span>
+                {profile.researchField && <span>{profile.researchField}</span>}
+              </div>
+            </div>
+
+            <dl className={styles.accountFacts}>
+              <div>
+                <dt>Member since</dt>
+                <dd>{formatDate(profile.createdAt)}</dd>
+              </div>
+              <div>
+                <dt>Last sign in</dt>
+                <dd>{formatDate(profile.lastLoginAt)}</dd>
+              </div>
+            </dl>
+          </section>
+
+          <div className={styles.contentGrid}>
+            <section className={styles.panel}>
+              <div className={styles.panelHeader}>
+                <span className={`${styles.panelIcon} ${styles.profileIcon}`}>ID</span>
+                <div>
+                  <h2>Personal Information</h2>
+                  <p>Details shown across your ScholarTrend account.</p>
                 </div>
               </div>
-              <div className={styles.field}>
-                <label className={styles.label} htmlFor="newPassword">New password</label>
-                <div className={styles.passwordWrapper}>
-                  <input
-                    id="newPassword"
-                    type={showNewPassword ? "text" : "password"}
-                    className={styles.input}
-                    value={passwordData.newPassword}
-                    onChange={handlePasswordChange('newPassword')}
-                    autoComplete="new-password"
-                    placeholder="At least 6 characters"
-                    required
-                  />
-                  <button 
-                    type="button" 
-                    className={styles.eyeButton}
-                    onClick={() => setShowNewPassword(!showNewPassword)}
-                    tabIndex="-1"
-                  >
-                    {showNewPassword ? (
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
-                    ) : (
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                    )}
+
+              <form className={styles.form} onSubmit={handleProfileSubmit}>
+                <div className={styles.formGrid}>
+                  <div className={styles.field}>
+                    <label className={styles.label} htmlFor="fullName">Full name</label>
+                    <input
+                      id="fullName"
+                      className={styles.input}
+                      value={profile.fullName}
+                      onChange={handleProfileChange('fullName')}
+                      placeholder="Your full name"
+                      required
+                    />
+                  </div>
+                  <div className={styles.field}>
+                    <label className={styles.label} htmlFor="email">Email address</label>
+                    <input id="email" className={styles.input} value={profile.email} disabled />
+                    <span className={styles.fieldHint}>Your sign-in email cannot be changed here.</span>
+                  </div>
+                  <div className={styles.field}>
+                    <label className={styles.label} htmlFor="institution">Institution</label>
+                    <input
+                      id="institution"
+                      className={styles.input}
+                      value={profile.institution}
+                      onChange={handleProfileChange('institution')}
+                      placeholder="e.g. FPT University"
+                    />
+                  </div>
+                  <div className={styles.field}>
+                    <label className={styles.label} htmlFor="researchField">Research field</label>
+                    <input
+                      id="researchField"
+                      className={styles.input}
+                      value={profile.researchField}
+                      onChange={handleProfileChange('researchField')}
+                      placeholder="e.g. Artificial Intelligence"
+                    />
+                  </div>
+                </div>
+                <div className={styles.formActions}>
+                  <button type="submit" className={styles.primaryButton} disabled={savingProfile}>
+                    {savingProfile ? 'Saving changes...' : 'Save changes'}
                   </button>
                 </div>
-              </div>
-              <div className={styles.field}>
-                <label className={styles.label} htmlFor="confirmPassword">Confirm new password</label>
-                <div className={styles.passwordWrapper}>
-                  <input
-                    id="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
-                    className={styles.input}
-                    value={passwordData.confirmPassword}
-                    onChange={handlePasswordChange('confirmPassword')}
-                    autoComplete="new-password"
-                    placeholder="Repeat new password"
-                    required
-                  />
-                  <button 
-                    type="button" 
-                    className={styles.eyeButton}
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    tabIndex="-1"
-                  >
-                    {showConfirmPassword ? (
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
-                    ) : (
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                    )}
-                  </button>
+              </form>
+            </section>
+
+            <section className={styles.panel}>
+              <div className={styles.panelHeader}>
+                <span className={`${styles.panelIcon} ${styles.securityIcon}`}>
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 2a5 5 0 0 0-5 5v3H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-2V7a5 5 0 0 0-5-5Zm3 8H9V7a3 3 0 1 1 6 0v3Zm-3 4a2 2 0 0 1 1 3.73V19h-2v-1.27A2 2 0 0 1 12 14Z" />
+                  </svg>
+                </span>
+                <div>
+                  <h2>Password & Security</h2>
+                  <p>Use a unique password to keep your account secure.</p>
                 </div>
               </div>
-            </div>
-            <div className={styles.formActions}>
-              <button type="submit" className={styles.secondaryButton} disabled={changingPassword}>
-                {changingPassword ? 'Updating password...' : 'Update password'}
-              </button>
-            </div>
-          </form>
-        </section>
-      </div>
+
+              <form className={styles.form} onSubmit={handlePasswordSubmit}>
+                <div className={styles.securityFields}>
+                  <div className={styles.field}>
+                    <label className={styles.label} htmlFor="currentPassword">Current password</label>
+                    <div className={styles.passwordWrapper}>
+                      <input
+                        id="currentPassword"
+                        type={showCurrentPassword ? "text" : "password"}
+                        className={styles.input}
+                        value={passwordData.currentPassword}
+                        onChange={handlePasswordChange('currentPassword')}
+                        autoComplete="current-password"
+                        placeholder="Enter current password"
+                        required
+                      />
+                      <button 
+                        type="button" 
+                        className={styles.eyeButton}
+                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                        tabIndex="-1"
+                      >
+                        {showCurrentPassword ? (
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                        ) : (
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                  <div className={styles.field}>
+                    <label className={styles.label} htmlFor="newPassword">New password</label>
+                    <div className={styles.passwordWrapper}>
+                      <input
+                        id="newPassword"
+                        type={showNewPassword ? "text" : "password"}
+                        className={styles.input}
+                        value={passwordData.newPassword}
+                        onChange={handlePasswordChange('newPassword')}
+                        autoComplete="new-password"
+                        placeholder="At least 6 characters"
+                        required
+                      />
+                      <button 
+                        type="button" 
+                        className={styles.eyeButton}
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        tabIndex="-1"
+                      >
+                        {showNewPassword ? (
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                        ) : (
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                  <div className={styles.field}>
+                    <label className={styles.label} htmlFor="confirmPassword">Confirm new password</label>
+                    <div className={styles.passwordWrapper}>
+                      <input
+                        id="confirmPassword"
+                        type={showConfirmPassword ? "text" : "password"}
+                        className={styles.input}
+                        value={passwordData.confirmPassword}
+                        onChange={handlePasswordChange('confirmPassword')}
+                        autoComplete="new-password"
+                        placeholder="Repeat new password"
+                        required
+                      />
+                      <button 
+                        type="button" 
+                        className={styles.eyeButton}
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        tabIndex="-1"
+                      >
+                        {showConfirmPassword ? (
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                        ) : (
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div className={styles.formActions}>
+                  <button type="submit" className={styles.secondaryButton} disabled={changingPassword}>
+                    {changingPassword ? 'Updating password...' : 'Update password'}
+                  </button>
+                </div>
+              </form>
+            </section>
+          </div>
+        </>
+      )}
     </section>
   )
 }
