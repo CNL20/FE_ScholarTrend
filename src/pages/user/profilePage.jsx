@@ -266,7 +266,8 @@ function ProfilePage() {
     )
   }
 
-  const primaryRole = profile.roles[0]
+  const roles = profile.roles.map(r => String(r).toLowerCase())
+  const primaryRole = roles.includes('admin') ? 'Admin' : roles.includes('researcher') ? 'Researcher' : profile.roles[0]
 
   return (
     <section className={styles.page}>
