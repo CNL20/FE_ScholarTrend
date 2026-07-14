@@ -16,7 +16,7 @@ export const ROLES = {
  */
 export const PERMISSIONS = {
   // Ai cũng truy cập được (kể cả chưa đăng nhập)
-  public: ['/', '/login', '/register', '/search', '/search/results'],
+  public: ['/', '/login', '/register', '/search', '/search/results', '/pricing', '/payment/result'],
 
   // Cần đăng nhập
   authenticated: ['/dashboard', '/papers', '/following', '/notifications'],
@@ -38,6 +38,7 @@ export function getNavItems(role) {
     { to: '/authors', label: 'Authors' },
     { to: '/trends', label: 'Trends' },
     { to: '/reports/publications', label: 'Reports' },
+    { to: '/pricing', label: 'Pricing' },
   ]
 
   if (!role) return common

@@ -22,6 +22,8 @@ import FollowingPage from "./pages/user/followingPage";
 import NotificationsPage from "./pages/user/notificationsPage";
 import ProfilePage from "./pages/user/profilePage";
 import PublicationReportPage from "./pages/reports/publicationReportPage";
+import SubscriptionPlansPage from "./pages/payment/SubscriptionPlansPage";
+import PaymentResultPage from "./pages/payment/PaymentResultPage";
 
 // Admin Pages
 import AdminLayout from "./components/admin/AdminLayout";
@@ -111,6 +113,8 @@ function App() {
         { path: "topics/:topicId", element: <TopicDetailPage /> },
         { path: "trends", element: <TrendChartPage /> },
         { path: "reports/publications", element: <PublicationReportPage /> },
+        { path: "pricing", element: <SubscriptionPlansPage /> },
+        { path: "payment/result", element: <PaymentResultPage /> },
 
         // Cần đăng nhập — tất cả roles
         {

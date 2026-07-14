@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom'
-import styles from './landingPage.module.css'
+import { Link, useNavigate } from 'react-router-dom'
+import styles from './LandingPage.module.css'
 
 const features = [
   {
@@ -27,6 +27,10 @@ const stats = [
 ]
 
 function LandingPage() {
+  const token = localStorage.getItem('token');
+  const isAuthenticated = Boolean(token);
+  const navigate = useNavigate();
+
   return (
     <div className={styles.landing}>
       {/* Hero Section */}
@@ -46,8 +50,8 @@ function LandingPage() {
           <Link to="/search" className={styles.primary}>
             Start Searching
           </Link>
-          <Link to="/register" className={styles.secondary}>
-            Create Account →
+          <Link to="/pricing" className={styles.secondary}>
+            View Premium Plans →
           </Link>
         </div>
       </section>
@@ -87,8 +91,14 @@ function LandingPage() {
             Join thousands of researchers who trust ScholarTrend to stay ahead.
           </p>
           <div className={styles.ctaActions}>
-            <Link to="/register" className={styles.ctaBtn}>
-              Get Started — It&apos;s Free
+            <Link 
+              to={isAuthenticated ? "/dashboard" : "/login"} 
+              className={styles.ctaBtnPrimary}
+            >
+              {isAuthenticated ? "Continue with Free Plan" : "Get Started — It's Free"}
+            </Link>
+            <Link to="/pricing" className={styles.ctaBtnPremium}>
+              View Premium Plans
             </Link>
           </div>
         </div>
