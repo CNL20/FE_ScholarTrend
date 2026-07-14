@@ -90,6 +90,21 @@
   opacity: 0.65;
 }
 
+.buttonGroup {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.exportBtn {
+  background: var(--color-surface) !important;
+  color: var(--color-brand) !important;
+}
+
+.exportBtn:hover:not(:disabled) {
+  background: var(--color-brand-light) !important;
+  color: #fff !important;
+}
+
 .error {
   margin: 0 0 1rem;
   color: var(--color-danger);

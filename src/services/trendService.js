@@ -134,13 +134,4 @@ export async function compareTrends(type, ids, filters = {}) {
   }))
 }
 
-export async function getTrendOverview() {
-  const { data } = await api.get('/trends/overview')
-  return data
-}
 
-/** Số lượng paper theo năm (cho biểu đồ) */
-export async function getTrendByYear(params = {}) {
-  const { data } = await api.get('/trends/by-year', { params })
-  return data
-}

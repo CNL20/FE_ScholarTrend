@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { aggregatePaperById, getPaperById } from '../../services/paperService'
+import { aggregatePaperById, getPaperById, recordView } from '../../services/paperService'
 import { addBookmark, removeBookmark } from '../../services/bookmarkService'
 import {
   followPaper,
@@ -67,6 +67,13 @@ function PaperDetailPage() {
         setBookmarked(result.isBookmarked)
 
         if (hasToken) {
+          // Record paper view in background
+          try {
+            await recordView(paperId)
+          } catch {
+            // Ignore if recording view fails
+          }
+
           try {
             const followedPapers = await getFollowedPapers()
             setIsFollowing(
@@ -264,6 +271,10 @@ function PaperDetailPage() {
 
       <section className={styles.metrics}>
         <div>
+          <span>Views</span>
+          <strong>{paper.viewCount.toLocaleString()}</strong>
+        </div>
+        <div>
           <span>Citations</span>
           <strong>{paper.citationCount.toLocaleString()}</strong>
         </div>
@@ -432,11 +443,11 @@ function PaperDetailPage() {
               {paper.topics.length > 0 ? (
                 paper.topics.map((topic) => (
                   <Link
-                    key={topic}
-                    to={`/search/results?keyword=${encodeURIComponent(topic)}&page=1&pageSize=10`}
+                    key={topic.id || topic.name}
+                    to={topic.id ? `/topics/${topic.id}` : `/search/results?keyword=${encodeURIComponent(topic.name)}&page=1&pageSize=10`}
                     className={styles.topicTag}
                   >
-                    {topic}
+                    {topic.name}
                   </Link>
                 ))
               ) : (

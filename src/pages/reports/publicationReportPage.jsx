@@ -11,7 +11,7 @@ import {
   YAxis,
 } from 'recharts'
 import Skeleton from '../../components/Skeleton'
-import { getPublicationReport } from '../../services/reportService'
+import { getPublicationReport, exportReportAsJson, exportReportAsCsv } from '../../services/reportService'
 import styles from './publicationReportPage.module.css'
 
 function getInitialFilters() {
@@ -91,6 +91,42 @@ function PublicationReportPage() {
     await loadReport(filters)
   }
 
+  const handleExportJson = async () => {
+    try {
+      setLoading(true)
+      const blob = await exportReportAsJson(filters)
+      const url = window.URL.createObjectURL(new Blob([blob]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `publication_report_${new Date().getTime()}.json`)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+    } catch (err) {
+      setError('Failed to export JSON report.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleExportCsv = async () => {
+    try {
+      setLoading(true)
+      const blob = await exportReportAsCsv(filters)
+      const url = window.URL.createObjectURL(new Blob([blob]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `publication_report_${new Date().getTime()}.csv`)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+    } catch (err) {
+      setError('Failed to export CSV report.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const totalCitations = report?.items.reduce(
     (sum, item) => sum + item.totalCitations,
     0,
@@ -147,9 +183,17 @@ function PublicationReportPage() {
             <option value="Month" />
           </datalist>
         </label>
-        <button type="submit" disabled={loading}>
-          {loading ? 'Generating...' : 'Generate report'}
-        </button>
+        <div className={styles.buttonGroup}>
+          <button type="submit" disabled={loading}>
+            {loading ? 'Generating...' : 'Generate report'}
+          </button>
+          <button type="button" onClick={handleExportJson} disabled={loading} className={styles.exportBtn}>
+            Export JSON
+          </button>
+          <button type="button" onClick={handleExportCsv} disabled={loading} className={styles.exportBtn}>
+            Export CSV
+          </button>
+        </div>
       </form>
 
       {error && <p className={styles.error}>{error}</p>}

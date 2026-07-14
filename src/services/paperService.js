@@ -23,6 +23,7 @@ function normalizePaperListItem(paper) {
       .filter(Boolean),
     keywords: paper.keywords ?? [],
     citationCount: paper.citationCount ?? 0,
+    viewCount: paper.viewCount ?? 0,
   }
 }
 
@@ -44,8 +45,11 @@ function normalizePaperDetail(paper) {
       ))
       .filter((author) => author.name),
     keywords: paper.keywords ?? [],
-    topics: paper.topics ?? [],
+    topics: (paper.topics ?? []).map((t) =>
+      typeof t === 'string' ? { id: null, name: t } : t
+    ),
     citationCount: paper.citationCount ?? 0,
+    viewCount: paper.viewCount ?? 0,
     isBookmarked: Boolean(paper.isBookmarked),
   }
 }
@@ -210,8 +214,8 @@ export async function aggregatePaperById(id) {
  * @returns {Paper[]}
  */
 export async function getRecentPapers(count = 10) {
-  const { data } = await api.get('/papers/recent', { params: { count } })
-  return data
+  const result = await searchPapers({ pageSize: count })
+  return result.items || []
 }
 
 /**
@@ -231,4 +235,14 @@ export async function getPapersByAuthor(authorName, params = {}) {
 export async function recordView(paperId) {
   const { data } = await api.post(`/papers/${paperId}/view`)
   return data
+}
+
+/**
+ * Thống kê tổng quan tất cả bài báo
+ */
+export async function getGlobalPaperAggregate() {
+  const { data: response } = await api.get('/papers/aggregate')
+  const result = unwrapResponse(response, 'Failed to aggregate global paper metadata.')
+
+  return normalizeAggregateResult(result)
 }

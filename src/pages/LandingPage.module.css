@@ -200,52 +200,121 @@
   letter-spacing: 0.04em;
 }
 
-/* ── CTA Section ── */
+/* ── Modern CTA Section ── */
 .ctaSection {
-  padding: 2rem 0 3rem;
+  padding: 4rem 1rem 5rem;
+  display: flex;
+  justify-content: center;
 }
 
 .ctaCard {
   text-align: center;
-  padding: 3rem 2rem;
-  border-radius: var(--radius-lg);
-  background: var(--color-brand-bg);
-  border: 1px solid var(--color-brand-border);
+  padding: 4rem 2rem;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  color: #ffffff;
+  max-width: 900px;
+  width: 100%;
+  box-shadow: 0 20px 40px rgba(37, 99, 235, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.ctaCard::before {
+  content: '';
+  position: absolute;
+  top: -50px;
+  left: -50px;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
+  border-radius: 50%;
+}
+
+.ctaCard::after {
+  content: '';
+  position: absolute;
+  bottom: -100px;
+  right: -50px;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+  border-radius: 50%;
 }
 
 .ctaTitle {
-  font-size: 1.6rem;
+  font-size: 2.2rem;
   font-weight: 800;
-  margin: 0 0 0.75rem;
-  color: var(--color-text);
+  margin: 0 0 1rem;
+  color: #ffffff;
+  position: relative;
+  z-index: 1;
 }
 
 .ctaSubtitle {
-  color: var(--color-text-secondary);
-  margin: 0 0 1.75rem;
-  font-size: 1rem;
+  color: #e0e7ff;
+  margin: 0 auto 2.5rem;
+  font-size: 1.15rem;
+  max-width: 600px;
+  line-height: 1.6;
+  position: relative;
+  z-index: 1;
 }
 
 .ctaActions {
   display: flex;
   justify-content: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
 }
 
-.ctaBtn {
-  padding: 0.85rem 2.25rem;
-  border-radius: var(--radius-md);
+.ctaBtnPrimary {
+  padding: 1rem 2.5rem;
+  border-radius: 999px;
   font-weight: 700;
-  font-size: 1rem;
-  color: var(--color-on-brand);
-  background: var(--color-brand);
-  box-shadow: var(--shadow-md);
-  transition: var(--transition);
+  font-size: 1.05rem;
+  color: #1e3a8a;
+  background: #ffffff;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  border: none;
 }
 
-.ctaBtn:hover {
-  filter: brightness(0.9);
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-1px);
+.ctaBtnPrimary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+  background: #f8fafc;
+}
+
+.ctaBtnPremium {
+  padding: 1rem 2.5rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.ctaBtnPremium:hover {
+  transform: translateY(-3px);
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
 }
 
 /* ── Responsive ── */
