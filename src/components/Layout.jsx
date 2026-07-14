@@ -5,6 +5,17 @@ import { getNavItems, ROLES } from "../utils/roles";
 import styles from "./layout.module.css";
 
 function Layout() {
+  const [dark, setDark] = useState(() => localStorage.getItem("theme") === "dark");
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", dark);
+  }, [dark]);
+  const toggleTheme = () => {
+    const next = !dark;
+    setDark(next);
+    localStorage.setItem("theme", next ? "dark" : "light");
+    document.documentElement.classList.toggle("dark", next);
+  };
+
   const token = localStorage.getItem("token");
   const userName = localStorage.getItem("userName");
   const userRole = localStorage.getItem("userRole");
@@ -14,6 +25,7 @@ function Layout() {
     avatarStorageKey ? localStorage.getItem(avatarStorageKey) || "" : "",
   );
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const isAuthenticated = Boolean(token);
   const navItems = getNavItems(isAuthenticated ? userRole : null);
@@ -98,19 +110,24 @@ function Layout() {
                 }
               >
                 <span className={styles.navLabel}>{item.label}</span>
-                {item.to === "/notifications" && unreadNotifications > 0 && (
-                  <span
-                    className={styles.notificationBadge}
-                    aria-label={`${unreadNotifications} unread notifications`}
-                  >
-                    {unreadNotifications > 99 ? "99+" : unreadNotifications}
-                  </span>
-                )}
               </NavLink>
             ))}
           </nav>
 
           <div className={styles.authActions}>
+            <button
+              type="button"
+              className={styles.themeToggle}
+              onClick={toggleTheme}
+              aria-label={dark ? "Light mode" : "Dark mode"}
+              title={dark ? "Light mode" : "Dark mode"}
+            >
+              {dark ? (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+              ) : (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+              )}
+            </button>
             {token ? (
               <>
                 <NavLink
@@ -145,30 +162,38 @@ function Layout() {
                     </span>
                   )}
                 </NavLink>
-                <div className={styles.userGreeting}>
-                  <span className={styles.userAvatar}>
-                    {userAvatar ? (
-                      <img src={userAvatar} alt="" />
-                    ) : (
-                      userName ? userName.charAt(0).toUpperCase() : "U"
-                    )}
-                  </span>
-                  <div className={styles.userInfo}>
-                    <span className={styles.userName}>{userName}</span>
-                    {userRole && (
-                      <span className={styles.userRole}>
-                        {getRoleLabel(userRole)}
-                      </span>
-                    )}
-                  </div>
+                <div className={styles.userMenu}>
+                  <button
+                    type="button"
+                    className={styles.avatarBtn}
+                    onClick={() => setMenuOpen((prev) => !prev)}
+                    aria-haspopup="true"
+                    aria-expanded={menuOpen}
+                  >
+                    <span className={styles.userAvatar}>
+                      {userAvatar ? (
+                        <img src={userAvatar} alt="" />
+                      ) : (
+                        userName ? userName.charAt(0).toUpperCase() : "U"
+                      )}
+                    </span>
+                    <svg className={styles.chevron} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="12" height="12"><polyline points="6 9 12 15 18 9"/></svg>
+                  </button>
+                  {menuOpen && (
+                    <>
+                      <div className={styles.backdrop} onClick={() => setMenuOpen(false)} />
+                      <div className={styles.dropdown}>
+                        <div className={styles.dropdownHeader}>
+                          <span className={styles.dropdownName}>{userName}</span>
+                          {userRole && <span className={styles.dropdownRole}>{getRoleLabel(userRole)}</span>}
+                        </div>
+                        <div className={styles.dropdownDivider} />
+                        <NavLink to="/profile" className={styles.dropdownItem} onClick={() => setMenuOpen(false)}>Profile</NavLink>
+                        <button type="button" className={styles.dropdownItem} onClick={handleLogout}>Logout</button>
+                      </div>
+                    </>
+                  )}
                 </div>
-                <button
-                  type="button"
-                  className={styles.logoutBtn}
-                  onClick={handleLogout}
-                >
-                  Logout
-                </button>
               </>
             ) : (
               <>

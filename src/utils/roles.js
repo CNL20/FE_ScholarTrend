@@ -46,7 +46,6 @@ export function getNavItems(role) {
     { to: '/dashboard', label: 'Dashboard' },
     ...common.slice(1), // skip Home, add Search + Trends
     { to: '/bookmarks', label: 'Bookmarks' },
-    { to: '/profile', label: 'Profile' },
   ]
 
   if (role === ROLES.LECTURER_STUDENT) {
@@ -60,8 +59,6 @@ export function getNavItems(role) {
     return [
       { to: '/', label: 'Home' },
       ...authenticated,
-      { to: '/following', label: 'Following' },
-      { to: '/notifications', label: 'Notifications' },
     ]
   }
 
@@ -69,8 +66,6 @@ export function getNavItems(role) {
     return [
       { to: '/', label: 'Home' },
       ...authenticated,
-      { to: '/following', label: 'Following' },
-      { to: '/notifications', label: 'Notifications' },
       { to: '/admin', label: 'Admin Panel' },
     ]
   }
