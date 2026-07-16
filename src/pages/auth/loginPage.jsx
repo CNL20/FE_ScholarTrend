@@ -198,14 +198,7 @@ function LoginPage() {
     }
   };
 
-  const handleDemoLogin = (role) => {
-    localStorage.setItem("token", "demo-token");
-    localStorage.setItem("refreshToken", "demo-refresh");
-    localStorage.setItem("userRole", role);
-    localStorage.setItem("userName", role === "Admin" ? "Demo Admin" : "Demo Researcher");
-    localStorage.setItem("userId", "demo-user-id");
-    navigate(role === "Admin" ? "/admin" : "/dashboard", { replace: true });
-  };
+
 
   return (
     <div className={styles.wrapper}>
@@ -241,8 +234,8 @@ function LoginPage() {
                 value={form.password}
                 onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
               />
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className={styles.eyeButton}
                 onClick={() => setShowPassword(!showPassword)}
                 tabIndex="-1"
@@ -338,21 +331,10 @@ function LoginPage() {
           )}
         </div>
 
-        <div className={styles.demoSection}>
-          <div className={styles.divider} aria-hidden="true"><span>or try demo</span></div>
-          <div className={styles.demoButtons}>
-            <button type="button" className={styles.demoBtn} onClick={() => handleDemoLogin("Researcher")}>
-              Demo as Researcher
-            </button>
-            <button type="button" className={styles.demoBtn} onClick={() => handleDemoLogin("Admin")}>
-              Demo as Admin
-            </button>
-          </div>
-          <p className={styles.helperText}>No login required — explore all features instantly.</p>
-        </div>
+
 
         <p className={styles.footer}>
-          Don&apos;t have an account? <Link to="/register">Create one</Link>
+          Don&apos;t have an account? <Link to="/register">Create Account</Link>
         </p>
       </section>
     </div>

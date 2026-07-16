@@ -780,7 +780,8 @@
   text-transform: uppercase;
 }
 
-.pendingControls input {
+.pendingControls input,
+.pendingControls select {
   width: 82px;
   height: 34px;
   padding: 0 9px;
@@ -793,7 +794,8 @@
   font-weight: 650;
 }
 
-.pendingControls input:focus {
+.pendingControls input:focus,
+.pendingControls select:focus {
   border-color: #8ea9a0;
   box-shadow: 0 0 0 3px rgba(71, 114, 104, 0.08);
 }
@@ -836,6 +838,8 @@
 .syncJobsList {
   display: grid;
   gap: 10px;
+  min-height: 540px;
+  align-content: start;
 }
 
 .syncJobCard {

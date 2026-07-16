@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { getUserById, getUsers, updateUserRole, updateUserStatus } from "../../services/adminService";
+import { getAdminDashboard, getUserById, getUsers, updateUserRole, updateUserStatus } from "../../services/adminService";
+import Pagination from "../../components/Pagination";
 import { ROLES } from "../../utils/roles";
 import styles from "./AdminUserManagementPage.module.css";
 
@@ -123,12 +124,29 @@ function AdminUserManagementPage() {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("All");
   const [activeFilter, setActiveFilter] = useState("All");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [stats, setStats] = useState(null);
   const [pendingId, setPendingId] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
   const currentUserId = localStorage.getItem("userId");
+
+  useEffect(() => {
+    let active = true;
+    getAdminDashboard()
+      .then((res) => {
+        if (active) setStats(res);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [refreshKey]);
 
   useEffect(() => {
     let active = true;
@@ -142,8 +160,14 @@ function AdminUserManagementPage() {
           search,
           role: roleFilter,
           isActive: activeFilter,
+          page: currentPage,
+          pageSize,
         });
-        if (active) setUsers(normalizeUsers(result));
+        if (active) {
+          setUsers(normalizeUsers(result));
+          setTotalPages(result?.totalPages || 1);
+          setTotalUsers(result?.totalCount || 0);
+        }
       } catch (requestError) {
         if (active) {
           setUsers([]);
@@ -162,27 +186,11 @@ function AdminUserManagementPage() {
       active = false;
       window.clearTimeout(timerId);
     };
-  }, [activeFilter, refreshKey, roleFilter, search]);
+  }, [activeFilter, refreshKey, roleFilter, search, currentPage, pageSize]);
 
-  const filteredUsers = useMemo(() => {
-    const keyword = search.trim().toLowerCase();
-    return users.filter((user) => {
-      const matchesRole = roleFilter === "All" || userHasRole(user, roleFilter);
-      const matchesStatus =
-        activeFilter === "All" ||
-        (activeFilter === "true" ? isUserActive(user) : !isUserActive(user));
-      const matchesKeyword =
-        !keyword ||
-        getDisplayName(user).toLowerCase().includes(keyword) ||
-        String(user.email || "").toLowerCase().includes(keyword) ||
-        String(user.institution || "").toLowerCase().includes(keyword) ||
-        String(user.researchField || "").toLowerCase().includes(keyword);
-      return matchesRole && matchesStatus && matchesKeyword;
-    });
-  }, [activeFilter, roleFilter, search, users]);
-
-  const activeCount = users.filter(isUserActive).length;
-  const adminCount = users.filter((user) => userHasRole(user, ROLES.ADMIN)).length;
+  const activeCount = stats?.activeUsers || 0;
+  const adminCount = stats?.usersByRole?.Admin || stats?.usersByRole?.admin || 0;
+  const totalStatsCount = stats?.totalUsers || 0;
 
   const handleUpdateRole = async (user, role) => {
     const id = getUserId(user);
@@ -333,7 +341,7 @@ function AdminUserManagementPage() {
           </div>
           <div>
             <span>Total accounts</span>
-            <strong>{loading ? "--" : users.length.toLocaleString()}</strong>
+            <strong>{loading && !stats ? "--" : totalStatsCount.toLocaleString()}</strong>
           </div>
         </article>
         <article className={styles.summaryCard}>
@@ -365,14 +373,20 @@ function AdminUserManagementPage() {
               aria-label="Search users"
               placeholder="Search by name or email"
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                setCurrentPage(1);
+              }}
             />
           </div>
           <select
             className={styles.filterSelect}
             aria-label="Filter by role"
             value={roleFilter}
-            onChange={(event) => setRoleFilter(event.target.value)}
+            onChange={(event) => {
+              setRoleFilter(event.target.value);
+              setCurrentPage(1);
+            }}
           >
             <option value="All">All roles</option>
             {roleOptions.map((role) => (
@@ -385,18 +399,41 @@ function AdminUserManagementPage() {
             className={styles.filterSelect}
             aria-label="Filter by active status"
             value={activeFilter}
-            onChange={(event) => setActiveFilter(event.target.value)}
+            onChange={(event) => {
+              setActiveFilter(event.target.value);
+              setCurrentPage(1);
+            }}
           >
             <option value="All">All status</option>
             <option value="true">Active</option>
             <option value="false">Inactive</option>
           </select>
+          <select
+            className={styles.filterSelect}
+            aria-label="Items per page"
+            value={pageSize}
+            onChange={(event) => {
+              setPageSize(Number(event.target.value));
+              setCurrentPage(1);
+            }}
+          >
+            <option value="10">10 / page</option>
+            <option value="20">20 / page</option>
+            <option value="50">50 / page</option>
+          </select>
           <span className={styles.resultCount}>
-            {filteredUsers.length} {filteredUsers.length === 1 ? "result" : "results"}
+            {totalUsers} {totalUsers === 1 ? "result" : "results"}
           </span>
         </div>
 
-        <div className={styles.tableScroll}>
+        <div 
+          className={styles.tableScroll} 
+          style={{ 
+            opacity: loading ? 0.5 : 1, 
+            transition: "opacity 0.2s ease-in-out",
+            pointerEvents: loading ? "none" : "auto" 
+          }}
+        >
           <table className={styles.table}>
             <thead>
               <tr>
@@ -423,7 +460,7 @@ function AdminUserManagementPage() {
                   </tr>
                 ))
               ) : (
-                filteredUsers.map((user) => {
+                users.map((user) => {
                   const id = getUserId(user);
                   const isCurrentUser = String(id) === String(currentUserId);
                   const status = getStatus(user);
@@ -516,7 +553,7 @@ function AdminUserManagementPage() {
           </table>
         </div>
 
-        {!loading && filteredUsers.length === 0 && (
+        {!loading && users.length === 0 && (
           <div className={styles.emptyState}>
             <div className={styles.emptyIcon}><Icon name="user" size={22} /></div>
             <strong>No users found</strong>
@@ -524,6 +561,14 @@ function AdminUserManagementPage() {
           </div>
         )}
       </article>
+
+      <div style={{ padding: '1rem', display: 'flex', justifyContent: 'center' }}>
+        <Pagination
+          page={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
+      </div>
 
       {selectedUser && (
         <div className={styles.modalBackdrop} role="presentation" onClick={closeDetails}>
