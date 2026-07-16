@@ -50,7 +50,8 @@ function JournalDetailPage() {
 
         if (hasToken) {
           try {
-            const followedJournals = await getFollowedJournals()
+            const followedResult = await getFollowedJournals({ page: 1, pageSize: 1000 })
+            const followedJournals = followedResult?.items ?? []
             setIsFollowing(
               followedJournals.some((item) => Number(item.id) === Number(journalId)),
             )
