@@ -42,7 +42,8 @@ function AuthorDetailPage() {
 
         if (hasToken && result?.id) {
           try {
-            const followedAuthors = await getFollowedAuthors()
+            const followedResult = await getFollowedAuthors({ page: 1, pageSize: 1000 })
+            const followedAuthors = followedResult?.items ?? []
             if (active) {
               setIsFollowing(
                 followedAuthors.some((item) => Number(item.id) === Number(result.id)),

@@ -75,7 +75,8 @@ function PaperDetailPage() {
           }
 
           try {
-            const followedPapers = await getFollowedPapers()
+            const followedResult = await getFollowedPapers({ page: 1, pageSize: 1000 })
+            const followedPapers = followedResult?.items ?? []
             setIsFollowing(
               followedPapers.some((item) => Number(item.id) === Number(result.id)),
             )

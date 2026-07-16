@@ -106,7 +106,8 @@ function TopicDetailPage() {
 
         if (hasToken) {
           try {
-            const followedTopics = await getFollowedTopics()
+            const followedResult = await getFollowedTopics({ page: 1, pageSize: 1000 })
+            const followedTopics = followedResult?.items ?? []
             setIsFollowing(
               followedTopics.some((item) => Number(item.id) === Number(topicId)),
             )

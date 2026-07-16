@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import {
   Bar,
   BarChart,
@@ -42,14 +43,28 @@ function PublicationReportPage() {
   const [report, setReport] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [errorCode, setErrorCode] = useState(null)
+
+  const handleError = (err, defaultMsg) => {
+    const status = err.response?.status
+    setErrorCode(status || 500)
+    if (status === 403) {
+      setError('Access Denied. You do not have permission to access publication reports.')
+    } else if (status === 401) {
+      setError('Please sign in to access reports.')
+    } else {
+      setError(err.response?.data?.message || err.message || defaultMsg)
+    }
+  }
 
   const loadReport = async (nextFilters) => {
     setLoading(true)
     setError('')
+    setErrorCode(null)
     try {
       setReport(await getPublicationReport(nextFilters))
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Failed to load report.')
+      handleError(err, 'Failed to load report.')
       setReport(null)
     } finally {
       setLoading(false)
@@ -65,7 +80,7 @@ function PublicationReportPage() {
         if (active) setReport(result)
       } catch (err) {
         if (active) {
-          setError(err.response?.data?.message || err.message || 'Failed to load report.')
+          handleError(err, 'Failed to load report.')
         }
       } finally {
         if (active) setLoading(false)
@@ -86,6 +101,7 @@ function PublicationReportPage() {
     event.preventDefault()
     if (filters.yearFrom && filters.yearTo && Number(filters.yearFrom) > Number(filters.yearTo)) {
       setError('The start year cannot be later than the end year.')
+      setErrorCode(null)
       return
     }
     await loadReport(filters)
@@ -103,7 +119,7 @@ function PublicationReportPage() {
       link.click()
       link.remove()
     } catch (err) {
-      setError('Failed to export JSON report.')
+      handleError(err, 'Failed to export JSON report.')
     } finally {
       setLoading(false)
     }
@@ -121,7 +137,7 @@ function PublicationReportPage() {
       link.click()
       link.remove()
     } catch (err) {
-      setError('Failed to export CSV report.')
+      handleError(err, 'Failed to export CSV report.')
     } finally {
       setLoading(false)
     }
@@ -196,7 +212,44 @@ function PublicationReportPage() {
         </div>
       </form>
 
-      {error && <p className={styles.error}>{error}</p>}
+      {error && errorCode !== 403 && errorCode !== 401 && (
+        <p className={styles.error}>{error}</p>
+      )}
+
+      {errorCode === 403 && (
+        <div className={styles.upgradeBox}>
+          <div className={styles.upgradeIcon}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+            </svg>
+          </div>
+          <div className={styles.upgradeContent}>
+            <h3>Premium Feature</h3>
+            <p>Publication reports are only available for Researcher subscriptions and Admins. Upgrade your plan to unlock deep research analytics, exporting, and more.</p>
+          </div>
+          <Link to="/pricing" className={styles.upgradeBtn}>
+            View Subscription Plans
+          </Link>
+        </div>
+      )}
+
+      {errorCode === 401 && (
+        <div className={styles.upgradeBox}>
+          <div className={styles.upgradeIcon}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          </div>
+          <div className={styles.upgradeContent}>
+            <h3>Sign in required</h3>
+            <p>You need to be logged in to access advanced reporting features.</p>
+          </div>
+          <Link to="/login" className={styles.upgradeBtn}>
+            Sign In
+          </Link>
+        </div>
+      )}
 
       {loading && !report ? (
         <>
