@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Pagination from "../../components/Pagination";
 import {
   approvePendingSyncPapers,
   getPendingSyncJobById,
@@ -135,7 +136,9 @@ function AdminApiConfigPage() {
   const [syncScheduleError, setSyncScheduleError] = useState("");
   const [syncScheduleNotice, setSyncScheduleNotice] = useState("");
   const [scheduleHistory, setScheduleHistory] = useState([]);
-  const [scheduleHistoryLimit, setScheduleHistoryLimit] = useState(50);
+  const [scheduleHistoryPage, setScheduleHistoryPage] = useState(1);
+  const [scheduleHistoryPageSize, setScheduleHistoryPageSize] = useState(20);
+  const [scheduleHistoryTotalPages, setScheduleHistoryTotalPages] = useState(1);
   const [scheduleHistoryLoading, setScheduleHistoryLoading] = useState(true);
   const [scheduleHistoryError, setScheduleHistoryError] = useState("");
   const [triggerDraft, setTriggerDraft] = useState({
@@ -147,11 +150,15 @@ function AdminApiConfigPage() {
   const [triggerError, setTriggerError] = useState("");
   const [triggerResult, setTriggerResult] = useState(null);
   const [pendingJobs, setPendingJobs] = useState([]);
-  const [pendingLimit, setPendingLimit] = useState(50);
+  const [pendingPage, setPendingPage] = useState(1);
+  const [pendingPageSize, setPendingPageSize] = useState(20);
+  const [pendingTotalPages, setPendingTotalPages] = useState(1);
   const [pendingLoading, setPendingLoading] = useState(true);
   const [pendingError, setPendingError] = useState("");
   const [syncLogs, setSyncLogs] = useState([]);
-  const [syncLogLimit, setSyncLogLimit] = useState(50);
+  const [syncLogPage, setSyncLogPage] = useState(1);
+  const [syncLogPageSize, setSyncLogPageSize] = useState(20);
+  const [syncLogTotalPages, setSyncLogTotalPages] = useState(1);
   const [syncLogsLoading, setSyncLogsLoading] = useState(true);
   const [syncLogsError, setSyncLogsError] = useState("");
   const [selectedSyncJob, setSelectedSyncJob] = useState(null);
@@ -203,76 +210,22 @@ function AdminApiConfigPage() {
         if (active) setSyncStatusLoading(false);
       });
 
-    getSyncScheduleHistory(50)
-      .then((result) => {
-        if (!active) return;
-        setScheduleHistory(normalizeScheduleHistory(result));
-      })
-      .catch((error) => {
-        if (!active) return;
-        setScheduleHistory([]);
-        setScheduleHistoryError(
-          error.response?.data?.message ||
-            error.message ||
-            "Could not load sync schedule history.",
-        );
-      })
-      .finally(() => {
-        if (active) setScheduleHistoryLoading(false);
-      });
-
-    getPendingSyncJobs(50)
-      .then((result) => {
-        if (!active) return;
-        setPendingJobs(normalizePendingSyncJobs(result));
-      })
-      .catch((error) => {
-        if (!active) return;
-        setPendingJobs([]);
-        setPendingError(
-          error.response?.data?.message ||
-            error.message ||
-            "Could not load pending sync jobs.",
-        );
-      })
-      .finally(() => {
-        if (active) setPendingLoading(false);
-      });
-
-    getSyncLogs(50)
-      .then((result) => {
-        if (!active) return;
-        setSyncLogs(normalizeSyncLogs(result));
-      })
-      .catch((error) => {
-        if (!active) return;
-        setSyncLogs([]);
-        setSyncLogsError(
-          error.response?.data?.message ||
-            error.message ||
-            "Could not load sync logs.",
-        );
-      })
-      .finally(() => {
-        if (active) setSyncLogsLoading(false);
-      });
-
     return () => {
       active = false;
     };
   }, []);
 
   const refreshPendingSync = async () => {
-    const limit = Math.max(1, Number(pendingLimit) || 50);
     setPendingLoading(true);
     setPendingError("");
     setSyncDetailError("");
     setApproveError("");
 
     try {
-      const result = await getPendingSyncJobs(limit);
+      const result = await getPendingSyncJobs(pendingPage, pendingPageSize);
       const jobs = normalizePendingSyncJobs(result);
       setPendingJobs(jobs);
+      setPendingTotalPages(result?.totalPages || 1);
       if (selectedSyncJob && !jobs.some((job) => String(job.id) === String(selectedSyncJob.id))) {
         setSelectedSyncJob(null);
         setSelectedPaperIds([]);
@@ -288,6 +241,10 @@ function AdminApiConfigPage() {
       setPendingLoading(false);
     }
   };
+
+  useEffect(() => {
+    refreshPendingSync();
+  }, [pendingPage, pendingPageSize]);
 
   const refreshSyncStatus = async () => {
     setSyncStatusLoading(true);
@@ -403,13 +360,13 @@ function AdminApiConfigPage() {
   };
 
   const refreshScheduleHistory = async () => {
-    const limit = Math.max(1, Number(scheduleHistoryLimit) || 50);
     setScheduleHistoryLoading(true);
     setScheduleHistoryError("");
 
     try {
-      const result = await getSyncScheduleHistory(limit);
+      const result = await getSyncScheduleHistory(scheduleHistoryPage, scheduleHistoryPageSize);
       setScheduleHistory(normalizeScheduleHistory(result));
+      setScheduleHistoryTotalPages(result?.totalPages || 1);
     } catch (error) {
       setScheduleHistory([]);
       setScheduleHistoryError(
@@ -421,6 +378,10 @@ function AdminApiConfigPage() {
       setScheduleHistoryLoading(false);
     }
   };
+
+  useEffect(() => {
+    refreshScheduleHistory();
+  }, [scheduleHistoryPage, scheduleHistoryPageSize]);
 
   const handleTriggerDraftChange = (event) => {
     const { name, value } = event.target;
@@ -471,13 +432,13 @@ function AdminApiConfigPage() {
   };
 
   const refreshSyncLogs = async () => {
-    const limit = Math.max(1, Number(syncLogLimit) || 50);
     setSyncLogsLoading(true);
     setSyncLogsError("");
 
     try {
-      const result = await getSyncLogs(limit);
+      const result = await getSyncLogs(syncLogPage, syncLogPageSize);
       setSyncLogs(normalizeSyncLogs(result));
+      setSyncLogTotalPages(result?.totalPages || 1);
     } catch (error) {
       setSyncLogs([]);
       setSyncLogsError(
@@ -489,6 +450,10 @@ function AdminApiConfigPage() {
       setSyncLogsLoading(false);
     }
   };
+
+  useEffect(() => {
+    refreshSyncLogs();
+  }, [syncLogPage, syncLogPageSize]);
 
   const viewPendingSyncDetail = async (job) => {
     if (!job?.id) return;
@@ -819,14 +784,18 @@ function AdminApiConfigPage() {
           </div>
           <div className={styles.pendingControls}>
             <label>
-              Limit
-              <input
-                type="number"
-                min="1"
-                max="200"
-                value={scheduleHistoryLimit}
-                onChange={(event) => setScheduleHistoryLimit(event.target.value)}
-              />
+              Page size
+              <select
+                value={scheduleHistoryPageSize}
+                onChange={(event) => {
+                  setScheduleHistoryPageSize(Number(event.target.value));
+                  setScheduleHistoryPage(1);
+                }}
+              >
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+              </select>
             </label>
             <button
               type="button"
@@ -884,6 +853,13 @@ function AdminApiConfigPage() {
               <p>No schedule history yet.</p>
             </div>
           )}
+        </div>
+        <div style={{ padding: '1rem', display: 'flex', justifyContent: 'center' }}>
+          <Pagination
+            page={scheduleHistoryPage}
+            totalPages={scheduleHistoryTotalPages}
+            onPageChange={setScheduleHistoryPage}
+          />
         </div>
       </article>
 
@@ -1194,14 +1170,18 @@ function AdminApiConfigPage() {
           </div>
           <div className={styles.pendingControls}>
             <label>
-              Limit
-              <input
-                type="number"
-                min="1"
-                max="200"
-                value={syncLogLimit}
-                onChange={(event) => setSyncLogLimit(event.target.value)}
-              />
+              Page size
+              <select
+                value={syncLogPageSize}
+                onChange={(event) => {
+                  setSyncLogPageSize(Number(event.target.value));
+                  setSyncLogPage(1);
+                }}
+              >
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+              </select>
             </label>
             <button
               type="button"
@@ -1260,6 +1240,13 @@ function AdminApiConfigPage() {
             </div>
           )}
         </div>
+        <div style={{ padding: '1rem', display: 'flex', justifyContent: 'center' }}>
+          <Pagination
+            page={syncLogPage}
+            totalPages={syncLogTotalPages}
+            onPageChange={setSyncLogPage}
+          />
+        </div>
       </article>
 
       <article className={styles.routesPanel}>
@@ -1270,14 +1257,18 @@ function AdminApiConfigPage() {
           </div>
           <div className={styles.pendingControls}>
             <label>
-              Limit
-              <input
-                type="number"
-                min="1"
-                max="200"
-                value={pendingLimit}
-                onChange={(event) => setPendingLimit(event.target.value)}
-              />
+              Page size
+              <select
+                value={pendingPageSize}
+                onChange={(event) => {
+                  setPendingPageSize(Number(event.target.value));
+                  setPendingPage(1);
+                }}
+              >
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+              </select>
             </label>
             <button
               type="button"
@@ -1339,6 +1330,13 @@ function AdminApiConfigPage() {
               <p>No pending sync jobs right now.</p>
             </div>
           )}
+        </div>
+        <div style={{ padding: '1rem', display: 'flex', justifyContent: 'center' }}>
+          <Pagination
+            page={pendingPage}
+            totalPages={pendingTotalPages}
+            onPageChange={setPendingPage}
+          />
         </div>
 
         {selectedSyncJob && (

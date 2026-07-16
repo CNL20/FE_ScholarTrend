@@ -153,6 +153,7 @@
   border: 1px solid #e5e7e4;
   border-radius: 14px;
   box-shadow: 0 2px 8px rgba(31, 45, 40, 0.025);
+  min-height: 720px;
 }
 
 .toolbar {

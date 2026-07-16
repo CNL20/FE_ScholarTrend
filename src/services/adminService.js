@@ -9,7 +9,10 @@ function unwrapResponse(response, fallbackMessage) {
 }
 
 function buildUserParams(filters = {}) {
-  const params = {}
+  const params = {
+    page: filters.page || 1,
+    pageSize: filters.pageSize || 20,
+  }
   const search = filters.search?.trim()
 
   if (search) params.Search = search
@@ -87,9 +90,9 @@ export async function updateUserStatus(userId, isActive) {
 }
 
 
-export async function getSyncLogs(limit = 50) {
+export async function getSyncLogs(page = 1, pageSize = 20) {
   const { data: response } = await api.get('/admin/sync/logs', {
-    params: { limit },
+    params: { page, pageSize },
   })
 
   if (response && typeof response === 'object' && 'success' in response) {
@@ -129,9 +132,9 @@ export async function updateSyncSchedule(payload) {
   return response
 }
 
-export async function getSyncScheduleHistory(limit = 50) {
+export async function getSyncScheduleHistory(page = 1, pageSize = 20) {
   const { data: response } = await api.get('/admin/sync/schedule/history', {
-    params: { limit },
+    params: { page, pageSize },
   })
 
   if (response && typeof response === 'object' && 'success' in response) {
@@ -184,9 +187,9 @@ export async function updateSyncDataSourceStatus(sourceId, isActive) {
   return response
 }
 
-export async function getPendingSyncJobs(limit = 50) {
+export async function getPendingSyncJobs(page = 1, pageSize = 20) {
   const { data: response } = await api.get('/admin/sync/pending', {
-    params: { limit },
+    params: { page, pageSize },
   })
 
   if (response && typeof response === 'object' && 'success' in response) {
