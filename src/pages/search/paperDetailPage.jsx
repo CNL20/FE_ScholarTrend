@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { aggregatePaperById, getPaperById, recordView } from '../../services/paperService'
 import { addBookmark, removeBookmark } from '../../services/bookmarkService'
 import {
@@ -39,6 +39,7 @@ function formatScore(value) {
 
 function PaperDetailPage() {
   const { paperId } = useParams()
+  const navigate = useNavigate()
   const [paper, setPaper] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -161,6 +162,15 @@ function PaperDetailPage() {
     }
   }
 
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1)
+      return
+    }
+
+    navigate('/search')
+  }
+
   if (loading) {
     return (
       <div className={styles.detailPage}>
@@ -176,7 +186,10 @@ function PaperDetailPage() {
     return (
       <div className={styles.notFound}>
         <strong>{error || 'Paper not found.'}</strong>
-        <Link to="/search">Return to search</Link>
+        <button type="button" className={styles.backButton} onClick={handleBack}>
+          <span aria-hidden="true">&larr;</span>
+          Back
+        </button>
       </div>
     )
   }
@@ -187,6 +200,11 @@ function PaperDetailPage() {
 
   return (
     <article className={styles.detailPage}>
+      <button type="button" className={styles.backButton} onClick={handleBack}>
+        <span aria-hidden="true">&larr;</span>
+        Back
+      </button>
+
       <nav className={styles.breadcrumb} aria-label="Breadcrumb">
         <Link to="/search">Search</Link>
         <span>/</span>
