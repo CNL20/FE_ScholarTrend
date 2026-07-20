@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import Pagination from '../../components/Pagination'
 import Skeleton from '../../components/Skeleton'
 import {
   getNotificationSettings,
@@ -9,6 +10,9 @@ import {
   updateNotificationSettings,
 } from '../../services/notificationService'
 import styles from './simpleListPage.module.css'
+
+const PAGE_SIZE = 10
+const NOTIFICATION_FETCH_LIMIT = 100
 
 function formatDate(value) {
   let dateString = value;
@@ -25,10 +29,13 @@ function formatDate(value) {
 }
 
 function NotificationsPage() {
+  const role = localStorage.getItem('userRole')
+  const isAdmin = role === 'Admin'
+  const [notificationType, setNotificationType] = useState('User')
   const [notifications, setNotifications] = useState([])
   const [settings, setSettings] = useState(null)
   const [filter, setFilter] = useState('all')
-  const [limit, setLimit] = useState('20')
+  const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [markingId, setMarkingId] = useState(null)
@@ -37,6 +44,7 @@ function NotificationsPage() {
   const [settingsError, setSettingsError] = useState('')
   const [settingsSaving, setSettingsSaving] = useState(false)
   const [settingsMessage, setSettingsMessage] = useState('')
+  const [initialLoad, setInitialLoad] = useState(true)
 
   useEffect(() => {
     async function fetchSettings() {
@@ -87,14 +95,14 @@ function NotificationsPage() {
   }
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
     async function fetchNotifications() {
       setLoading(true)
       setError('')
       try {
         const result = await getNotifications({
           isRead: filter === 'all' ? undefined : filter === 'read',
-          limit,
+          limit: NOTIFICATION_FETCH_LIMIT,
+          type: notificationType === 'Admin' ? 'Admin' : 'User'
         })
         setNotifications(result)
       } catch (err) {
@@ -102,11 +110,47 @@ function NotificationsPage() {
         setNotifications([])
       } finally {
         setLoading(false)
+        setInitialLoad(false)
       }
     }
 
     fetchNotifications()
-  }, [filter, limit])
+  }, [filter, notificationType])
+
+  const totalPages = Math.max(1, Math.ceil(notifications.length / PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
+  const startIndex = (currentPage - 1) * PAGE_SIZE
+  const pageNotifications = useMemo(
+    () => notifications.slice(startIndex, startIndex + PAGE_SIZE),
+    [notifications, startIndex],
+  )
+  const firstResult = notifications.length > 0 ? startIndex + 1 : 0
+  const lastResult = Math.min(startIndex + pageNotifications.length, notifications.length)
+
+  const handleFilterChange = (value) => {
+    setFilter(value)
+    setPage(1)
+  }
+
+  const handlePageChange = (nextPage) => {
+    setPage(nextPage)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const updateNotificationReadState = (notificationId, notifyHeader = true) => {
+    setNotifications((current) =>
+      filter === 'unread'
+        ? current.filter((item) => item.id !== notificationId)
+        : current.map((item) => (
+          item.id === notificationId
+            ? { ...item, isRead: true, read: true, readAt: new Date().toISOString() }
+            : item
+        )),
+    )
+    if (notifyHeader) {
+      window.dispatchEvent(new Event('notifications-updated'))
+    }
+  }
 
   const handleMarkAsRead = async (notificationId) => {
     if (markingId === notificationId) return
@@ -115,21 +159,24 @@ function NotificationsPage() {
     setError('')
     try {
       await markAsRead(notificationId)
-      setNotifications((current) =>
-        filter === 'unread'
-          ? current.filter((item) => item.id !== notificationId)
-          : current.map((item) => (
-            item.id === notificationId
-              ? { ...item, isRead: true, read: true, readAt: new Date().toISOString() }
-              : item
-          )),
-      )
-      window.dispatchEvent(new Event('notifications-updated'))
+      updateNotificationReadState(notificationId)
     } catch {
       setError('Failed to mark notification as read.')
     } finally {
       setMarkingId(null)
     }
+  }
+
+  const handleOpenNotification = (event, item, isRead) => {
+    event.stopPropagation()
+    if (isRead || markingId === item.id) return
+
+    updateNotificationReadState(item.id, false)
+    markAsRead(item.id)
+      .catch(() => {})
+      .finally(() => {
+        window.dispatchEvent(new Event('notifications-updated'))
+      })
   }
 
   const handleMarkAllAsRead = async () => {
@@ -171,29 +218,38 @@ function NotificationsPage() {
         </button>
       </div>
 
+      {isAdmin && (
+        <div className={styles.typeTabs}>
+          <button
+            type="button"
+            className={notificationType === 'User' ? styles.typeTabActive : styles.typeTab}
+            onClick={() => { setNotificationType('User'); setPage(1); }}
+          >
+            Personal
+          </button>
+          <button
+            type="button"
+            className={notificationType === 'Admin' ? styles.typeTabActive : styles.typeTab}
+            onClick={() => { setNotificationType('Admin'); setPage(1); }}
+          >
+            System / Admin
+          </button>
+        </div>
+      )}
+
       <div className={styles.listToolbar}>
         <div className={styles.filterTabs}>
           {['all', 'unread', 'read'].map((value) => (
             <button
               key={value}
               type="button"
-              className={filter === value ? styles.filterTabActive : ''}
-              onClick={() => setFilter(value)}
+              className={`${styles.filterTab} ${filter === value ? styles.filterTabActive : ''}`}
+              onClick={() => handleFilterChange(value)}
             >
               {value[0].toUpperCase() + value.slice(1)}
             </button>
           ))}
         </div>
-        <select
-          className={styles.limitSelect}
-          value={limit}
-          onChange={(event) => setLimit(event.target.value)}
-          aria-label="Notification limit"
-        >
-          <option value="10">10 latest</option>
-          <option value="20">20 latest</option>
-          <option value="50">50 latest</option>
-        </select>
       </div>
 
       <section className={styles.settingsPanel}>
@@ -202,7 +258,6 @@ function NotificationsPage() {
             <span>Preferences</span>
             <h2>Notification settings</h2>
           </div>
-          <small>Manage delivery preferences</small>
         </div>
         {settingsLoading ? (
           <Skeleton variant="text" count={3} />
@@ -265,17 +320,29 @@ function NotificationsPage() {
 
       {error && <p className={styles.listError}>{error}</p>}
 
-      {loading && notifications.length === 0 ? (
+      {initialLoad ? (
         <Skeleton variant="card" count={3} />
       ) : (
-        <ul className={styles.list} style={{ opacity: loading ? 0.5 : 1, transition: 'opacity 0.2s', pointerEvents: loading ? 'none' : 'auto' }}>
+        <ul className={styles.list}>
           {notifications.length === 0 && (
             <li className={styles.listItem}>
               <span className={styles.listItemText}>No notifications.</span>
             </li>
           )}
-          {notifications.map((item) => {
+          {pageNotifications.map((item) => {
             const isRead = item.isRead ?? item.read ?? false
+            const targetUrl = item.targetUrl
+            const notificationBody = (
+              <>
+                <div className={styles.notificationTitle}>
+                  {!isRead && <span className={styles.unreadDot} />}
+                  <strong>{item.title}</strong>
+                  {item.createdAt && <time>{formatDate(item.createdAt)}</time>}
+                </div>
+                <span className={styles.listItemText}>{item.message}</span>
+              </>
+            )
+
             return (
               <li
                 key={item.id}
@@ -284,17 +351,22 @@ function NotificationsPage() {
                 aria-busy={markingId === item.id}
               >
                 <div className={styles.notificationContent}>
-                  <div className={styles.notificationTitle}>
-                    {!isRead && <span className={styles.unreadDot} />}
-                    <strong>{item.title}</strong>
-                    {item.createdAt && <time>{formatDate(item.createdAt)}</time>}
-                  </div>
-                  <span className={styles.listItemText}>{item.message}</span>
-                  {item.targetUrl && (
+                  {targetUrl ? (
+                    <Link
+                      className={styles.notificationMainLink}
+                      to={targetUrl}
+                      onClick={(event) => handleOpenNotification(event, item, isRead)}
+                    >
+                      {notificationBody}
+                    </Link>
+                  ) : (
+                    notificationBody
+                  )}
+                  {targetUrl && (
                     <Link
                       className={styles.notificationLink}
-                      to={item.targetUrl}
-                      onClick={(event) => event.stopPropagation()}
+                      to={targetUrl}
+                      onClick={(event) => handleOpenNotification(event, item, isRead)}
                     >
                       View details
                     </Link>
@@ -304,6 +376,13 @@ function NotificationsPage() {
             )
           })}
         </ul>
+      )}
+      {!loading && notifications.length > PAGE_SIZE && (
+        <Pagination
+          page={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
       )}
     </section>
   )
