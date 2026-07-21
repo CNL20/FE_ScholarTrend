@@ -38,7 +38,7 @@ function Layout() {
     let active = true;
     const refreshUnreadCount = async () => {
       try {
-        const count = await getUnreadNotificationCount();
+        const count = await getUnreadNotificationCount('User');
         if (active) setUnreadNotifications(count);
       } catch {
         if (active) setUnreadNotifications(0);

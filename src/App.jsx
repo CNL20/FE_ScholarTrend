@@ -16,6 +16,7 @@ import AuthorDetailPage from "./pages/search/authorDetailPage";
 import AuthorsPage from "./pages/authors/authorsPage";
 import JournalDetailPage from "./pages/journals/journalDetailPage";
 import TopicDetailPage from "./pages/topics/topicDetailPage";
+import TopicsPage from "./pages/topics/topicsPage";
 import TrendChartPage from "./pages/trends/trendChartPage";
 import BookmarksPage from "./pages/user/bookmarksPage";
 import FollowingPage from "./pages/user/followingPage";
@@ -111,6 +112,7 @@ function App() {
         { path: "authors/id/:authorId", element: <AuthorDetailPage /> },
         { path: "authors/:authorName", element: <AuthorDetailPage /> },
         { path: "journals/:journalId", element: <JournalDetailPage /> },
+        { path: "topics", element: <TopicsPage /> },
         { path: "topics/:topicId", element: <TopicDetailPage /> },
         { path: "trends", element: <TrendChartPage /> },
         { path: "reports/publications", element: <PublicationReportPage /> },

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getAdminDashboard } from "../../services/adminService";
+import { getNotifications, getUnreadNotificationCount, markAsRead } from "../../services/notificationService";
 import { getGlobalPaperAggregate } from "../../services/paperService";
 import styles from "./AdminDashboardPage.module.css";
 
@@ -98,6 +99,13 @@ function Icon({ name, size = 20 }) {
         <path d="M3 12h4l2-7 4 14 2-7h6" />
       </>
     ),
+    alert: (
+      <>
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 8v4" />
+        <path d="M12 16h.01" />
+      </>
+    ),
     refresh: (
       <>
         <path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 4v5h5M4 13a8.1 8.1 0 0 0 15.5 2M20 20v-5h-5" />
@@ -169,6 +177,8 @@ function AdminDashboardPage() {
   const [stats, setStats] = useState({});
   const [logs, setLogs] = useState([]);
   const [aggregateData, setAggregateData] = useState(null);
+  const [actionItems, setActionItems] = useState([]);
+  const [unreadActionCount, setUnreadActionCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
@@ -181,15 +191,19 @@ function AdminDashboardPage() {
       setError("");
 
       try {
-        const [result, agg] = await Promise.all([
+        const [result, agg, notifications, count] = await Promise.all([
           getAdminDashboard(),
-          getGlobalPaperAggregate().catch(() => null)
+          getGlobalPaperAggregate().catch(() => null),
+          getNotifications({ isRead: false, limit: 50, type: 'Admin' }).catch(() => []),
+          getUnreadNotificationCount('Admin').catch(() => 0)
         ]);
         if (!active) return;
 
         setStats(result || {});
         setLogs(normalizeLogs(result?.recentSyncLogs || []));
         setAggregateData(agg);
+        setActionItems(notifications || []);
+        setUnreadActionCount(count || 0);
       } catch (err) {
         if (!active) return;
 
@@ -271,7 +285,44 @@ function AdminDashboardPage() {
       </div>
 
       <div className={styles.contentGrid}>
-        <article className={styles.panel}>
+        <div className={styles.mainColumn}>
+          {actionItems.length > 0 && (
+            <article className={`${styles.panel} ${styles.actionPanel}`}>
+              <div className={styles.panelHeader}>
+                <div>
+                  <span className={styles.panelKicker}>Requires attention</span>
+                  <h3>Action Items</h3>
+                </div>
+                <div className={styles.badgeAlert}>{unreadActionCount > 99 ? '99+' : unreadActionCount}</div>
+              </div>
+              <div className={styles.actionList}>
+                {actionItems.map((item) => (
+                  <Link 
+                    to={item.targetUrl || "/admin"} 
+                    key={item.id} 
+                    className={styles.actionItem}
+                    onClick={(e) => {
+                      if (!item.isRead && !item.read) {
+                        markAsRead(item.id).catch(() => {});
+                      }
+                    }}
+                  >
+                    <div className={styles.actionIcon}>
+                      <Icon name="alert" size={20} />
+                    </div>
+                    <div className={styles.actionContent}>
+                      <strong>{item.title}</strong>
+                      <p>{item.message}</p>
+                      <span>{formatDate(item.createdAt)}</span>
+                    </div>
+                    <Icon name="arrow" size={16} />
+                  </Link>
+                ))}
+              </div>
+            </article>
+          )}
+
+          <article className={styles.panel}>
           <div className={styles.panelHeader}>
             <div>
               <span className={styles.panelKicker}>Data pipeline</span>
@@ -341,6 +392,7 @@ function AdminDashboardPage() {
             </div>
           </div>
         </article>
+        </div>
 
         <aside className={styles.sideColumn}>
           <article className={`${styles.panel} ${styles.healthPanel}`}>

@@ -29,9 +29,6 @@ function formatDate(value) {
 }
 
 function NotificationsPage() {
-  const role = localStorage.getItem('userRole')
-  const isAdmin = role === 'Admin'
-  const [notificationType, setNotificationType] = useState('User')
   const [notifications, setNotifications] = useState([])
   const [settings, setSettings] = useState(null)
   const [filter, setFilter] = useState('all')
@@ -102,7 +99,7 @@ function NotificationsPage() {
         const result = await getNotifications({
           isRead: filter === 'all' ? undefined : filter === 'read',
           limit: NOTIFICATION_FETCH_LIMIT,
-          type: notificationType === 'Admin' ? 'Admin' : 'User'
+          type: 'User'
         })
         setNotifications(result)
       } catch (err) {
@@ -115,7 +112,7 @@ function NotificationsPage() {
     }
 
     fetchNotifications()
-  }, [filter, notificationType])
+  }, [filter])
 
   const totalPages = Math.max(1, Math.ceil(notifications.length / PAGE_SIZE))
   const currentPage = Math.min(page, totalPages)
@@ -218,24 +215,7 @@ function NotificationsPage() {
         </button>
       </div>
 
-      {isAdmin && (
-        <div className={styles.typeTabs}>
-          <button
-            type="button"
-            className={notificationType === 'User' ? styles.typeTabActive : styles.typeTab}
-            onClick={() => { setNotificationType('User'); setPage(1); }}
-          >
-            Personal
-          </button>
-          <button
-            type="button"
-            className={notificationType === 'Admin' ? styles.typeTabActive : styles.typeTab}
-            onClick={() => { setNotificationType('Admin'); setPage(1); }}
-          >
-            System / Admin
-          </button>
-        </div>
-      )}
+
 
       <div className={styles.listToolbar}>
         <div className={styles.filterTabs}>

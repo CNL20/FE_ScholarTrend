@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import Pagination from "../../components/Pagination";
 import {
   approvePendingSyncPapers,
@@ -135,6 +136,7 @@ const getInitialPageSize = (key, defaultValue = 20) => {
 };
 
 function AdminApiConfigPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [syncStatus, setSyncStatus] = useState(null);
   const [syncStatusLoading, setSyncStatusLoading] = useState(true);
   const [syncStatusError, setSyncStatusError] = useState("");
@@ -469,6 +471,21 @@ function AdminApiConfigPage() {
     refreshSyncLogs();
   }, [syncLogPage, syncLogPageSize]);
 
+  // Handle deep linking for notifications
+  const hasProcessedPendingId = useRef(false);
+  useEffect(() => {
+    const pendingId = searchParams.get('pendingId');
+    if (pendingId && !hasProcessedPendingId.current) {
+      hasProcessedPendingId.current = true;
+      // Small delay allows ScrollRestoration to finish first
+      setTimeout(() => {
+        viewPendingSyncDetail({ id: Number(pendingId) });
+      }, 100);
+      // Clean up the URL without adding to history
+      setSearchParams(new URLSearchParams(), { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
   const viewPendingSyncDetail = async (job) => {
     if (!job?.id) return;
 
@@ -478,6 +495,11 @@ function AdminApiConfigPage() {
     setSyncDetailError("");
     setApproveError("");
     setApproveNotice("");
+
+    // Scroll immediately so the user sees the transition right away
+    setTimeout(() => {
+      document.getElementById("admin-sync-detail")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
 
     try {
       const result = await getPendingSyncJobById(job.id);
@@ -491,9 +513,6 @@ function AdminApiConfigPage() {
       );
     } finally {
       setSyncDetailLoading(false);
-      setTimeout(() => {
-        document.getElementById("admin-sync-detail")?.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 50);
     }
   };
 
