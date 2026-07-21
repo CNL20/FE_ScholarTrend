@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getAdminDashboard } from "../../services/adminService";
-import { getNotifications, getUnreadNotificationCount } from "../../services/notificationService";
+import { getNotifications, getUnreadNotificationCount, markAsRead } from "../../services/notificationService";
 import { getGlobalPaperAggregate } from "../../services/paperService";
 import styles from "./AdminDashboardPage.module.css";
 
@@ -297,7 +297,16 @@ function AdminDashboardPage() {
               </div>
               <div className={styles.actionList}>
                 {actionItems.map((item) => (
-                  <Link to={item.targetUrl || "/admin"} key={item.id} className={styles.actionItem}>
+                  <Link 
+                    to={item.targetUrl || "/admin"} 
+                    key={item.id} 
+                    className={styles.actionItem}
+                    onClick={(e) => {
+                      if (!item.isRead && !item.read) {
+                        markAsRead(item.id).catch(() => {});
+                      }
+                    }}
+                  >
                     <div className={styles.actionIcon}>
                       <Icon name="alert" size={20} />
                     </div>

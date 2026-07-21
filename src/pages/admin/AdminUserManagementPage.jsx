@@ -83,7 +83,10 @@ function getUserRoles(user) {
 }
 
 function getPrimaryRole(user) {
-  return getUserRoles(user)[0] || ROLES.LECTURER_STUDENT;
+  const roles = getUserRoles(user);
+  if (roles.includes(ROLES.ADMIN)) return ROLES.ADMIN;
+  if (roles.includes(ROLES.RESEARCHER)) return ROLES.RESEARCHER;
+  return roles[0] || ROLES.LECTURER_STUDENT;
 }
 
 function userHasRole(user, role) {

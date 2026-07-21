@@ -1,4 +1,5 @@
 import api from './api'
+import { clearNotificationCache } from './notificationService'
 
 function unwrapResponse(response, fallbackMessage) {
   if (!response || response.success === false || response.data == null) {
@@ -269,10 +270,12 @@ export async function approvePendingSyncPapers(syncId, pendingPaperIds) {
 
   if (response && typeof response === 'object' && 'success' in response) {
     clearAdminCache();
+    clearNotificationCache();
     return unwrapResponse(response, 'Failed to approve pending sync papers.')
   }
 
   clearAdminCache();
+  clearNotificationCache();
   return response
 }
 
@@ -281,9 +284,11 @@ export async function rejectPendingSyncJob(syncId) {
 
   if (response && typeof response === 'object' && 'success' in response) {
     clearAdminCache();
+    clearNotificationCache();
     return unwrapResponse(response, 'Failed to reject pending sync.')
   }
 
   clearAdminCache();
+  clearNotificationCache();
   return response
 }

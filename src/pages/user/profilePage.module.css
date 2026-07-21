@@ -301,6 +301,14 @@
   font-weight: 700;
 }
 
+.planName {
+  color: var(--color-brand);
+  background: var(--color-brand-bg);
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  display: inline-block;
+}
+
 .contentGrid {
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);

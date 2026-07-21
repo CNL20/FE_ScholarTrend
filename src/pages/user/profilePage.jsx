@@ -124,6 +124,8 @@ function ProfilePage() {
           roles: result.roles || [],
           createdAt: result.createdAt || '',
           lastLoginAt: result.lastLoginAt || '',
+          currentPlanName: result.currentPlanName || '',
+          subscriptionEndDate: result.subscriptionEndDate || '',
         })
 
         const storageKey = getAvatarStorageKey(result.id)
@@ -360,6 +362,18 @@ function ProfilePage() {
                 <dt>Last sign in</dt>
                 <dd>{formatDate(profile.lastLoginAt)}</dd>
               </div>
+              {profile.currentPlanName && (
+                <div>
+                  <dt>Current plan</dt>
+                  <dd className={styles.planName}>{profile.currentPlanName}</dd>
+                </div>
+              )}
+              {profile.subscriptionEndDate && (
+                <div>
+                  <dt>Expires on</dt>
+                  <dd>{formatDate(profile.subscriptionEndDate)}</dd>
+                </div>
+              )}
             </dl>
           </section>
 
