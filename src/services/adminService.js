@@ -89,6 +89,148 @@ export async function updateUserStatus(userId, isActive) {
   return response
 }
 
+export async function assessGapAnalysisQuality() {
+  const { data: response } = await api.post('/admin/gap-analysis/quality/assess')
+
+  if (response && typeof response === 'object' && 'success' in response) {
+    return unwrapResponse(response, 'Failed to run gap analysis quality assessment.')
+  }
+
+  return response
+}
+
+export async function assessTopicGapAnalysisQuality(topicId) {
+  const normalizedTopicId = Number(topicId)
+  if (!Number.isInteger(normalizedTopicId) || normalizedTopicId <= 0) {
+    throw new Error('Enter a valid topic id.')
+  }
+
+  const { data: response } = await api.post(
+    `/admin/gap-analysis/quality/assess/${normalizedTopicId}`,
+  )
+
+  if (response && typeof response === 'object' && 'success' in response) {
+    return unwrapResponse(response, 'Failed to run topic gap analysis quality assessment.')
+  }
+
+  return response
+}
+
+export async function extractGapAnalysis() {
+  const { data: response } = await api.post('/admin/gap-analysis/extract')
+
+  if (response && typeof response === 'object' && 'success' in response) {
+    return unwrapResponse(response, 'Failed to run gap analysis extraction.')
+  }
+
+  return response
+}
+
+export async function extractTopicGapAnalysis(topicId) {
+  const normalizedTopicId = Number(topicId)
+  if (!Number.isInteger(normalizedTopicId) || normalizedTopicId <= 0) {
+    throw new Error('Enter a valid topic id.')
+  }
+
+  const { data: response } = await api.post(
+    `/admin/gap-analysis/extract/${normalizedTopicId}`,
+  )
+
+  if (response && typeof response === 'object' && 'success' in response) {
+    return unwrapResponse(response, 'Failed to run topic gap analysis extraction.')
+  }
+
+  return response
+}
+
+export async function mineGapAnalysisPatterns() {
+  const { data: response } = await api.post('/admin/gap-analysis/patterns/mine')
+
+  if (response && typeof response === 'object' && 'success' in response) {
+    return unwrapResponse(response, 'Failed to mine gap analysis patterns.')
+  }
+
+  return response
+}
+
+export async function mineTopicGapAnalysisPatterns(topicId) {
+  const normalizedTopicId = Number(topicId)
+  if (!Number.isInteger(normalizedTopicId) || normalizedTopicId <= 0) {
+    throw new Error('Enter a valid topic id.')
+  }
+
+  const { data: response } = await api.post(
+    `/admin/gap-analysis/patterns/mine/${normalizedTopicId}`,
+  )
+
+  if (response && typeof response === 'object' && 'success' in response) {
+    return unwrapResponse(response, 'Failed to mine topic gap analysis patterns.')
+  }
+
+  return response
+}
+
+export async function generateGapAnalysisGaps() {
+  const { data: response } = await api.post('/admin/gap-analysis/gaps/generate')
+
+  if (response && typeof response === 'object' && 'success' in response) {
+    return unwrapResponse(response, 'Failed to generate gap analysis gaps.')
+  }
+
+  return response
+}
+
+export async function generateTopicGapAnalysisGaps(topicId) {
+  const normalizedTopicId = Number(topicId)
+  if (!Number.isInteger(normalizedTopicId) || normalizedTopicId <= 0) {
+    throw new Error('Enter a valid topic id.')
+  }
+
+  const { data: response } = await api.post(
+    `/admin/gap-analysis/gaps/generate/${normalizedTopicId}`,
+  )
+
+  if (response && typeof response === 'object' && 'success' in response) {
+    return unwrapResponse(response, 'Failed to generate topic gap analysis gaps.')
+  }
+
+  return response
+}
+
+export async function regenerateTopicGapAnalysisGaps(topicId) {
+  const normalizedTopicId = Number(topicId)
+  if (!Number.isInteger(normalizedTopicId) || normalizedTopicId <= 0) {
+    throw new Error('Enter a valid topic id.')
+  }
+
+  const { data: response } = await api.post(
+    `/admin/gap-analysis/gaps/regenerate/${normalizedTopicId}`,
+  )
+
+  if (response && typeof response === 'object' && 'success' in response) {
+    return unwrapResponse(response, 'Failed to regenerate topic gap analysis gaps.')
+  }
+
+  return response
+}
+
+export async function runTopicGapAnalysisPipeline(topicId) {
+  const normalizedTopicId = Number(topicId)
+  if (!Number.isInteger(normalizedTopicId) || normalizedTopicId <= 0) {
+    throw new Error('Enter a valid topic id.')
+  }
+
+  const { data: response } = await api.post(
+    `/admin/gap-analysis/pipeline/${normalizedTopicId}`,
+  )
+
+  if (response && typeof response === 'object' && 'success' in response) {
+    return unwrapResponse(response, 'Failed to run topic gap analysis pipeline.')
+  }
+
+  return response
+}
+
 
 export async function getSyncLogs(page = 1, pageSize = 20) {
   const { data: response } = await api.get('/admin/sync/logs', {

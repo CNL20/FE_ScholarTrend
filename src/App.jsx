@@ -31,6 +31,7 @@ import AdminLayout from "./components/admin/AdminLayout";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdminUserManagementPage from "./pages/admin/AdminUserManagementPage";
 import AdminApiConfigPage from "./pages/admin/AdminApiConfigPage";
+import AdminGapAnalysisPage from "./pages/admin/AdminGapAnalysisPage";
 
 // Verify Email
 import VerifyEmailPage from "./pages/auth/verifyEmailPage";
@@ -89,6 +90,7 @@ function App() {
         { index: true, element: <AdminDashboardPage /> },
         { path: "users", element: <AdminUserManagementPage /> },
         { path: "api-config", element: <AdminApiConfigPage /> },
+        { path: "gap-analysis", element: <AdminGapAnalysisPage /> },
       ],
     },
 
