@@ -1,4 +1,6 @@
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { getDashboardOverview } from '../services/dashboardService'
 import styles from './LandingPage.module.css'
 
 const features = [
@@ -19,17 +21,22 @@ const features = [
   },
 ]
 
-const stats = [
-  { value: '12,450+', label: 'Publications Indexed' },
-  { value: '92', label: 'Tracked Journals' },
-  { value: '1,200+', label: 'Active Researchers' },
-  { value: '99.9%', label: 'Uptime' },
-]
-
 function LandingPage() {
   const token = localStorage.getItem('token');
   const isAuthenticated = Boolean(token);
   const navigate = useNavigate();
+  const [overview, setOverview] = useState(null);
+
+  useEffect(() => {
+    getDashboardOverview().then(setOverview).catch(() => {});
+  }, []);
+
+  const stats = [
+    { value: overview ? overview.totalPapers.toLocaleString() : '-', label: 'Publications Indexed' },
+    { value: overview ? overview.totalJournals.toLocaleString() : '-', label: 'Tracked Journals' },
+    { value: overview ? overview.totalAuthors.toLocaleString() : '-', label: 'Active Researchers' },
+    { value: '99.9%', label: 'Uptime' },
+  ];
 
   return (
     <div className={styles.landing}>
