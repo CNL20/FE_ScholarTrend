@@ -13,6 +13,8 @@ import {
   rejectPendingSyncJob,
   triggerAdminSync,
   updateSyncSchedule,
+  getSyncDataSources,
+  updateSyncDataSourceStatus,
 } from "../../services/adminService";
 import styles from "./AdminApiConfigPage.module.css";
 
@@ -186,8 +188,42 @@ function AdminApiConfigPage() {
   const [approveError, setApproveError] = useState("");
   const [approveNotice, setApproveNotice] = useState("");
 
+  const [dataSources, setDataSources] = useState([]);
+  const [dataSourcesLoading, setDataSourcesLoading] = useState(true);
+  const [dataSourcesError, setDataSourcesError] = useState("");
+  const [sourceToggling, setSourceToggling] = useState(null);
+
+  const refreshDataSources = async () => {
+    setDataSourcesLoading(true);
+    setDataSourcesError("");
+    try {
+      const result = await getSyncDataSources();
+      setDataSources(Array.isArray(result) ? result : []);
+    } catch (error) {
+      setDataSources([]);
+      setDataSourcesError(error.response?.data?.message || error.message || "Could not load data sources.");
+    } finally {
+      setDataSourcesLoading(false);
+    }
+  };
+
+  const handleToggleSource = async (source) => {
+    if (sourceToggling) return;
+    setSourceToggling(source.id);
+    try {
+      await updateSyncDataSourceStatus(source.id, !source.isActive);
+      await refreshDataSources();
+    } catch (error) {
+      alert("Failed to update source: " + (error.response?.data?.message || error.message));
+    } finally {
+      setSourceToggling(null);
+    }
+  };
+
   useEffect(() => {
     let active = true;
+
+    refreshDataSources();
 
     getSyncSchedule()
       .then((result) => {
@@ -653,6 +689,90 @@ function AdminApiConfigPage() {
           </p>
         </div>
       </div>
+
+      <article className={styles.routesPanel}>
+        <div className={styles.syncPanelHeader}>
+          <div>
+            <span className={styles.kicker}>Configuration</span>
+            <h3>Data sources</h3>
+          </div>
+          <button
+            type="button"
+            className={styles.syncRefreshButton}
+            onClick={refreshDataSources}
+            disabled={dataSourcesLoading}
+          >
+            <Icon name="refresh" size={15} />
+            {dataSourcesLoading ? "Loading..." : "Refresh"}
+          </button>
+        </div>
+
+        {dataSourcesError && (
+          <div className={styles.syncError} role="alert">
+            {dataSourcesError}
+          </div>
+        )}
+
+        <div className={styles.compactList}>
+          {dataSourcesLoading && dataSources.length === 0 ? (
+             Array.from({ length: 3 }, (_, index) => (
+              <div className={styles.syncSkeleton} key={index}>
+                <span />
+                <span />
+              </div>
+            ))
+          ) : dataSources.length > 0 ? (
+            dataSources.map((source) => {
+              const websiteMap = {
+                'ArXiv': 'https://arxiv.org/',
+                'Crossref': 'https://www.crossref.org/',
+                'OpenAlex': 'https://openalex.org/',
+                'SemanticScholar': 'https://www.semanticscholar.org/',
+                'IEEE Xplore': 'https://ieeexplore.ieee.org/',
+                'PubMed': 'https://pubmed.ncbi.nlm.nih.gov/'
+              };
+              const siteUrl = websiteMap[source.name] || Object.values(websiteMap).find(url => url.toLowerCase().includes(source.name.toLowerCase()));
+              return (
+              <div className={styles.sourceRow} key={source.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', border: '1px solid #dfe3df', borderRadius: '12px', marginBottom: '8px', background: '#fbfcfa' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <strong style={{ fontSize: '14px', color: '#1f2d28' }}>{source.name}</strong>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <span style={{ fontSize: '11px', color: '#8f9692' }}>{source.baseUrl || 'Internal integration'}</span>
+                    {siteUrl && (
+                      <a href={siteUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: '11px', color: '#2d6558', textDecoration: 'underline', fontWeight: 500 }}>
+                        Visit Website ↗
+                      </a>
+                    )}
+                  </div>
+                </div>
+                <label className={styles.scheduleToggle} style={{ margin: 0, alignItems: 'center' }}>
+                  <input
+                    type="checkbox"
+                    checked={source.isActive}
+                    onChange={() => handleToggleSource(source)}
+                    disabled={sourceToggling === source.id}
+                  />
+                  <span />
+                  <div style={{ minWidth: '45px', marginLeft: '6px' }}>
+                    <strong style={{ 
+                      fontSize: '11px', 
+                      color: source.isActive ? '#2d6558' : '#8f9692',
+                      marginTop: '2px' 
+                    }}>
+                      {sourceToggling === source.id ? "Saving" : source.isActive ? "Active" : "Disabled"}
+                    </strong>
+                  </div>
+                </label>
+              </div>
+              );
+            })
+          ) : (
+            <div className={styles.syncEmpty}>
+              <p>No data sources found.</p>
+            </div>
+          )}
+        </div>
+      </article>
 
       <article className={styles.routesPanel}>
         <div className={styles.syncPanelHeader}>
