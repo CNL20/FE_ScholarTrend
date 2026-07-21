@@ -84,34 +84,9 @@ function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [unreadNotifications, setUnreadNotifications] = useState(0);
   const userName = localStorage.getItem("userName") || "Administrator";
   const currentPage = pageNames[location.pathname] || "Admin";
 
-  useEffect(() => {
-    let active = true;
-    async function checkNotifications() {
-      try {
-        const count = await getUnreadNotificationCount("Admin");
-        if (active) setUnreadNotifications(count);
-      } catch (err) {
-        if (active) setUnreadNotifications(0);
-      }
-    }
-
-    checkNotifications();
-
-    const refreshUnreadCount = () => {
-      checkNotifications();
-    };
-
-    window.addEventListener("notifications-updated", refreshUnreadCount);
-
-    return () => {
-      active = false;
-      window.removeEventListener("notifications-updated", refreshUnreadCount);
-    };
-  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -199,38 +174,7 @@ function AdminLayout() {
             </div>
           </div>
           <div className={styles.account}>
-            <NavLink
-              to="/notifications"
-              className={({ isActive }) =>
-                `${styles.notificationButton} ${
-                  isActive ? styles.notificationButtonActive : ""
-                }`
-              }
-              aria-label={
-                unreadNotifications > 0
-                  ? `${unreadNotifications} unread notifications`
-                  : "Notifications"
-              }
-              title="Notifications"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M18 15.5V10a6 6 0 0 0-12 0v5.5L4.8 17h14.4L18 15.5Z" />
-                <path d="M10 20a2 2 0 0 0 4 0" />
-              </svg>
-              {unreadNotifications > 0 && (
-                <span className={styles.notificationBadge} aria-hidden="true">
-                  {unreadNotifications > 99 ? '99+' : unreadNotifications}
-                </span>
-              )}
-            </NavLink>
+
             <div className={styles.accountText}>
               <strong>{userName}</strong>
               <span>Administrator</span>

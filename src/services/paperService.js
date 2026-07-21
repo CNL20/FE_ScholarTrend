@@ -8,6 +8,34 @@ function unwrapResponse(response, fallbackMessage) {
   return response.data
 }
 
+const cache = new Map();
+const CACHE_TTL = 15000; // 15 seconds
+
+export function clearPaperCache() {
+  cache.clear();
+}
+
+async function withCache(key, fetcher, ttl = CACHE_TTL) {
+  const cached = cache.get(key);
+  if (cached && Date.now() - cached.timestamp < ttl) {
+    return cached.data;
+  }
+  if (cached && cached.promise) {
+    return cached.promise;
+  }
+
+  const promise = fetcher().then(data => {
+    cache.set(key, { data, timestamp: Date.now() });
+    return data;
+  }).catch(err => {
+    cache.delete(key);
+    throw err;
+  });
+
+  cache.set(key, { promise, timestamp: 0 });
+  return promise;
+}
+
 function normalizePaperListItem(paper) {
   const journal = typeof paper.journal === 'string'
     ? { name: paper.journal }
@@ -241,8 +269,8 @@ export async function recordView(paperId) {
  * Thống kê tổng quan tất cả bài báo
  */
 export async function getGlobalPaperAggregate() {
-  const { data: response } = await api.get('/papers/aggregate')
-  const result = unwrapResponse(response, 'Failed to aggregate global paper metadata.')
-
-  return normalizeAggregateResult(result)
+  return withCache('globalPaperAggregate', async () => {
+    const { data: response } = await api.get('/papers/aggregate')
+    return normalizeAggregateResult(unwrapResponse(response, 'Failed to aggregate global paper metadata.'))
+  })
 }
