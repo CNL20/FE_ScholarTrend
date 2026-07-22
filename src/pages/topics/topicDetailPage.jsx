@@ -22,7 +22,6 @@ import {
   getTopicGapEvidences,
   getTopicGapList,
   getTopicGaps,
-  getTopicInsightsDashboard,
 } from '../../services/topicService'
 import styles from './topicDetailPage.module.css'
 
@@ -89,7 +88,6 @@ function TopicDetailPage() {
   const { topicId } = useParams()
   const navigate = useNavigate()
   const [topic, setTopic] = useState(null)
-  const [insights, setInsights] = useState(null)
   const [gapDashboard, setGapDashboard] = useState(null)
   const [gapList, setGapList] = useState(null)
   const [selectedGapDetail, setSelectedGapDetail] = useState(null)
@@ -97,7 +95,6 @@ function TopicDetailPage() {
   const [selectedGapId, setSelectedGapId] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [insightsError, setInsightsError] = useState('')
   const [gapError, setGapError] = useState('')
   const [gapListError, setGapListError] = useState('')
   const [gapDetailError, setGapDetailError] = useState('')
@@ -112,13 +109,11 @@ function TopicDetailPage() {
     async function fetchTopic() {
       setLoading(true)
       setError('')
-      setInsights(null)
       setGapDashboard(null)
       setGapList(null)
       setSelectedGapDetail(null)
       setSelectedGapEvidences(null)
       setSelectedGapId(null)
-      setInsightsError('')
       setGapError('')
       setGapListError('')
       setGapDetailError('')
@@ -127,9 +122,8 @@ function TopicDetailPage() {
       setIsFollowing(false)
       try {
         const hasToken = Boolean(localStorage.getItem('token'))
-        const [topicResponse, insightsResponse, gapsResponse, gapListResponse] = await Promise.allSettled([
+        const [topicResponse, gapsResponse, gapListResponse] = await Promise.allSettled([
           getTopicById(topicId),
-          getTopicInsightsDashboard(topicId),
           getTopicGaps(topicId),
           getTopicGapList(topicId),
         ])
@@ -140,17 +134,6 @@ function TopicDetailPage() {
 
         const topicResult = topicResponse.value
         setTopic(topicResult)
-
-        if (insightsResponse.status === 'fulfilled') {
-          setInsights(insightsResponse.value)
-        } else {
-          setInsights(null)
-          setInsightsError(
-            insightsResponse.reason?.response?.data?.message ||
-            insightsResponse.reason?.message ||
-            'Could not load topic insights.',
-          )
-        }
 
         if (gapsResponse.status === 'fulfilled') {
           setGapDashboard(gapsResponse.value)
@@ -192,7 +175,6 @@ function TopicDetailPage() {
       } catch (err) {
         setError(err.response?.data?.message || err.message || 'Failed to load topic details.')
         setTopic(null)
-        setInsights(null)
         setGapDashboard(null)
         setGapList(null)
         setSelectedGapDetail(null)
@@ -328,10 +310,6 @@ function TopicDetailPage() {
     ? trendData.reduce((sum, point) => sum + (point.growthRate ?? 0), 0) / trendData.length
     : 0
   const peakScore = Math.max(0, ...trendData.map((point) => point.trendingScore ?? 0))
-  const insightTimeline = insights?.timeline ?? []
-  const insightOpportunities = insights?.opportunities ?? []
-  const topMethods = insights?.topMethods ?? []
-  const topDatasets = insights?.topDatasets ?? []
   const hasGapList = Array.isArray(gapList)
   const topicGapItems = hasGapList ? gapList : gapDashboard?.gaps ?? []
   const gapCoverage = gapDashboard?.coverage ?? null
@@ -456,8 +434,8 @@ function TopicDetailPage() {
 
               {topicGapItems.length > 0 ? (
                 <div className={styles.gapList}>
-                  {topicGapItems.map((gap) => (
-                    <article className={styles.gapCard} key={gap.id || gap.title}>
+                  {topicGapItems.map((gap, index) => (
+                    <article className={styles.gapCard} key={gap.id ? gap.id : `${gap.title}-${index}`}>
                       <div className={styles.gapCardTop}>
                         <div>
                           <h3><AiInferredText text={gap.title || 'Untitled gap'} /></h3>
@@ -481,9 +459,9 @@ function TopicDetailPage() {
 
                       {Array.isArray(gap.evidences) && gap.evidences.length > 0 && (
                         <div className={styles.gapEvidenceList}>
-                          {gap.evidences.slice(0, 3).map((evidence) => (
+                          {gap.evidences.slice(0, 3).map((evidence, evIdx) => (
                             <Link
-                              key={evidence.id || `${gap.id}-${evidence.paperId}`}
+                              key={evidence.id ? evidence.id : `${gap.id}-${evidence.paperId}-${evIdx}`}
                               to={`/papers/${evidence.paperId}`}
                             >
                               <strong>{evidence.paperTitle || `Paper #${evidence.paperId}`}</strong>
@@ -589,101 +567,6 @@ function TopicDetailPage() {
           </>
         ) : (
           <p className={styles.emptyInline}>No gap data is available for this topic.</p>
-        )}
-      </article>
-
-      <article className={`${styles.panel} ${styles.insightsPanel}`}>
-        <div className={styles.panelHeader}>
-          <div>
-            <span className={styles.eyebrow}>AI topic insights</span>
-            <h2>Research intelligence dashboard</h2>
-          </div>
-          <span className={styles.analyzedAt}>
-            Last analyzed: {formatDateTime(insights?.lastAnalyzedAt)}
-          </span>
-        </div>
-
-        {insightsError && <p className={styles.insightsError}>{insightsError}</p>}
-
-        {insights ? (
-          <>
-            <div className={styles.insightTagsGrid}>
-              <section>
-                <h3>Top methods</h3>
-                <div className={styles.insightTags}>
-                  {topMethods.length > 0 ? (
-                    topMethods.map((method) => <span key={method}><AiInferredText text={method} /></span>)
-                  ) : (
-                    <span>No methods found</span>
-                  )}
-                </div>
-              </section>
-              <section>
-                <h3>Top datasets</h3>
-                <div className={styles.insightTags}>
-                  {topDatasets.length > 0 ? (
-                    topDatasets.map((dataset) => <span key={dataset}><AiInferredText text={dataset} /></span>)
-                  ) : (
-                    <span>No datasets found</span>
-                  )}
-                </div>
-              </section>
-            </div>
-
-            <div className={styles.insightsGrid}>
-              <section className={styles.timelineBlock}>
-                <h3>Timeline</h3>
-                {insightTimeline.length > 0 ? (
-                  <ol className={styles.timelineList}>
-                    {insightTimeline.map((item) => (
-                      <li key={`${item.year}-${item.achievement}`}>
-                        <div>
-                          <strong>{item.year || 'N/A'}</strong>
-                          <span>{formatNumber(item.paperCount)} papers</span>
-                        </div>
-                        <section>
-                          <h4><AiInferredText text={item.achievement || 'Research milestone'} /></h4>
-                          <p><AiInferredText text={item.summary || 'No summary available.'} /></p>
-                        </section>
-                      </li>
-                    ))}
-                  </ol>
-                ) : (
-                  <p className={styles.emptyInline}>No timeline data available.</p>
-                )}
-              </section>
-
-              <section className={styles.opportunityBlock}>
-                <h3>Opportunities</h3>
-                {insightOpportunities.length > 0 ? (
-                  <div className={styles.opportunityList}>
-                    {insightOpportunities.map((opportunity) => (
-                      <article key={opportunity.title || opportunity.description}>
-                        <h4><AiInferredText text={opportunity.title || 'Research opportunity'} /></h4>
-                        <p><AiInferredText text={opportunity.description || 'No description available.'} /></p>
-                        {Array.isArray(opportunity.evidences) && opportunity.evidences.length > 0 && (
-                          <div className={styles.evidenceList}>
-                            {opportunity.evidences.map((evidence) => (
-                              <Link
-                                key={`${evidence.paperId}-${evidence.excerpt}`}
-                                to={`/papers/${evidence.paperId}`}
-                              >
-                                Paper #{evidence.paperId}: {evidence.excerpt || 'View evidence'}
-                              </Link>
-                            ))}
-                          </div>
-                        )}
-                      </article>
-                    ))}
-                  </div>
-                ) : (
-                  <p className={styles.emptyInline}>No opportunities available.</p>
-                )}
-              </section>
-            </div>
-          </>
-        ) : (
-          <p className={styles.emptyInline}>No insights dashboard is available for this topic.</p>
         )}
       </article>
 

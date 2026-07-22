@@ -434,3 +434,67 @@ export async function rejectPendingSyncJob(syncId) {
   clearNotificationCache();
   return response
 }
+
+// ====================
+// PDF TEXT & MIGRATION
+// ====================
+
+export async function extractPdfTextForPaper(id, force = false) {
+  const { data: response } = await api.post(`/admin/pdf-text/papers/${id}/extract`, null, {
+    params: { force }
+  })
+  return unwrapResponse(response, 'Failed to extract PDF text.')
+}
+
+export async function extractPdfTextBatch(paperIds, force = false) {
+  const { data: response } = await api.post(`/admin/pdf-text/papers/extract-batch`, {
+    paperIds,
+    force
+  })
+  return unwrapResponse(response, 'Failed to batch extract PDF text.')
+}
+
+export async function backfillPdfText(maxPapers = 200) {
+  const { data: response } = await api.post(`/admin/pdf-text/backfill`, null, {
+    params: { maxPapers }
+  })
+  return unwrapResponse(response, 'Failed to backfill PDF text.')
+}
+
+export async function getExtractedPdfText(id) {
+  const { data: response } = await api.get(`/admin/pdf-text/papers/${id}`)
+  return unwrapResponse(response, 'Failed to get extracted PDF text.')
+}
+
+export async function migratePdfsToB2() {
+  const { data: response } = await api.post(`/admin/migrations/pdfs/local-to-b2`)
+  return unwrapResponse(response, 'Failed to migrate PDFs to B2.')
+}
+
+export async function getPdfStorageList(limit = 50) {
+  const { data: response } = await api.get(`/admin/migrations/pdfs`, {
+    params: { limit }
+  })
+  return unwrapResponse(response, 'Failed to get PDF storage list.')
+}
+
+// ====================
+// AI TESTING (GAP ANALYSIS)
+// ====================
+
+export async function extractPaperWithAI(paperId) {
+  const normalizedPaperId = Number(paperId)
+  if (!Number.isInteger(normalizedPaperId) || normalizedPaperId <= 0) {
+    throw new Error('Invalid paper id.')
+  }
+
+  const { data: response } = await api.post(`/admin/gap-analysis/extract-paper/${normalizedPaperId}`)
+  return unwrapResponse(response, 'Failed to extract paper data using AI.')
+}
+
+export async function testAIGapAnalysis() {
+  const { data: response } = await api.get(`/admin/gap-analysis/test-ai`)
+  return unwrapResponse(response, 'Failed to test AI connection.')
+}
+
+

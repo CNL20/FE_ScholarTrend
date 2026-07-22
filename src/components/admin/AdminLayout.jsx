@@ -8,6 +8,7 @@ const sidebarLinks = [
   { to: "/admin/users", label: "Users", description: "Accounts and roles", icon: "users" },
   { to: "/admin/api-config", label: "Integrations", description: "API and data sync", icon: "settings" },
   { to: "/admin/gap-analysis", label: "Gap analysis", description: "Quality assessment", icon: "gap" },
+  { to: "/admin/pdf-management", label: "PDF extraction", description: "PDF text for AI", icon: "pdf" },
 ];
 
 const pageNames = {
@@ -15,6 +16,7 @@ const pageNames = {
   "/admin/users": "User management",
   "/admin/api-config": "API & integrations",
   "/admin/gap-analysis": "AdminGapAnalysis",
+  "/admin/pdf-management": "PDF extraction",
 };
 
 function Icon({ name, size = 20 }) {
@@ -46,6 +48,14 @@ function Icon({ name, size = 20 }) {
         <path d="M4 19h16" />
         <path d="m7 15 4-4 3 3 5-7" />
         <path d="M7 8h4M7 12h2" />
+      </>
+    ),
+    pdf: (
+      <>
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <line x1="9" y1="13" x2="15" y2="13" />
+        <line x1="9" y1="17" x2="13" y2="17" />
       </>
     ),
     menu: (

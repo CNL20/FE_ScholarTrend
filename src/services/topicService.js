@@ -175,3 +175,38 @@ export async function getTopicGapEvidences(id) {
 
   return (Array.isArray(result) ? result : []).map(normalizeTopicGapEvidence)
 }
+
+export async function getTopicPatterns(id) {
+  const topicId = normalizeTopicId(id)
+
+  const { data: response } = await api.get(`/topics/${topicId}/patterns`)
+  return unwrapResponse(response, 'Failed to load topic patterns.')
+}
+
+export async function getTopicGapTrends(id) {
+  const topicId = normalizeTopicId(id)
+
+  const { data: response } = await api.get(`/topics/${topicId}/trends`)
+  return unwrapResponse(response, 'Failed to load topic trends.')
+}
+
+export async function getTopicCoverage(id) {
+  const topicId = normalizeTopicId(id)
+
+  const { data: response } = await api.get(`/topics/${topicId}/coverage`)
+  return unwrapResponse(response, 'Failed to load topic coverage.')
+}
+
+export async function getTopicQuality(id) {
+  const topicId = normalizeTopicId(id)
+
+  const { data: response } = await api.get(`/topics/${topicId}/quality`)
+  return unwrapResponse(response, 'Failed to load topic quality report.')
+}
+
+export async function getTopicAnalysis(id) {
+  const topicId = normalizeTopicId(id)
+
+  const { data: response } = await api.get(`/topics/${topicId}/analysis`)
+  return unwrapResponse(response, 'Failed to load topic analysis result.')
+}

@@ -33,6 +33,7 @@ import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdminUserManagementPage from "./pages/admin/AdminUserManagementPage";
 import AdminApiConfigPage from "./pages/admin/AdminApiConfigPage";
 import AdminGapAnalysisPage from "./pages/admin/AdminGapAnalysisPage";
+import AdminPdfManagementPage from "./pages/admin/AdminPdfManagementPage";
 
 // Verify Email
 import VerifyEmailPage from "./pages/auth/verifyEmailPage";
@@ -92,6 +93,7 @@ function App() {
         { path: "users", element: <AdminUserManagementPage /> },
         { path: "api-config", element: <AdminApiConfigPage /> },
         { path: "gap-analysis", element: <AdminGapAnalysisPage /> },
+        { path: "pdf-management", element: <AdminPdfManagementPage /> },
       ],
     },
 

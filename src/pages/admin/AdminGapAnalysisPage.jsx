@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   assessGapAnalysisQuality,
   assessTopicGapAnalysisQuality,
@@ -11,6 +11,13 @@ import {
   regenerateTopicGapAnalysisGaps,
   runTopicGapAnalysisPipeline,
 } from "../../services/adminService";
+import {
+  getTopicPatterns,
+  getTopicGapTrends,
+  getTopicCoverage,
+  getTopicQuality,
+  getTopics,
+} from "../../services/topicService";
 import styles from "./AdminGapAnalysisPage.module.css";
 
 function getErrorMessage(error, fallbackMessage) {
@@ -38,6 +45,11 @@ function formatTime(value) {
 }
 
 function AdminGapAnalysisPage() {
+  const [reportTopicId, setReportTopicId] = useState("");
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportResult, setReportResult] = useState("");
+  const [reportError, setReportError] = useState("");
+
   const [topicId, setTopicId] = useState("");
   const [extractTopicId, setExtractTopicId] = useState("");
   const [patternsTopicId, setPatternsTopicId] = useState("");
@@ -75,6 +87,34 @@ function AdminGapAnalysisPage() {
   const [globalError, setGlobalError] = useState("");
   const [topicError, setTopicError] = useState("");
   const [runHistory, setRunHistory] = useState([]);
+
+  const [topics, setTopics] = useState([]);
+  const [topicsLoading, setTopicsLoading] = useState(true);
+
+  useEffect(() => {
+    getTopics()
+      .then(result => setTopics(result || []))
+      .catch(console.error)
+      .finally(() => setTopicsLoading(false));
+  }, []);
+
+  const handleFetchReport = async (reportName, fetchFn) => {
+    if (!reportTopicId) {
+      setReportError("Please enter a Topic ID first.");
+      return;
+    }
+    setReportLoading(true);
+    setReportError("");
+    setReportResult("");
+    try {
+      const result = await fetchFn(reportTopicId);
+      setReportResult(`--- ${reportName} ---\n` + formatResult(result));
+    } catch (error) {
+      setReportError(getErrorMessage(error, `Could not load ${reportName}.`));
+    } finally {
+      setReportLoading(false);
+    }
+  };
 
   const addRunHistory = (scope, result) => {
     setRunHistory((current) => [
@@ -287,6 +327,61 @@ function AdminGapAnalysisPage() {
       </header>
 
       <div className={styles.sectionIntro}>
+        <span className={styles.kicker}>Analysis Reports</span>
+        <h3>View Generated Topic Reports</h3>
+      </div>
+
+      <div className={styles.actionGrid}>
+        <article className={`${styles.card} ${styles.wideCard}`}>
+          <div className={styles.cardHeader}>
+            <div>
+              <h3>Fetch Topic Data</h3>
+            </div>
+          </div>
+          <p className={styles.cardText}>
+            View the extracted gap trends, patterns, coverage, and quality for a topic.
+          </p>
+
+          <div className={styles.topicForm} style={{ alignItems: 'flex-end', marginBottom: '16px' }}>
+            <label>
+              Topic ID
+              <select
+                value={reportTopicId}
+                onChange={(event) => setReportTopicId(event.target.value)}
+                disabled={reportLoading || topicsLoading}
+              >
+                <option value="">-- Select a topic --</option>
+                {topics.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <button type="button" className={styles.secondaryButton} disabled={reportLoading} onClick={() => handleFetchReport("Gap Trends", getTopicGapTrends)}>Trends</button>
+              <button type="button" className={styles.secondaryButton} disabled={reportLoading} onClick={() => handleFetchReport("Patterns", getTopicPatterns)}>Patterns</button>
+              <button type="button" className={styles.secondaryButton} disabled={reportLoading} onClick={() => handleFetchReport("Coverage", getTopicCoverage)}>Coverage</button>
+              <button type="button" className={styles.secondaryButton} disabled={reportLoading} onClick={() => handleFetchReport("Quality", getTopicQuality)}>Quality</button>
+            </div>
+          </div>
+
+          {reportError && (
+            <div className={styles.errorBox} role="alert">
+              {reportError}
+            </div>
+          )}
+
+          {reportResult && (
+            <div className={styles.resultBox}>
+              <span>Report Data</span>
+              <pre>{reportResult}</pre>
+            </div>
+          )}
+        </article>
+      </div>
+
+      <div className={styles.sectionIntro}>
         <span className={styles.kicker}>Full pipeline</span>
         <h3>Run every step for one topic</h3>
       </div>
@@ -306,15 +401,18 @@ function AdminGapAnalysisPage() {
           <form className={styles.topicForm} onSubmit={handleRunPipelineTopic}>
             <label>
               Topic ID
-              <input
-                type="number"
-                min="1"
-                step="1"
+              <select
                 value={pipelineTopicId}
-                placeholder="Example: 5"
                 onChange={(event) => setPipelineTopicId(event.target.value)}
-                disabled={pipelineLoading}
-              />
+                disabled={pipelineLoading || topicsLoading}
+              >
+                <option value="">-- Select a topic --</option>
+                {topics.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
             </label>
             <button
               type="submit"
@@ -394,15 +492,18 @@ function AdminGapAnalysisPage() {
           <form className={styles.topicForm} onSubmit={handleExtractTopic}>
             <label>
               Topic ID
-              <input
-                type="number"
-                min="1"
-                step="1"
+              <select
                 value={extractTopicId}
-                placeholder="Example: 5"
                 onChange={(event) => setExtractTopicId(event.target.value)}
-                disabled={extractTopicLoading}
-              />
+                disabled={extractTopicLoading || topicsLoading}
+              >
+                <option value="">-- Select a topic --</option>
+                {topics.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
             </label>
             <button
               type="submit"
@@ -482,15 +583,18 @@ function AdminGapAnalysisPage() {
           <form className={styles.topicForm} onSubmit={handleMinePatternsTopic}>
             <label>
               Topic ID
-              <input
-                type="number"
-                min="1"
-                step="1"
+              <select
                 value={patternsTopicId}
-                placeholder="Example: 5"
                 onChange={(event) => setPatternsTopicId(event.target.value)}
-                disabled={patternsTopicLoading}
-              />
+                disabled={patternsTopicLoading || topicsLoading}
+              >
+                <option value="">-- Select a topic --</option>
+                {topics.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
             </label>
             <button
               type="submit"
@@ -570,15 +674,18 @@ function AdminGapAnalysisPage() {
           <form className={styles.topicForm} onSubmit={handleGenerateGapsTopic}>
             <label>
               Topic ID
-              <input
-                type="number"
-                min="1"
-                step="1"
+              <select
                 value={generateTopicId}
-                placeholder="Example: 5"
                 onChange={(event) => setGenerateTopicId(event.target.value)}
-                disabled={generateTopicLoading}
-              />
+                disabled={generateTopicLoading || topicsLoading}
+              >
+                <option value="">-- Select a topic --</option>
+                {topics.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
             </label>
             <button
               type="submit"
@@ -617,15 +724,18 @@ function AdminGapAnalysisPage() {
           <form className={styles.topicForm} onSubmit={handleRegenerateGapsTopic}>
             <label>
               Topic ID
-              <input
-                type="number"
-                min="1"
-                step="1"
+              <select
                 value={regenerateTopicId}
-                placeholder="Example: 5"
                 onChange={(event) => setRegenerateTopicId(event.target.value)}
-                disabled={regenerateTopicLoading}
-              />
+                disabled={regenerateTopicLoading || topicsLoading}
+              >
+                <option value="">-- Select a topic --</option>
+                {topics.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
             </label>
             <button
               type="submit"
@@ -705,15 +815,18 @@ function AdminGapAnalysisPage() {
           <form className={styles.topicForm} onSubmit={handleAssessTopic}>
             <label>
               Topic ID
-              <input
-                type="number"
-                min="1"
-                step="1"
+              <select
                 value={topicId}
-                placeholder="Example: 5"
                 onChange={(event) => setTopicId(event.target.value)}
-                disabled={topicLoading}
-              />
+                disabled={topicLoading || topicsLoading}
+              >
+                <option value="">-- Select a topic --</option>
+                {topics.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
             </label>
             <button type="submit" className={styles.secondaryButton} disabled={topicLoading}>
               {topicLoading ? "Running..." : "Run topic assessment"}
