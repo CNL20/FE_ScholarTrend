@@ -7,12 +7,14 @@ const sidebarLinks = [
   { to: "/admin", label: "Overview", description: "System dashboard", icon: "dashboard", end: true },
   { to: "/admin/users", label: "Users", description: "Accounts and roles", icon: "users" },
   { to: "/admin/api-config", label: "Integrations", description: "API and data sync", icon: "settings" },
+  { to: "/admin/gap-analysis", label: "Gap analysis", description: "Quality assessment", icon: "gap" },
 ];
 
 const pageNames = {
   "/admin": "Overview",
   "/admin/users": "User management",
   "/admin/api-config": "API & integrations",
+  "/admin/gap-analysis": "AdminGapAnalysis",
 };
 
 function Icon({ name, size = 20 }) {
@@ -36,6 +38,14 @@ function Icon({ name, size = 20 }) {
       <>
         <circle cx="12" cy="12" r="3" />
         <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V21h-4v-.09A1.7 1.7 0 0 0 9 19.36a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.63 15 1.7 1.7 0 0 0 3.09 14H3v-4h.09A1.7 1.7 0 0 0 4.64 9a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.63h.01A1.7 1.7 0 0 0 10 3.09V3h4v.09A1.7 1.7 0 0 0 15 4.64a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.37 9v.01A1.7 1.7 0 0 0 20.91 10H21v4h-.09A1.7 1.7 0 0 0 19.4 15Z" />
+      </>
+    ),
+    gap: (
+      <>
+        <path d="M4 19V5" />
+        <path d="M4 19h16" />
+        <path d="m7 15 4-4 3 3 5-7" />
+        <path d="M7 8h4M7 12h2" />
       </>
     ),
     menu: (
@@ -86,6 +96,7 @@ function AdminLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
   const userName = localStorage.getItem("userName") || "Administrator";
   const currentPage = pageNames[location.pathname] || "Admin";
+
 
 
   const handleLogout = () => {
