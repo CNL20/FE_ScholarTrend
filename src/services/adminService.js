@@ -421,6 +421,20 @@ export async function approvePendingSyncPapers(syncId, pendingPaperIds) {
   return response
 }
 
+export async function approveAllPendingSyncs() {
+  const { data: response } = await api.post(`/admin/sync/approve-all-pending`)
+
+  if (response && typeof response === 'object' && 'success' in response) {
+    clearAdminCache();
+    clearNotificationCache();
+    return unwrapResponse(response, 'Failed to approve all pending syncs.')
+  }
+
+  clearAdminCache();
+  clearNotificationCache();
+  return response
+}
+
 export async function rejectPendingSyncJob(syncId) {
   const { data: response } = await api.post(`/admin/sync/pending/${syncId}/reject`)
 
