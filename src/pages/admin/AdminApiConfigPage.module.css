@@ -866,6 +866,36 @@
   opacity: 0.65;
 }
 
+.approveAllButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  padding: 0 16px;
+  margin-left: 10px;
+  color: #fff;
+  background: #2d6558;
+  border: 1px solid #2d6558;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 750;
+  transition: all 0.2s ease;
+}
+
+.approveAllButton:hover:not(:disabled) {
+  background: #245549;
+  border-color: #245549;
+  box-shadow: 0 4px 10px rgba(45, 101, 88, 0.2);
+}
+
+.approveAllButton:disabled {
+  cursor: wait;
+  opacity: 0.65;
+  background: #8ea9a0;
+  border-color: #8ea9a0;
+}
+
 .syncError {
   margin-bottom: 12px;
   padding: 10px 12px;
@@ -1470,7 +1500,8 @@
 }
 
 .modalCancel,
-.modalConfirm {
+.modalConfirm,
+.modalApprove {
   height: 40px;
   padding: 0 20px;
   border-radius: 8px;
@@ -1500,7 +1531,17 @@
   background: #b32a21;
 }
 
+.modalApprove {
+  background: #2d6558;
+  color: #fff;
+}
+
+.modalApprove:hover:not(:disabled) {
+  background: #245549;
+}
+
 .modalConfirm:disabled,
+.modalApprove:disabled,
 .modalCancel:disabled {
   opacity: 0.6;
   cursor: not-allowed;

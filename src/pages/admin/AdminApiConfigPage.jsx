@@ -15,6 +15,7 @@ import {
   updateSyncSchedule,
   getSyncDataSources,
   updateSyncDataSourceStatus,
+  approveAllPendingSyncs,
 } from "../../services/adminService";
 import styles from "./AdminApiConfigPage.module.css";
 
@@ -163,6 +164,9 @@ function AdminApiConfigPage() {
     paperLimit: 50,
     searchQuery: "",
   });
+  const [approveLoading, setApproveLoading] = useState(false);
+  const [approveAllLoading, setApproveAllLoading] = useState(false);
+  const [approveError, setApproveError] = useState("");
   const [triggerLoading, setTriggerLoading] = useState(false);
   const [triggerError, setTriggerError] = useState("");
   const [triggerResult, setTriggerResult] = useState(null);
@@ -182,10 +186,9 @@ function AdminApiConfigPage() {
   const [syncDetailLoading, setSyncDetailLoading] = useState(false);
   const [syncDetailError, setSyncDetailError] = useState("");
   const [selectedPaperIds, setSelectedPaperIds] = useState([]);
-  const [approveLoading, setApproveLoading] = useState(false);
   const [rejectLoading, setRejectLoading] = useState(false);
   const [showRejectConfirm, setShowRejectConfirm] = useState(false);
-  const [approveError, setApproveError] = useState("");
+  const [showApproveAllConfirm, setShowApproveAllConfirm] = useState(false);
   const [approveNotice, setApproveNotice] = useState("");
 
   const [dataSources, setDataSources] = useState([]);
@@ -608,7 +611,7 @@ function AdminApiConfigPage() {
       );
 
       try {
-        const jobsResult = await getPendingSyncJobs(Math.max(1, Number(pendingLimit) || 50));
+        const jobsResult = await getPendingSyncJobs(pendingPage, pendingPageSize);
         setPendingJobs(normalizePendingSyncJobs(jobsResult));
       } catch {
         setPendingError("Approved, but could not refresh the pending sync list.");
@@ -631,6 +634,30 @@ function AdminApiConfigPage() {
       );
     } finally {
       setApproveLoading(false);
+    }
+  };
+
+  const handleApproveAll = () => {
+    setShowApproveAllConfirm(true);
+  };
+
+  const confirmApproveAll = async () => {
+    setShowApproveAllConfirm(false);
+    setApproveAllLoading(true);
+    setPendingError("");
+
+    try {
+      await approveAllPendingSyncs();
+      alert("Successfully started approval of all pending papers. It will finish in the background.");
+      refreshPendingSync();
+    } catch (error) {
+      setPendingError(
+        error.response?.data?.message ||
+          error.message ||
+          "Could not approve all pending syncs.",
+      );
+    } finally {
+      setApproveAllLoading(false);
     }
   };
 
@@ -1431,6 +1458,14 @@ function AdminApiConfigPage() {
               <Icon name="refresh" size={15} />
               {pendingLoading ? "Loading..." : "Refresh"}
             </button>
+            <button
+              type="button"
+              className={styles.approveAllButton}
+              onClick={handleApproveAll}
+              disabled={pendingLoading || approveAllLoading || pendingJobs.length === 0}
+            >
+              {approveAllLoading ? "Approving All..." : "Approve All Pending"}
+            </button>
           </div>
         </div>
 
@@ -1544,17 +1579,17 @@ function AdminApiConfigPage() {
                 <span>Choose papers to import into the library.</span>
               </div>
               <div className={styles.approveActions}>
-                <button type="button" onClick={selectAllPapers} disabled={reviewBusy || String(selectedSyncJob.status || "Pending").toLowerCase() !== "pending"}>
+                <button type="button" onClick={selectAllPapers} disabled={reviewBusy || !["pending", "partiallyapproved"].includes(String(selectedSyncJob.status || "Pending").toLowerCase())}>
                   Select all
                 </button>
-                <button type="button" onClick={clearPaperSelection} disabled={reviewBusy || String(selectedSyncJob.status || "Pending").toLowerCase() !== "pending"}>
+                <button type="button" onClick={clearPaperSelection} disabled={reviewBusy || !["pending", "partiallyapproved"].includes(String(selectedSyncJob.status || "Pending").toLowerCase())}>
                   Clear
                 </button>
                 <button
                   type="button"
                   className={styles.approveButton}
                   onClick={handleApproveSelectedPapers}
-                  disabled={reviewBusy || selectedPaperIds.length === 0 || String(selectedSyncJob.status || "Pending").toLowerCase() !== "pending"}
+                  disabled={reviewBusy || selectedPaperIds.length === 0 || !["pending", "partiallyapproved"].includes(String(selectedSyncJob.status || "Pending").toLowerCase())}
                 >
                   {approveLoading ? "Approving..." : "Approve selected"}
                 </button>
@@ -1562,7 +1597,7 @@ function AdminApiConfigPage() {
                   type="button"
                   className={styles.rejectButton}
                   onClick={() => setShowRejectConfirm(true)}
-                  disabled={reviewBusy || String(selectedSyncJob.status || "Pending").toLowerCase() !== "pending"}
+                  disabled={reviewBusy || !["pending", "partiallyapproved"].includes(String(selectedSyncJob.status || "Pending").toLowerCase())}
                 >
                   Reject sync
                 </button>
@@ -1642,6 +1677,44 @@ function AdminApiConfigPage() {
           </div>
         )}
       </article>
+
+      {showApproveAllConfirm && (
+        <div className={styles.modalOverlay} onClick={() => setShowApproveAllConfirm(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <div className={styles.modalIcon} style={{ color: '#2d6558', background: '#eaf4f0' }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+              </div>
+              <h3>Approve All Pending Papers?</h3>
+            </div>
+            <p>
+              Are you sure you want to approve ALL pending papers across all sync jobs? <br />
+              This action may take several minutes to complete.
+            </p>
+            <div className={styles.modalActions}>
+              <button 
+                type="button" 
+                className={styles.modalCancel} 
+                onClick={() => setShowApproveAllConfirm(false)}
+                disabled={approveAllLoading}
+              >
+                Cancel
+              </button>
+              <button 
+                type="button" 
+                className={styles.modalApprove} 
+                onClick={confirmApproveAll}
+                disabled={approveAllLoading}
+              >
+                {approveAllLoading ? "Approving..." : "Approve All"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showRejectConfirm && (
         <div className={styles.modalOverlay} onClick={() => setShowRejectConfirm(false)}>
