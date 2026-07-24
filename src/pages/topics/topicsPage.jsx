@@ -9,18 +9,32 @@ const PAGE_SIZE = 12
 
 function TopicsPage() {
   const [topics, setTopics] = useState([])
+  const [totalCount, setTotalCount] = useState(0)
   const [query, setQuery] = useState('')
+  const [debouncedQuery, setDebouncedQuery] = useState('')
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedQuery(query)
+      setPage(1) // Reset to page 1 on new search
+    }, 500)
+    return () => clearTimeout(handler)
+  }, [query])
+
+  useEffect(() => {
     let active = true
 
     async function fetchTopics() {
+      setLoading(true)
       try {
-        const result = await getTopics()
-        if (active) setTopics(result)
+        const result = await getTopics({ keyword: debouncedQuery, page, pageSize: PAGE_SIZE })
+        if (active) {
+          setTopics(result.items || [])
+          setTotalCount(result.totalCount || 0)
+        }
       } catch (err) {
         if (active) {
           setError(err.response?.data?.message || err.message || 'Failed to load topics.')
@@ -35,31 +49,14 @@ function TopicsPage() {
     return () => {
       active = false
     }
-  }, [])
+  }, [debouncedQuery, page])
 
-  const filteredTopics = useMemo(() => {
-    const keyword = query.trim().toLowerCase()
-    if (!keyword) return topics
-
-    return topics.filter((topic) =>
-      [topic.name, topic.description]
-        .filter(Boolean)
-        .some((value) => value.toLowerCase().includes(keyword)),
-    )
-  }, [topics, query])
-
-  const totalPages = Math.max(1, Math.ceil(filteredTopics.length / PAGE_SIZE))
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
   const currentPage = Math.min(page, totalPages)
-  const startIndex = (currentPage - 1) * PAGE_SIZE
-  const pageTopics = useMemo(
-    () => filteredTopics.slice(startIndex, startIndex + PAGE_SIZE),
-    [filteredTopics, startIndex],
-  )
   const totalPapers = topics.reduce((sum, topic) => sum + (topic.paperCount ?? 0), 0)
 
   const handleSearchChange = (event) => {
     setQuery(event.target.value)
-    setPage(1)
   }
 
   return (
@@ -72,7 +69,7 @@ function TopicsPage() {
         </div>
         <div className={styles.summary}>
           <span>
-            <strong>{topics.length}</strong>
+            <strong>{totalCount}</strong>
             Topics
           </span>
           <span>
@@ -92,7 +89,7 @@ function TopicsPage() {
           onChange={handleSearchChange}
         />
         <div className={styles.resultCount}>
-          {filteredTopics.length} result{filteredTopics.length !== 1 ? 's' : ''}
+          {totalCount} result{totalCount !== 1 ? 's' : ''}
         </div>
       </div>
 
@@ -104,12 +101,12 @@ function TopicsPage() {
         </div>
       ) : error ? (
         <div className={styles.error}>{error}</div>
-      ) : filteredTopics.length === 0 ? (
+      ) : topics.length === 0 ? (
         <div className={styles.empty}>No topics found matching "{query}".</div>
       ) : (
         <>
           <div className={styles.grid}>
-            {pageTopics.map((topic) => (
+            {topics.map((topic) => (
               <Link to={`/topics/${topic.id}`} key={topic.id} className={styles.card}>
                 <div className={styles.cardHeader}>
                   <div className={styles.icon}>

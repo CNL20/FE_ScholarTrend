@@ -19,18 +19,32 @@ function getInitials(name) {
 
 function AuthorsPage() {
   const [authors, setAuthors] = useState([])
+  const [totalCount, setTotalCount] = useState(0)
   const [query, setQuery] = useState('')
+  const [debouncedQuery, setDebouncedQuery] = useState('')
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedQuery(query)
+      setPage(1) // Reset to page 1 on new search
+    }, 500)
+    return () => clearTimeout(handler)
+  }, [query])
+
+  useEffect(() => {
     let active = true
 
     async function fetchAuthors() {
+      setLoading(true)
       try {
-        const result = await getAuthors()
-        if (active) setAuthors(result)
+        const result = await getAuthors({ keyword: debouncedQuery, page, pageSize: PAGE_SIZE })
+        if (active) {
+          setAuthors(result.items || [])
+          setTotalCount(result.totalCount || 0)
+        }
       } catch (err) {
         if (active) {
           setError(err.response?.data?.message || err.message || 'Failed to load authors.')
@@ -45,33 +59,18 @@ function AuthorsPage() {
     return () => {
       active = false
     }
-  }, [])
+  }, [debouncedQuery, page])
 
-  const filteredAuthors = useMemo(() => {
-    const keyword = query.trim().toLowerCase()
-    if (!keyword) return authors
-
-    return authors.filter((author) =>
-      [author.name, author.affiliation, author.country]
-        .filter(Boolean)
-        .some((value) => value.toLowerCase().includes(keyword)),
-    )
-  }, [authors, query])
-
-  const totalPages = Math.max(1, Math.ceil(filteredAuthors.length / PAGE_SIZE))
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
   const currentPage = Math.min(page, totalPages)
+  
   const startIndex = (currentPage - 1) * PAGE_SIZE
-  const pageAuthors = useMemo(
-    () => filteredAuthors.slice(startIndex, startIndex + PAGE_SIZE),
-    [filteredAuthors, startIndex],
-  )
-  const firstResult = filteredAuthors.length > 0 ? startIndex + 1 : 0
-  const lastResult = Math.min(startIndex + pageAuthors.length, filteredAuthors.length)
+  const firstResult = totalCount > 0 ? startIndex + 1 : 0
+  const lastResult = Math.min(startIndex + authors.length, totalCount)
   const totalPapers = authors.reduce((sum, author) => sum + (author.paperCount ?? 0), 0)
 
   const handleSearchChange = (event) => {
     setQuery(event.target.value)
-    setPage(1)
   }
 
   return (
@@ -84,7 +83,7 @@ function AuthorsPage() {
         </div>
         <div className={styles.summary}>
           <span>
-            <strong>{authors.length}</strong>
+            <strong>{totalCount}</strong>
             Authors
           </span>
           <span>
@@ -103,8 +102,8 @@ function AuthorsPage() {
           placeholder="Search by name, affiliation, or country"
         />
         <span className={styles.resultCount}>
-          {filteredAuthors.length > 0
-            ? `${firstResult}-${lastResult} of ${filteredAuthors.length}`
+          {totalCount > 0
+            ? `${firstResult}-${lastResult} of ${totalCount}`
             : '0 results'}
         </span>
       </div>
@@ -113,10 +112,10 @@ function AuthorsPage() {
 
       {loading ? (
         <Skeleton variant="card" count={6} />
-      ) : filteredAuthors.length > 0 ? (
+      ) : authors.length > 0 ? (
         <>
           <div className={styles.grid}>
-            {pageAuthors.map((author) => {
+            {authors.map((author) => {
               const authorPath = author.id
                 ? `/authors/id/${encodeURIComponent(author.id)}`
                 : `/authors/${encodeURIComponent(author.name)}`

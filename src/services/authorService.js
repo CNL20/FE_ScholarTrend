@@ -8,17 +8,22 @@ function unwrapResponse(response, fallbackMessage) {
   return response.data
 }
 
-export async function getAuthors() {
-  const { data: response } = await api.get('/authors')
+export async function getAuthors(params = {}) {
+  const { data: response } = await api.get('/authors', { params })
   const result = unwrapResponse(response, 'Failed to load authors.')
 
-  return (Array.isArray(result) ? result : []).map((author) => ({
-    ...author,
-    name: author.name ?? `Author ${author.id}`,
-    affiliation: author.affiliation ?? '',
-    country: author.country ?? '',
-    paperCount: author.paperCount ?? 0,
-  }))
+  const items = Array.isArray(result.items) ? result.items : []
+  
+  return {
+    ...result,
+    items: items.map((author) => ({
+      ...author,
+      name: author.name ?? `Author ${author.id}`,
+      affiliation: author.affiliation ?? '',
+      country: author.country ?? '',
+      paperCount: author.paperCount ?? 0,
+    }))
+  }
 }
 
 function normalizeRecentPaper(paper) {
