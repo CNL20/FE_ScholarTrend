@@ -103,7 +103,7 @@ function getPaperId(paper) {
 
 function canApprovePaper(paper) {
   const status = String(paper?.status || "").toLowerCase();
-  return getPaperId(paper) != null && !["approved", "rejected", "imported"].includes(status);
+  return getPaperId(paper) != null && !["approved", "rejected", "imported", "processing"].includes(status);
 }
 
 function getSelectablePaperIds(papers) {
@@ -190,6 +190,15 @@ function AdminApiConfigPage() {
   const [showRejectConfirm, setShowRejectConfirm] = useState(false);
   const [showApproveAllConfirm, setShowApproveAllConfirm] = useState(false);
   const [approveNotice, setApproveNotice] = useState("");
+  const [toasts, setToasts] = useState([]);
+
+  const addToast = (title, message, type = "success") => {
+    const id = Date.now();
+    setToasts((prev) => [...prev, { id, title, message, type }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 5000);
+  };
 
   const [dataSources, setDataSources] = useState([]);
   const [dataSourcesLoading, setDataSourcesLoading] = useState(true);
@@ -217,7 +226,7 @@ function AdminApiConfigPage() {
       await updateSyncDataSourceStatus(source.id, !source.isActive);
       await refreshDataSources();
     } catch (error) {
-      alert("Failed to update source: " + (error.response?.data?.message || error.message));
+      addToast("Update Failed", error.response?.data?.message || error.message, "error");
     } finally {
       setSourceToggling(null);
     }
@@ -648,7 +657,7 @@ function AdminApiConfigPage() {
 
     try {
       await approveAllPendingSyncs();
-      alert("Successfully started approval of all pending papers. It will finish in the background.");
+      addToast("Approval Started", "Successfully started approval of all pending papers. It will finish in the background.", "success");
       refreshPendingSync();
     } catch (error) {
       setPendingError(
@@ -1754,6 +1763,27 @@ function AdminApiConfigPage() {
           </div>
         </div>
       )}
+
+      <div className={styles.toastContainer}>
+        {toasts.map((toast) => (
+          <div key={toast.id} className={`${styles.toast} ${toast.type === 'error' ? styles.toastError : ''}`}>
+            <div className={styles.toastIcon}>
+              {toast.type === 'success' ? (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              ) : (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              )}
+            </div>
+            <div className={styles.toastContent}>
+              <h4 className={styles.toastTitle}>{toast.title}</h4>
+              <p className={styles.toastMessage}>{toast.message}</p>
+            </div>
+            <button className={styles.toastClose} onClick={() => setToasts((prev) => prev.filter((t) => t.id !== toast.id))}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div>
+        ))}
+      </div>
     </section>
   );
 }
