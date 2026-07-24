@@ -26,15 +26,20 @@ function normalizeGapId(id) {
   return gapId
 }
 
-export async function getTopics() {
-  const { data: response } = await api.get('/topics')
+export async function getTopics(params = {}) {
+  const { data: response } = await api.get('/topics', { params })
   const result = unwrapResponse(response, 'Failed to load topics.')
 
-  return (Array.isArray(result) ? result : []).map((topic) => ({
-    ...topic,
-    name: topic.topicName ?? topic.name ?? `Topic ${topic.id}`,
-    paperCount: topic.paperCount ?? 0,
-  }))
+  const items = Array.isArray(result.items) ? result.items : []
+
+  return {
+    ...result,
+    items: items.map((topic) => ({
+      ...topic,
+      name: topic.topicName ?? topic.name ?? `Topic ${topic.id}`,
+      paperCount: topic.paperCount ?? 0,
+    }))
+  }
 }
 
 function normalizeRecentPaper(paper) {
