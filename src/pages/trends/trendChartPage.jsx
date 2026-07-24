@@ -167,7 +167,7 @@ function TrendChartPage() {
         setJournalSeries(journalResult)
         setOptions({
           keywords: topKeywordResult,
-          topics: allTopicsResult,
+          topics: allTopicsResult?.items || [],
           journals: allJournalsResult,
         })
       } catch (err) {
